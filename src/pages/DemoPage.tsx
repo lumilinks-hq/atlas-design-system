@@ -1,0 +1,247 @@
+import { Button, ButtonGroup, Chip } from "@heroui/react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Bot,
+  Check,
+  CheckCircle2,
+  Code2,
+  FileText,
+  Layers3,
+  RotateCcw,
+  ScanSearch,
+  ShieldCheck,
+  X,
+} from "lucide-react";
+import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import baselineEvaluation from "../../experiments/account-management/runs/mvp-05/baseline/design-evaluation.json";
+import comparison from "../../experiments/account-management/runs/mvp-05/comparison.json";
+import correctedEvaluation from "../../experiments/account-management/runs/mvp-05/harness-corrected/design-evaluation.json";
+
+const scenes = [
+  { id: "issue", number: "01", label: "Issue" },
+  { id: "apply", number: "02", label: "設計を適用" },
+  { id: "generate", number: "03", label: "生成と検査" },
+  { id: "result", number: "04", label: "結果を比較" },
+] as const;
+
+function SceneHeading({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
+  return (
+    <header className="scene-heading">
+      <p>{eyebrow}</p>
+      <h1>{title}</h1>
+      <span>{description}</span>
+    </header>
+  );
+}
+
+function IssueScene() {
+  return (
+    <section className="demo-scene issue-scene" aria-labelledby="issue-title">
+      <SceneHeading
+        eyebrow="01 — 作りたい機能のIssue"
+        title="顧客企業の契約と利用状況を管理したい"
+        description="AIへ渡す設計指示書です。利用者、必要な機能、完了条件だけを明確にします。"
+      />
+
+      <article className="issue-sheet">
+        <header className="issue-sheet-header">
+          <div className="issue-meta"><span><FileText size={18} /> Issue #218</span><Chip color="success" size="sm" variant="soft">対応中</Chip></div>
+          <h2 id="issue-title">顧客企業の契約・利用状況管理</h2>
+          <p>CS担当者が、企業情報を確認し、権限に応じて契約プランと席数を変更できる画面を作る。</p>
+        </header>
+        <div className="issue-columns">
+          <section><p className="issue-label">利用者</p><h3>CS Manager / Viewer</h3><p>Managerだけが契約を変更できる。Viewerは閲覧のみ。</p></section>
+          <section><p className="issue-label">主要操作</p><h3>契約プランと席数を変更</h3><p>利用中の42席を下回る変更は保存できない。</p></section>
+          <section><p className="issue-label">完了条件</p><ul><li><Check size={17} />7つの画面状態を再現できる</li><li><Check size={17} />保存前に変更内容を確認する</li><li><Check size={17} />TypeScript・Test・Buildが通る</li></ul></section>
+        </div>
+      </article>
+    </section>
+  );
+}
+
+function ApplyScene() {
+  return (
+    <section className="demo-scene apply-scene">
+      <SceneHeading
+        eyebrow="02 — Design Harnessを適用"
+        title="Issueに、Atlasの設計情報を重ねる"
+        description="Issueは変えません。AIが読むコンテキストに、既存の設計判断を追加します。"
+      />
+
+      <div className="apply-flow" aria-label="IssueへAtlas Design Systemを適用する流れ">
+        <div className="flow-inputs">
+          <article className="site-card flow-card issue-input">
+            <span className="flow-icon"><FileText size={26} /></span>
+            <div><p>作りたい機能</p><h2>Issue #218</h2><span>作りたい機能と完了条件</span></div>
+          </article>
+          <article className="site-card flow-card system-input">
+            <span className="flow-icon"><Layers3 size={26} /></span>
+            <div><p>デモ用デザインシステム</p><h2>Atlas Design System</h2><span>Design Harnessを用いて管理</span></div>
+            <div className="contract-chips"><span>ページレイアウト</span><span>1カラム</span><span>HeroUI</span><span>検証ルール</span></div>
+          </article>
+        </div>
+        <div className="flow-connector" aria-hidden="true"><span /><ArrowRight size={30} /></div>
+        <article className="site-card flow-output">
+          <span className="flow-output-icon"><Bot size={34} /></span>
+          <p>AIへ渡す実装情報</p>
+          <h2>実装に必要な判断が揃う</h2>
+          <ul><li><CheckCircle2 size={18} />どのページ構造を使うか</li><li><CheckCircle2 size={18} />どのHeroUI部品を使うか</li><li><CheckCircle2 size={18} />何を検査するか</li></ul>
+        </article>
+      </div>
+      <p className="scene-note"><ShieldCheck size={18} />Baselineとの差は、Atlasの設計情報を渡すかどうかだけです。</p>
+    </section>
+  );
+}
+
+function GenerateScene() {
+  const stages = [
+    { icon: FileText, title: "設計を読む", detail: "Issue + Atlas", evidence: "1パターン / 1利用例" },
+    { icon: Code2, title: "画面を作る", detail: "React + HeroUI", evidence: "7状態" },
+    { icon: ScanSearch, title: "同じ検査をかける", detail: "型 / テスト / ビルド", evidence: "4件の設計違反" },
+    { icon: CheckCircle2, title: "指摘を返して直す", detail: "生成コードを再修正", evidence: "設計違反 0件" },
+  ];
+  return (
+    <section className="demo-scene generate-scene">
+      <SceneHeading
+        eyebrow="03 — 生成過程"
+        title="AIは設計を読み、作り、検査結果で直す"
+        description="生成を一度で終わらせず、設計ルールへ適合するまで同じRunの中で補正します。"
+      />
+
+      <ol className="generation-track">
+        {stages.map((stage, index) => {
+          const Icon = stage.icon;
+          return (
+            <li key={stage.title}>
+              <div className="site-card generation-card">
+                <span className="generation-number">{String(index + 1).padStart(2, "0")}</span>
+                <Icon size={30} />
+                <h2>{stage.title}</h2>
+                <span>{stage.detail}</span>
+                <strong>{stage.evidence}</strong>
+              </div>
+              {index < stages.length - 1 && <ArrowRight className="generation-arrow" size={26} aria-hidden="true" />}
+            </li>
+          );
+        })}
+      </ol>
+
+      <div className="run-proof">
+        <div><span className="run-dot" /><strong>Run {comparison.pairId}</strong></div>
+        <span>Codex CLI 0.150.1</span>
+        <span>Model gpt-5.4</span>
+        <span>人は生成コードを直接修正していない</span>
+      </div>
+    </section>
+  );
+}
+
+function ResultScene() {
+  const navigate = useNavigate();
+  const previews = [
+    {
+      condition: "baseline",
+      title: "AIにIssueだけ渡す",
+      caption: "設計指示なし・初回生成",
+      evaluation: baselineEvaluation,
+      tone: "baseline",
+    },
+    {
+      condition: "harness-corrected",
+      title: "Atlasを適用する",
+      caption: "設計指示あり・検査後",
+      evaluation: correctedEvaluation,
+      tone: "atlas",
+    },
+  ] as const;
+  return (
+    <section className="demo-scene result-scene">
+      <SceneHeading
+        eyebrow="04 — 結果"
+        title="設計指示があると、修正可能な実装になる"
+        description="同じIssueから生成した画面です。差は、設計情報と検査結果を実装へ戻せるかどうかです。"
+      />
+
+      <div className="result-grid">
+        {previews.map((preview) => (
+          <article className={`site-card result-card result-card-${preview.tone}`} key={preview.condition}>
+            <header>
+              <div><p>{preview.caption}</p><h2>{preview.title}</h2></div>
+              <div className="result-score"><strong>{preview.evaluation.summary.failed}</strong><span>設計違反</span></div>
+            </header>
+            <div className="result-image"><img alt={`${preview.title}で生成した顧客企業管理画面`} src={`/experiments/account-management/runs/mvp-05/${preview.condition}.png`} /></div>
+            <footer><span>{preview.evaluation.summary.passed} 合格</span><span className={preview.evaluation.summary.failed === 0 ? "result-pass" : "result-fail"}>{preview.evaluation.summary.failed} 違反</span><span>{preview.evaluation.summary.review} 要確認</span></footer>
+          </article>
+        ))}
+      </div>
+      <p className="result-conclusion">初回出力の見た目を競うのではなく、既存ルールで検査し、直せる状態を作る。</p>
+      <div className="result-actions" aria-label="生成された画面を操作する">
+        <Button variant="secondary" onPress={() => navigate("/play/account-management?mode=baseline")}>設計指示なしの画面を操作する</Button>
+        <Button variant="primary" onPress={() => navigate("/play/account-management?mode=atlas")}>Atlas適用後の画面を操作する <ArrowRight size={16} /></Button>
+      </div>
+    </section>
+  );
+}
+
+const sceneComponents = [IssueScene, ApplyScene, GenerateScene, ResultScene];
+
+export function DemoPage() {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedScene = searchParams.get("scene");
+  const requestedIndex = scenes.findIndex((scene) => scene.id === requestedScene);
+  const currentIndex = requestedIndex >= 0 ? requestedIndex : 0;
+  const CurrentScene = sceneComponents[currentIndex]!;
+
+  const updateScene = (nextIndex: number) => {
+    const safeIndex = Math.min(Math.max(nextIndex, 0), scenes.length - 1);
+    setSearchParams({ scene: scenes[safeIndex]!.id }, { replace: true });
+  };
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement) return;
+      if (event.key === "ArrowRight") updateScene(currentIndex + 1);
+      else if (event.key === "ArrowLeft") updateScene(currentIndex - 1);
+      else if (event.key.toLowerCase() === "r") updateScene(0);
+      else return;
+      event.preventDefault();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  });
+
+  return (
+    <div className="demo-shell">
+      <header className="demo-header">
+        <div className="demo-brand"><Button aria-label="Atlas Design Systemへ戻る" isIconOnly size="sm" variant="ghost" onPress={() => navigate("/")}><X size={18} /></Button><strong>Atlas 実装比較デモ</strong></div>
+        <div className="demo-position" aria-label={`${currentIndex + 1} / ${scenes.length}`}><span>{String(currentIndex + 1).padStart(2, "0")}</span><i />{String(scenes.length).padStart(2, "0")}</div>
+        <Button size="sm" variant="ghost" onPress={() => updateScene(0)}><RotateCcw size={16} />最初から</Button>
+      </header>
+
+      <main className="demo-stage" id="demo-content"><CurrentScene /></main>
+
+      <footer className="demo-footer">
+        <nav className="scene-navigation" aria-label="デモの場面">
+          {scenes.map((scene, index) => (
+            <button
+              aria-label={`${scene.number} ${scene.label}`}
+              aria-current={index === currentIndex ? "step" : undefined}
+              className={index === currentIndex ? "scene-nav-item scene-nav-item-active" : index < currentIndex ? "scene-nav-item scene-nav-item-done" : "scene-nav-item"}
+              key={scene.id}
+              onClick={() => updateScene(index)}
+            >
+              <span>{scene.number}</span><strong>{scene.label}</strong>
+            </button>
+          ))}
+        </nav>
+        <ButtonGroup size="sm" variant="secondary">
+          <Button aria-label="前へ" isDisabled={currentIndex === 0} onPress={() => updateScene(currentIndex - 1)}><ArrowLeft size={16} />前へ</Button>
+          <Button aria-label="次へ" isDisabled={currentIndex === scenes.length - 1} onPress={() => updateScene(currentIndex + 1)}>次へ<ArrowRight size={16} /></Button>
+        </ButtonGroup>
+      </footer>
+    </div>
+  );
+}

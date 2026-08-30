@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "example.schema.json",
+  "type": "object",
+  "required": ["id", "name", "purpose", "pattern", "variant", "composition", "states", "components", "rules"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string", "pattern": "^example\\." },
+    "name": { "type": "string", "minLength": 1 },
+    "purpose": { "type": "string", "minLength": 1 },
+    "pattern": { "type": "string", "pattern": "^pattern\\." },
+    "variant": { "type": "string", "minLength": 1 },
+    "composition": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "states": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+    "components": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^component\\." }, "uniqueItems": true },
+    "rules": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pattern.schema.json",
+  "type": "object",
+  "required": ["id", "name", "purpose", "principles", "anatomy", "variants", "states", "components", "rules"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string", "pattern": "^pattern\\." },
+    "name": { "type": "string", "minLength": 1 },
+    "purpose": { "type": "string", "minLength": 1 },
+    "principles": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/principle" }
+    },
+    "anatomy": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/anatomy" }
+    },
+    "variants": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/variant" }
+    },
+    "states": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+    "components": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^component\\." }, "uniqueItems": true },
+    "rules": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true }
+  },
+  "$defs": {
+    "principle": {
+      "type": "object",
+      "required": ["id", "title", "description"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "anatomy": {
+      "type": "object",
+      "required": ["id", "name", "required", "description"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "required": { "type": "boolean" },
+        "description": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "variant": {
+      "type": "object",
+      "required": ["id", "name", "useWhen", "avoidWhen", "structure", "desktop", "narrow"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "useWhen": { "type": "string", "minLength": 1 },
+        "avoidWhen": { "type": "string", "minLength": 1 },
+        "structure": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "desktop": { "type": "string", "minLength": 1 },
+        "narrow": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

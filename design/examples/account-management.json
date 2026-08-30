@@ -1,0 +1,39 @@
+{
+  "$schema": "../schemas/example.schema.json",
+  "id": "example.account-management",
+  "name": "顧客企業の契約・利用状況管理",
+  "purpose": "CS担当者が企業の契約状態を把握し、権限と業務制約を守って契約内容を変更する",
+  "pattern": "pattern.page-layout",
+  "variant": "single-one-column",
+  "composition": [
+    "ページ見出しに企業名、契約状態、契約変更の主要操作を置く",
+    "概要セクションにプランと契約期間を表示する",
+    "利用状況セクションに契約席数、利用席数、残り席数を並べる",
+    "関連オブジェクトとしてメンバー一覧を表示する",
+    "契約変更はDrawerへ分離し、確定前に変更内容を確認する"
+  ],
+  "states": ["default", "drawer-open", "invalid-seat-count", "unauthorized", "loading", "success", "failure"],
+  "components": [
+    "component.button",
+    "component.table",
+    "component.card",
+    "component.select",
+    "component.number-field",
+    "component.chip",
+    "component.surface",
+    "component.drawer",
+    "component.alert-dialog",
+    "component.toast"
+  ],
+  "rules": [
+    "business.permission",
+    "business.seat-limit",
+    "state.complete",
+    "state.loading",
+    "state.failure",
+    "action.confirmation",
+    "a11y.form-label",
+    "a11y.error-recovery",
+    "a11y.focus-management"
+  ]
+}

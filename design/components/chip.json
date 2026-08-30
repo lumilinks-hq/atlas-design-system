@@ -1,0 +1,15 @@
+{
+  "$schema": "../schemas/component.schema.json",
+  "id": "component.chip",
+  "name": "Chip",
+  "implementation": "Chip",
+  "import": "@heroui/react",
+  "variants": ["default", "soft"],
+  "sizes": ["sm", "md"],
+  "requirements": [
+    "状態名を文字で表示する",
+    "操作要素の代わりに使わない",
+    "semantic colorと状態の意味を一致させる"
+  ],
+  "relatedRules": ["component.approved", "a11y.color-only", "color.semantic"]
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "../../design/schemas/experiment.schema.json",
+  "id": "experiment.account-management",
+  "title": "顧客企業の契約・利用状況管理",
+  "brief": "./brief.md",
+  "starter": "./starter",
+  "conditions": {
+    "baseline": { "includesDesignContract": false },
+    "harness": { "includesDesignContract": true }
+  },
+  "designRefs": {
+    "patterns": ["pattern.page-layout#single-one-column"],
+    "examples": ["example.account-management"]
+  },
+  "requiredStates": ["default", "drawer-open", "invalid-seat-count", "unauthorized", "loading", "success", "failure"],
+  "checks": ["build", "typecheck", "test", "design-rules", "accessibility", "responsive"]
+}

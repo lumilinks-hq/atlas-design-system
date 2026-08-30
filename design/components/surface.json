@@ -1,0 +1,14 @@
+{
+  "$schema": "../schemas/component.schema.json",
+  "id": "component.surface",
+  "name": "Surface",
+  "implementation": "Surface",
+  "import": "@heroui/react",
+  "variants": ["default"],
+  "sizes": ["md"],
+  "requirements": [
+    "ページ背景と情報領域の階層を作る",
+    "不要な影を追加しない"
+  ],
+  "relatedRules": ["component.approved", "layout.grouping"]
+}

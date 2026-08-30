@@ -1,0 +1,602 @@
+Reading additional input from stdin...
+2026-08-30T06:13:53.581778Z ERROR codex_core::tools::router: error=apply_patch verification failed: invalid patch: multiple operations target <repo>/.runs/account-management/mvp-05/harness-corrected/src/App.tsx
+2026-08-30T06:16:56.906005Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in <repo>/.runs/account-management/mvp-05/harness-corrected/src/App.tsx:
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Alert,
+  Card,
+  Chip,
+} from "@heroui/react";
+import { companyFixture, currentUserFixture, type UserRole } from "./fixtures";
+
+type DemoState =
+  | "default"
+  | "drawer-open"
+  | "invalid-seat-count"
+  | "unauthorized"
+  | "loading"
+  | "success"
+  | "failure";
+
+type PlanId = "starter" | "business" | "enterprise";
+
+type ContractDraft = {
+  plan: PlanId;
+  seats: number;
+};
+
+type BannerState = {
+  status: "accent" | "success" | "warning" | "danger";
+  title: string;
+  description: string;
+} | null;
+
+type DemoPreset = {
+  role: UserRole;
+  contract: ContractDraft;
+  draft: ContractDraft;
+  isDrawerOpen: boolean;
+  banner: BannerState;
+  isSaving: boolean;
+};
+
+const demoStates: DemoState[] = [
+  "default",
+  "drawer-open",
+  "invalid-seat-count",
+  "unauthorized",
+  "loading",
+  "success",
+  "failure",
+];
+
+const plans: Array<{ id: PlanId; label: string }> = [
+  { id: "starter", label: "Starter" },
+  { id: "business", label: "Business" },
+  { id: "enterprise", label: "Enterprise" },
+];
+
+const defaultDraft: ContractDraft = { plan: "business", seats: companyFixture.seats };
+const successDraft: ContractDraft = { plan: "enterprise", seats: 60 };
+const failureDraft: ContractDraft = { plan: "enterprise", seats: 48 };
+
+function formatDateRange(start: string, end: string) {
+  const formatter = new Intl.DateTimeFormat("ja-JP", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  return `${formatter.format(new Date(start))}から${formatter.format(new Date(end))}`;
+}
+
+function getStateFromQuery() {
+  if (typeof window === "undefined") {
+    return "default" satisfies DemoState;
+  }
+
+  const value = new URLSearchParams(window.location.search).get("state");
+  return demoStates.includes(value as DemoState) ? (value as DemoState) : "default";
+}
+
+function getDemoPreset(state: DemoState): DemoPreset {
+  switch (state) {
+    case "drawer-open":
+      return {
+        role: currentUserFixture.role,
+        contract: defaultDraft,
+        draft: defaultDraft,
+        isDrawerOpen: true,
+        banner: null,
+        isSaving: false,
+      };
+    case "invalid-seat-count":
+      return {
+        role: currentUserFixture.role,
+        contract: defaultDraft,
+        draft: { plan: "business" as const, seats: 41 },
+        isDrawerOpen: true,
+        banner: null,
+        isSaving: false,
+      };
+    case "unauthorized":
+      return {
+        role: "viewer" satisfies UserRole,
+        contract: defaultDraft,
+        draft: defaultDraft,
+        isDrawerOpen: false,
+        banner: {
+          status: "warning" as const,
+          title: "CS Viewerは契約を変更できません",
+          description: "閲覧のみ可能です。契約変更が必要な場合はCS Managerへ依頼してください。",
+        },
+        isSaving: false,
+      };
+    case "loading":
+      return {
+        role: currentUserFixture.role,
+        contract: defaultDraft,
+        draft: failureDraft,
+        isDrawerOpen: true,
+        banner: {
+          status: "accent" as const,
+          title: "契約変更を保存しています",
+          description: "保存完了まで、内容の変更と二重送信を停止しています。",
+        },
+        isSaving: true,
+      };
+    case "success":
+      return {
+        role: currentUserFixture.role,
+        contract: successDraft,
+        draft: successDraft,
+        isDrawerOpen: false,
+        banner: {
+          status: "success" as const,
+          title: "契約内容を更新しました",
+          description: "プランをEnterprise、契約席数を60席へ反映済みです。",
+        },
+        isSaving: false,
+      };
+    case "failure":
+      return {
+        role: currentUserFixture.role,
+        contract: defaultDraft,
+        draft: failureDraft,
+        isDrawerOpen: true,
+        banner: {
+          status: "danger" as const,
+          title: "契約内容を更新できませんでした",
+          description: "入力内容は保持しています。内容を確認して再試行してください。",
+        },
+        isSaving: false,
+      };
+    case "default":
+    default:
+      return {
+        role: currentUserFixture.role,
+        contract: defaultDraft,
+        draft: defaultDraft,
+        isDrawerOpen: false,
+        banner: null,
+        isSaving: false,
+      };
+  }
+}
+
+export function App() {
+  const [demoState, setDemoState] = useState<DemoState>(() => getStateFromQuery());
+  const initialPreset = useMemo(() => getDemoPreset(demoState), [demoState]);
+  const [role, setRole] = useState<UserRole>(initialPreset.role as UserRole);
+  const [contract, setContract] = useState<ContractDraft>(initialPreset.contract);
+  const [draft, setDraft] = useState<ContractDraft>(initialPreset.draft);
+  const [selectedPlan, setSelectedPlan] = useState<PlanId>(initialPreset.draft.plan);
+  const [seatInput, setSeatInput] = useState(String(initialPreset.draft.seats));
+  const [banner, setBanner] = useState<BannerState>(initialPreset.banner);
+  const [isSaving, setIsSaving] = useState(initialPreset.isSaving);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const saveTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const preset = getDemoPreset(demoState);
+    setRole(preset.role);
+    setContract(preset.contract);
+    setDraft(preset.draft);
+    setSelectedPlan(preset.draft.plan);
+    setSeatInput(String(preset.draft.seats));
+    setBanner(preset.banner);
+    setIsSaving(preset.isSaving);
+    setIsConfirmOpen(false);
+
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("state", demoState);
+      window.history.replaceState({}, "", url);
+    }
+  }, [demoState]);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current !== null) {
+        window.clearTimeout(saveTimerRef.current);
+      }
+    };
+  }, []);
+
+  const usedSeats = companyFixture.usedSeats;
+  const remainingSeats = contract.seats - usedSeats;
+  const parsedSeatCount = Number(seatInput);
+  const isSeatCountInvalid =
+    Number.isNaN(parsedSeatCount) || !Number.isInteger(parsedSeatCount) || parsedSeatCount < usedSeats;
+  const canEdit = role === "manager";
+  const pendingDraft: ContractDraft = {
+    plan: selectedPlan,
+    seats: Number.isNaN(parsedSeatCount) ? usedSeats : parsedSeatCount,
+  };
+  const planLabel = plans.find((plan) => plan.id === contract.plan)?.label ?? contract.plan;
+  const pendingPlanLabel = plans.find((plan) => plan.id === pendingDraft.plan)?.label ?? pendingDraft.plan;
+  const hasUnsavedChanges =
+    pendingDraft.plan !== contract.plan || pendingDraft.seats !== contract.seats;
+
+  const applyStatePreset = (nextState: DemoState) => {
+    if (saveTimerRef.current !== null) {
+      window.clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    setDemoState(nextState);
+  };
+
+  const openEditor = () => {
+    if (!canEdit || isSaving) {
+      return;
+    }
+
+    setDemoState("drawer-open");
+    setDraft(contract);
+    setSelectedPlan(contract.plan);
+    setSeatInput(String(contract.seats));
+    setBanner(null);
+  };
+
+  const closeEditor = () => {
+    if (isSaving) {
+      return;
+    }
+
+    setIsConfirmOpen(false);
+    if (demoState === "drawer-open" || demoState === "invalid-seat-count" || demoState === "failure") {
+      setDemoState("default");
+    }
+  };
+
+  const handleSeatInputChange = (value: string) => {
+    setSeatInput(value);
+    if (Number(value) < usedSeats) {
+      setDemoState("invalid-seat-count");
+      return;
+    }
+
+    if (demoState === "invalid-seat-count") {
+      setDemoState("drawer-open");
+    }
+  };
+
+  const handleStartSave = () => {
+    if (!canEdit || isSeatCountInvalid || !hasUnsavedChanges || isSaving) {
+      return;
+    }
+    setDraft(pendingDraft);
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmSave = () => {
+    if (isSaving) {
+      return;
+    }
+
+    setIsConfirmOpen(false);
+    setIsSaving(true);
+    setBanner({
+      status: "accent",
+      title: "契約変更を保存しています",
+      description: "保存完了まで、内容の変更と二重送信を停止しています。",
+    });
+    setDemoState("loading");
+
+    saveTimerRef.current = window.setTimeout(() => {
+      const shouldFail = pendingDraft.seats === failureDraft.seats || demoState === "failure";
+
+      if (shouldFail) {
+        setIsSaving(false);
+        setBanner({
+          status: "danger",
+          title: "契約内容を更新できませんでした",
+          description: "入力内容は保持しています。内容を確認して再試行してください。",
+        });
+        setDemoState("failure");
+        return;
+      }
+
+      setContract(pendingDraft);
+      setDraft(pendingDraft);
+      setIsSaving(false);
+      setBanner({
+        status: "success",
+        title: "契約内容を更新しました",
+        description: `プランを${pendingPlanLabel}、契約席数を${pendingDraft.seats}席へ反映しました。`,
+      });
+      setDemoState("success");
+    }, 700);
+  };
+
+  return (
+    <main className="page-shell">
+      <section className="page-header">
+        <div className="page-header__title">
+          <p className="eyebrow">Customer Contract Management</p>
+          <h1>{companyFixture.name}</h1>
+          <div className="status-row">
+            <Chip color="success" size="md" variant="soft">
+              契約状態: {companyFixture.status}
+            </Chip>
+            <Chip color={canEdit ? "accent" : "warning"} size="md" variant="soft">
+              利用者権限: {canEdit ? "CS Manager" : "CS Viewer"}
+            </Chip>
+          </div>
+        </div>
+        <div className="page-header__actions">
+          <div className="state-switcher" aria-label="画面状態の切り替え">
+            {demoStates.map((state) => (
+              <button
+                key={state}
+                type="button"
+                className={demoState === state ? "app-button app-button--primary app-button--sm" : "app-button app-button--outline app-button--sm"}
+                onClick={() => applyStatePreset(state)}
+              >
+                {state}
+              </button>
+            ))}
+          </div>
+          {canEdit ? (
+            <button type="button" className="app-button app-button--primary" onClick={openEditor}>
+              契約を変更
+            </button>
+          ) : (
+            <p className="permission-note">
+              CS Viewerは契約変更できません。内容確認のみ可能です。
+            </p>
+          )}
+        </div>
+      </section>
+
+      {banner ? (
+        <Alert status={banner.status}>
+          <Alert.Content>
+            <Alert.Title>{banner.title}</Alert.Title>
+            <Alert.Description>{banner.description}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+      ) : null}
+
+      <section className="content-grid">
+        <Card>
+          <Card.Header>
+            <Card.Title>企業概要</Card.Title>
+            <Card.Description>顧客企業の基本情報と契約期間です。</Card.Description>
+          </Card.Header>
+          <Card.Content className="details-grid">
+            <div>
+              <dt>企業名</dt>
+              <dd>{companyFixture.name}</dd>
+            </div>
+            <div>
+              <dt>契約期間</dt>
+              <dd>{formatDateRange(companyFixture.contractStart, companyFixture.contractEnd)}</dd>
+            </div>
+            <div>
+              <dt>担当者</dt>
+              <dd>{currentUserFixture.name}</dd>
+            </div>
+            <div>
+              <dt>現在プラン</dt>
+              <dd>{planLabel}</dd>
+            </div>
+          </Card.Content>
+        </Card>
+
+        <Card>
+          <Card.Header>
+            <Card.Title>契約と利用状況</Card.Title>
+            <Card.Description>利用席数を下回る契約席数には変更できません。</Card.Description>
+          </Card.Header>
+          <Card.Content className="metric-grid">
+            <article className="metric-card">
+              <span>契約席数</span>
+              <strong>{contract.seats}</strong>
+              <small>変更可能</small>
+            </article>
+            <article className="metric-card">
+              <span>利用席数</span>
+              <strong>{usedSeats}</strong>
+              <small>現在利用中</small>
+            </article>
+            <article className="metric-card">
+              <span>残り席数</span>
+              <strong>{remainingSeats}</strong>
+              <small>追加利用可能</small>
+            </article>
+          </Card.Content>
+        </Card>
+      </section>
+
+      <Card>
+        <Card.Header>
+          <Card.Title>メンバー一覧</Card.Title>
+          <Card.Description>氏名、メールアドレス、ロール、状態を確認できます。</Card.Description>
+        </Card.Header>
+        <Card.Content>
+          <div className="table-scroll">
+            <table className="member-table" aria-label="メンバー一覧">
+              <thead>
+                <tr>
+                  <th scope="col">氏名</th>
+                  <th scope="col">メールアドレス</th>
+                  <th scope="col">ロール</th>
+                  <th scope="col">状態</th>
+                </tr>
+              </thead>
+              <tbody>
+              {companyFixture.members.map((member) => (
+                <tr key={member.id}>
+                  <th scope="row">{member.name}</th>
+                  <td>{member.email}</td>
+                  <td>{member.role}</td>
+                  <td>
+                    <Chip color={member.status === "利用中" ? "success" : "warning"} size="sm" variant="soft">
+                      {member.status}
+                    </Chip>
+                  </td>
+                </tr>
+              ))}
+              </tbody>
+            </table>
+          </div>
+        </Card.Content>
+      </Card>
+
+      {["drawer-open", "invalid-seat-count", "loading", "failure"].includes(demoState) ? (
+        <div className="drawer-overlay" role="presentation">
+          <aside className="drawer-panel" aria-label="契約変更">
+            <div className="drawer-header">
+              <h2>契約変更</h2>
+              <button
+                type="button"
+                className="app-button app-button--outline app-button--sm"
+                disabled={isSaving}
+                aria-label="契約変更を閉じる"
+                onClick={closeEditor}
+              >
+                閉じる
+              </button>
+            </div>
+            <div className="drawer-body">
+                <div className="field-block">
+                  <label className="field-label" htmlFor="plan-select">
+                    プラン
+                  </label>
+                  <select
+                    id="plan-select"
+                    className="field-control"
+                    value={selectedPlan}
+                    disabled={!canEdit || isSaving}
+                    onChange={(event) => setSelectedPlan(event.target.value as PlanId)}
+                  >
+                    {plans.map((plan) => (
+                      <option key={plan.id} value={plan.id}>
+                        {plan.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="field-help">現在の契約条件に応じてプランを更新します。</p>
+                </div>
+
+                <div className="field-block">
+                  <label className="field-label" htmlFor="seat-input">
+                    契約席数
+                  </label>
+                  <input
+                    id="seat-input"
+                    className="field-control"
+                    type="number"
+                    min={usedSeats}
+                    step={1}
+                    value={seatInput}
+                    disabled={!canEdit || isSaving}
+                    aria-invalid={isSeatCountInvalid}
+                    aria-describedby="seat-help seat-error"
+                    onChange={(event) => handleSeatInputChange(event.target.value)}
+                  />
+                  <p id="seat-help" className="field-help">
+                    利用席数42席以上で設定してください。
+                  </p>
+                  {isSeatCountInvalid ? (
+                    <p id="seat-error" className="field-error" role="alert">
+                      契約席数は現在の利用席数42席以上にしてください。
+                    </p>
+                  ) : null}
+                </div>
+
+                <Card variant="secondary">
+                  <Card.Header>
+                    <Card.Title>変更内容の確認</Card.Title>
+                    <Card.Description>保存前に更新内容を確認します。</Card.Description>
+                  </Card.Header>
+                  <Card.Content className="confirm-grid">
+                    <div>
+                      <dt>プラン</dt>
+                      <dd>
+                        {planLabel} → {pendingPlanLabel}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>契約席数</dt>
+                      <dd>
+                        {contract.seats}席 → {pendingDraft.seats}席
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>保存後の残り席数</dt>
+                      <dd>{pendingDraft.seats - usedSeats}席</dd>
+                    </div>
+                    <div>
+                      <dt>保存可否</dt>
+                      <dd>{isSeatCountInvalid ? "入力エラーあり" : "保存可能"}</dd>
+                    </div>
+                  </Card.Content>
+                </Card>
+            </div>
+            <div className="drawer-footer">
+              <button
+                type="button"
+                className="app-button app-button--outline"
+                disabled={isSaving}
+                onClick={closeEditor}
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                className="app-button app-button--primary"
+                disabled={!canEdit || isSeatCountInvalid || !hasUnsavedChanges || isSaving}
+                onClick={handleStartSave}
+              >
+                {isSaving ? "保存中..." : "保存内容を確認"}
+              </button>
+            </div>
+          </aside>
+        </div>
+      ) : null}
+
+      {isConfirmOpen ? (
+        <div className="confirm-overlay" role="presentation">
+          <section className="confirm-panel" aria-labelledby="confirm-title" aria-modal="true" role="dialog">
+            <h2 id="confirm-title">契約変更を保存しますか？</h2>
+            <p>変更前後を確認し、問題なければ保存してください。</p>
+            <dl className="confirm-grid">
+              <div>
+                <dt>プラン</dt>
+                <dd>
+                  {planLabel} → {pendingPlanLabel}
+                </dd>
+              </div>
+              <div>
+                <dt>契約席数</dt>
+                <dd>
+                  {contract.seats}席 → {pendingDraft.seats}席
+                </dd>
+              </div>
+            </dl>
+            <div className="confirm-actions">
+              <button type="button" className="app-button app-button--outline" onClick={() => setIsConfirmOpen(false)}>
+                戻る
+              </button>
+              <button type="button" className="app-button app-button--primary" onClick={handleConfirmSave}>
+                保存する
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+    </main>
+  );
+}
+2026-08-30T06:21:34.995836Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in <repo>/.runs/account-management/mvp-05/harness-corrected/src/App.tsx:
+            <Drawer.Dialog aria-label="契約変更">
+              <Drawer.Header className="drawer-header">
+                <Drawer.Heading>契約変更</Drawer.Heading>
+                <Drawer.CloseTrigger
+                  aria-label="契約変更を閉じる"
+                  isDisabled={isSaving}
+                  onPress={closeEditor}
+                />
+              </Drawer.Header>

@@ -1,0 +1,150 @@
+{
+  "$schema": "./schemas/rules.schema.json",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "id": "component.approved",
+      "title": "承認済みHeroUIコンポーネントを使う",
+      "category": "component",
+      "severity": "error",
+      "method": "automatic",
+      "description": "契約に存在しないUI部品を追加しない",
+      "fix": "design/componentsにあるHeroUIコンポーネントへ置き換える"
+    },
+    {
+      "id": "token.no-raw-color",
+      "title": "JSXへ色コードを書かない",
+      "category": "token",
+      "severity": "error",
+      "method": "automatic",
+      "description": "色はsemantic tokenを介して利用する",
+      "fix": "design/tokens.jsonに対応するCSS変数を使う"
+    },
+    {
+      "id": "a11y.control-name",
+      "title": "操作要素に名前を付ける",
+      "category": "accessibility",
+      "severity": "error",
+      "method": "automatic",
+      "description": "アイコンだけの操作にも支援技術が読める名前を付ける",
+      "fix": "視覚ラベルまたはaria-labelを追加する"
+    },
+    {
+      "id": "a11y.form-label",
+      "title": "入力に視覚ラベルを付ける",
+      "category": "accessibility",
+      "severity": "error",
+      "method": "automatic",
+      "description": "placeholderだけをLabelとして使わない",
+      "fix": "HeroUIのLabelを入力へ関連付ける"
+    },
+    {
+      "id": "a11y.error-recovery",
+      "title": "エラーに回復方法を示す",
+      "category": "accessibility",
+      "severity": "error",
+      "method": "human",
+      "description": "何が起きたかと次に行う操作を表示する",
+      "fix": "対象入力の近くに原因と有効な値を表示する"
+    },
+    {
+      "id": "a11y.color-only",
+      "title": "色だけで状態を伝えない",
+      "category": "accessibility",
+      "severity": "error",
+      "method": "human",
+      "description": "状態名を文字またはアイコンと併記する",
+      "fix": "Chipへ状態名を表示する"
+    },
+    {
+      "id": "business.permission",
+      "title": "契約変更を権限で制御する",
+      "category": "business",
+      "severity": "error",
+      "method": "automatic",
+      "description": "閲覧権限だけの利用者は契約を変更できない",
+      "fix": "操作表示と更新処理の両方で権限を確認する"
+    },
+    {
+      "id": "business.seat-limit",
+      "title": "契約席数を利用席数未満にしない",
+      "category": "business",
+      "severity": "error",
+      "method": "automatic",
+      "description": "現在利用中の席数を保護する",
+      "fix": "NumberFieldの最小値と送信前検証を利用席数に合わせる"
+    },
+    {
+      "id": "state.complete",
+      "title": "必要な画面状態を実装する",
+      "category": "state",
+      "severity": "error",
+      "method": "automatic",
+      "description": "Default、Loading、Success、Failure、Unauthorized、Invalidを欠かさない",
+      "fix": "不足するfixtureと表示を追加する"
+    },
+    {
+      "id": "layout.grouping",
+      "title": "ページの関係を余白と見出しで示す",
+      "category": "layout",
+      "severity": "warning",
+      "method": "ai-review",
+      "description": "見出し領域とコンテンツ領域を分け、セクション間をグループ内の2倍以上空ける",
+      "fix": "ページ見出し、セクション見出し、余白の順で情報の関係を表す"
+    },
+    {
+      "id": "layout.narrow",
+      "title": "狭い画面では1カラムへ積み替える",
+      "category": "layout",
+      "severity": "error",
+      "method": "automatic",
+      "description": "320px幅または200% zoomで横スクロールを発生させず、主要情報と操作を欠落させない",
+      "fix": "情報の優先順位を保って1カラムへ積み、表はリストへ切り替える"
+    },
+    {
+      "id": "state.loading",
+      "title": "非同期処理中の状態を示す",
+      "category": "state",
+      "severity": "error",
+      "method": "automatic",
+      "description": "保存中であることを示し、二重送信を防ぐ",
+      "fix": "Buttonのloadingとdisabledを同期する"
+    },
+    {
+      "id": "state.failure",
+      "title": "失敗後も再試行できる",
+      "category": "state",
+      "severity": "error",
+      "method": "human",
+      "description": "Toastだけで失敗情報を消さない",
+      "fix": "Drawer内にエラーと再試行操作を残す"
+    },
+    {
+      "id": "color.semantic",
+      "title": "semantic colorを意味に合わせる",
+      "category": "color",
+      "severity": "warning",
+      "method": "ai-review",
+      "description": "危険色を通常操作へ使わない",
+      "fix": "操作の意味に対応するtokenへ置き換える"
+    },
+    {
+      "id": "action.confirmation",
+      "title": "契約変更を確定前に確認する",
+      "category": "interaction",
+      "severity": "error",
+      "method": "automatic",
+      "description": "プランまたは席数の変更内容を、AlertDialog.Triggerから開いた確認画面で確認する",
+      "fix": "起点操作にAlertDialog.Triggerを使い、AlertDialogへ変更前後を表示する"
+    },
+    {
+      "id": "a11y.focus-management",
+      "title": "Drawerのフォーカスを管理する",
+      "category": "accessibility",
+      "severity": "error",
+      "method": "automatic",
+      "description": "開閉時にフォーカスを失わず、起点を主要操作として識別できる",
+      "fix": "Drawer.Root内でDrawer.TriggerとDrawer.Backdropを組にし、Triggerへ主要Buttonの視覚スタイルを適用する"
+    }
+  ]
+}

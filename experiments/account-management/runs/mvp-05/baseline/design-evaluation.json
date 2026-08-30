@@ -1,0 +1,127 @@
+{
+  "pairId": "mvp-05",
+  "mode": "baseline",
+  "summary": {
+    "passed": 9,
+    "failed": 4,
+    "review": 3
+  },
+  "rules": [
+    {
+      "id": "component.approved",
+      "status": "failed",
+      "evidence": [
+        "button: 1件",
+        "table: 1件",
+        "select: 1件",
+        "number input: 1件",
+        "custom dialog: 1件"
+      ]
+    },
+    {
+      "id": "token.no-raw-color",
+      "status": "failed",
+      "evidence": [
+        "raw color: 30件"
+      ]
+    },
+    {
+      "id": "a11y.control-name",
+      "status": "review",
+      "evidence": [
+        "実ブラウザのaccessibility treeで確認する"
+      ]
+    },
+    {
+      "id": "a11y.form-label",
+      "status": "passed",
+      "evidence": [
+        "視覚ラベルまたはaria-labelあり"
+      ]
+    },
+    {
+      "id": "a11y.error-recovery",
+      "status": "passed",
+      "evidence": [
+        "原因または回復方法の文言あり"
+      ]
+    },
+    {
+      "id": "a11y.color-only",
+      "status": "passed",
+      "evidence": [
+        "状態名を文字で表示"
+      ]
+    },
+    {
+      "id": "business.permission",
+      "status": "passed",
+      "evidence": [
+        "Viewerの権限制御あり"
+      ]
+    },
+    {
+      "id": "business.seat-limit",
+      "status": "passed",
+      "evidence": [
+        "利用席数を使う制約あり"
+      ]
+    },
+    {
+      "id": "state.complete",
+      "status": "passed",
+      "evidence": [
+        "必須7状態あり"
+      ]
+    },
+    {
+      "id": "layout.grouping",
+      "status": "review",
+      "evidence": [
+        "スクリーンショットをblind reviewする"
+      ]
+    },
+    {
+      "id": "layout.narrow",
+      "status": "passed",
+      "evidence": [
+        "狭幅向けmedia queryと再配置あり"
+      ]
+    },
+    {
+      "id": "state.loading",
+      "status": "passed",
+      "evidence": [
+        "保存中のdisabled制御あり"
+      ]
+    },
+    {
+      "id": "state.failure",
+      "status": "passed",
+      "evidence": [
+        "失敗後の再試行経路あり"
+      ]
+    },
+    {
+      "id": "color.semantic",
+      "status": "review",
+      "evidence": [
+        "semantic colorの意味はblind reviewする"
+      ]
+    },
+    {
+      "id": "action.confirmation",
+      "status": "failed",
+      "evidence": [
+        "HeroUI AlertDialogを使用していません"
+      ]
+    },
+    {
+      "id": "a11y.focus-management",
+      "status": "failed",
+      "evidence": [
+        "HeroUI Drawerの標準フォーカス管理がありません"
+      ]
+    }
+  ]
+}

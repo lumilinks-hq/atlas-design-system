@@ -1,0 +1,51 @@
+{
+  "$schema": "../../../../../design/schemas/run.schema.json",
+  "id": "mvp-05-harness",
+  "experimentId": "experiment.account-management",
+  "condition": "harness",
+  "status": "completed",
+  "createdAt": "2026-08-30T05:52:36.672Z",
+  "input": {
+    "briefSha256": "bc7ee77b1b40bc9155f99094325c8b3a755e2f913cc4a11d3ae86c236c64c905",
+    "starterSha256": "a7918bef24712a7c172d3a29b07775db44f46c5b412eae3ffc4845b51a8d22cc",
+    "promptSha256": "6a22891522edab7038bacb7640041bad08662a3c9c8ab1f989d196bf38ef6e05",
+    "designContractSha256": "9fa63b30655040d8274ecfaa77455edb9a487cf8bd63f0036448b7b018789332"
+  },
+  "environment": {
+    "runner": "codex",
+    "model": "gpt-5.4",
+    "cliVersion": "codex-cli 0.150.1"
+  },
+  "artifacts": [
+    "events.jsonl",
+    "agent-stderr.log",
+    "changes.diff",
+    "source",
+    "typecheck.log",
+    "test.log",
+    "build.log",
+    "design-evaluation.json"
+  ],
+  "checks": [
+    {
+      "name": "typecheck",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "test",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "build",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "design-rules",
+      "status": "failed",
+      "exitCode": 1
+    }
+  ]
+}

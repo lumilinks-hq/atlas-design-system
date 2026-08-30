@@ -1,0 +1,15 @@
+{
+  "$schema": "../schemas/component.schema.json",
+  "id": "component.table",
+  "name": "Table",
+  "implementation": "Table",
+  "import": "@heroui/react",
+  "variants": ["default"],
+  "sizes": ["md"],
+  "requirements": [
+    "列見出しを省略しない",
+    "状態を色だけで示さない",
+    "狭い画面では情報の優先順位を保ってスクロール可能にする"
+  ],
+  "relatedRules": ["component.approved", "a11y.color-only", "layout.narrow"]
+}

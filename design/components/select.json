@@ -1,0 +1,15 @@
+{
+  "$schema": "../schemas/component.schema.json",
+  "id": "component.select",
+  "name": "Select",
+  "implementation": "Select",
+  "import": "@heroui/react",
+  "variants": ["default"],
+  "sizes": ["md"],
+  "requirements": [
+    "視覚的なLabelを付ける",
+    "未選択と選択済みを区別する",
+    "エラー時に回復方法を示す"
+  ],
+  "relatedRules": ["component.approved", "a11y.form-label", "a11y.error-recovery"]
+}
