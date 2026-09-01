@@ -12,7 +12,7 @@ token_source: ./design/tokens.json
 
 - 北極星: 「整った業務台帳」— 状態、事実、次の操作を同じ順序で確認できる
 - カラー: 明るいニュートラル基調。強い操作は`color.accent`の1色、状態色は意味を持つ場所だけに使う
-- タイポグラフィ: 日本語UIは14pxを本文基準とし、見出し・本文・補助情報の4段階で構成する
+- タイポグラフィ: 日本語UIは16pxを本文基準とし、見出し・本文・補助情報の4段階で構成する
 - レイアウト: `pattern.page-layout`からvariantを選び、ページ見出しからコンテンツへ重要度順に配置する
 - 死守ライン: 320px幅、200% zoom、キーボード操作でも主要情報・主要操作・回復方法を失わない
 
@@ -38,7 +38,7 @@ token_source: ./design/tokens.json
 
 ### When Principles Conflict
 
-- 一覧性と可読性が衝突する → 14px本文と1.6の行間を保ち、列や情報を次画面へ分ける
+- 一覧性と可読性が衝突する → 16px本文と1.6の行間を保ち、列や情報を次画面へ分ける
 - デスクトップの同時参照と狭幅の操作性が衝突する → 狭幅では1カラムまたは別画面を選び、横スクロールを増やさない
 - 画面固有の便利さと既存Patternが衝突する → 業務上の根拠がある場合だけExampleへ例外を記録し、Pattern自体へ暗黙に混ぜない
 - AIの初回出力と検査結果が衝突する → 検査結果を優先し、同じRunへ修正指示として戻す
@@ -65,8 +65,9 @@ token_source: ./design/tokens.json
 
 - **階層:** 余白を第一、サーフェス色差を第二、区切り線を第三の手段にする
 - **角丸:** 通常は8px。カプセル型と正円だけを用途が明確な例外として使う
+- **HeroUIへの適用:** `design/component-theme.css`を読み込み、HeroUIの角丸倍率とButtonGroupなどの複合構造を保つ。`.button`全体へ角丸を直接上書きしない
 - **影:** Cardは`shadow.raised`を標準とし、Drawer、Dialog、Popoverなど一時的な層にはより強い影を使う
-- **密度:** テーブルと一覧は14px基準。ページ見出しとセクション間には32px以上を確保する
+- **密度:** テーブルと一覧は16px基準、メタ情報は14px。ページ見出しとセクション間には32px以上を確保する
 - **アイコン:** Lucideの線画を使い、文字と組み合わせる。アイコンだけの操作には必ず名前を付ける
 
 **自由領域:** データの特徴を伝える小さな可視化や空状態の構成。業務台帳に短い注釈を加えるように、判断を早める範囲で工夫してよい。
@@ -77,7 +78,7 @@ token_source: ./design/tokens.json
 
 | Intent | Token | Value | Do | Don't |
 |---|---|---|---|---|
-| Page background | `color.background` | `oklch(0.985 0.004 255)` | アプリケーション全体の背景 | カード背景として使わない |
+| Page background | `color.background` | `oklch(0.978 0.008 265.9)` | アプリケーション全体の背景 | カード背景として使わない |
 | Surface | `color.surface` | `oklch(1 0 0)` | カード、テーブル、固定パネル | ページ全体を白一色にしない |
 | Muted surface | `color.surfaceMuted` | `oklch(0.965 0.006 255)` | 入力背景、補助領域、コード領域 | 主要操作の強調に使わない |
 | Primary text | `color.text` | `oklch(0.25 0.02 255)` | 見出し、本文、主要数値 | 大面積の背景に使わない |
@@ -118,15 +119,15 @@ token_source: ./design/tokens.json
 
 ### Scale
 
-**原則:** 日本語の業務UIは14pxを基準とし、階層はサイズを増やしすぎず、weightと余白で補う。
+**原則:** 日本語の業務UIは16pxを基準とし、階層はサイズを増やしすぎず、weightと余白で補う。値の正本は`design/tokens.json`の`type`。
 
 | Context | Token | Font | Size | Weight | Line Height | Reasoning |
 |---|---|---|---|---|---|---|
-| Page title | `type.title` | system sans | 28px | 650 | 1.25 | 対象画面の識別と視線の起点 |
-| Section heading | `type.heading` | system sans | 18px | 650 | 1.4 | 情報群の境界を明示する |
-| Body / table | `type.body` | system sans | 14px | 400 | 1.6 | 日本語の可読性と業務画面の密度を両立する |
-| UI label | `type.label` | system sans | 13px | 500 | 1.5 | ボタン、入力、ナビゲーション |
-| Caption / metadata | `type.small` | system sans | 12px | 400 | 1.4 | 補助情報の下限。これ未満にしない |
+| Page title | `type.title` | system sans | 32px | 650 | 1.25 | 対象画面の識別と視線の起点 |
+| Section heading | `type.heading` | system sans | 20px | 650 | 1.25 | 情報群の境界を明示する |
+| Body / table | `type.body` | system sans | 16px | 400 | 1.6 | 日本語の可読性と業務画面の密度を両立する |
+| UI label | `type.label` | system sans | 14px | 500 | 1.6 | ボタン、入力、ナビゲーション |
+| Caption / metadata | `type.small` | system sans | 14px | 400 | 1.6 | 補助情報の下限。これ未満にしない |
 
 ### Rules
 
@@ -154,6 +155,22 @@ token_source: ./design/tokens.json
 | `space.6` | 24px | カード内、見出しと本文 | 情報群の内部を整える |
 | `space.8` | 32px | セクション間 | グループ境界を示す |
 | `space.12` | 48px | ページ内の大きな区切り | 別の目的を持つ領域を分ける |
+
+### Breakpoint & Layout Partials
+
+- 幅の境界は`breakpoint.narrow`（768px）だけを使う。CSSのmedia queryはカスタムプロパティを参照できないため、`design/layout.css`は`@media (max-width: 767px)`をリテラルで書き、`validate-design.mjs`がtokens.jsonとの一致を検査する
+- レイアウト実装の正本は`design/layout.css`。生成アプリはこれをimportし、契約が参照するクラス名をそのまま使う。同等のクラスを独自に再実装しない
+- variant別の数値（余白、幅、gap）は`design/patterns/*.json`の各variantの`layout`が正本。DrawerとAlertDialogの寸法は`design/components/{drawer,alert-dialog}.json`の`layout`が正本
+
+| Class | Role |
+|---|---|
+| `.page-shell` / `.page-shell--stack` | コンテンツ幅`content.maxWidth`の中央寄せと、ページ上下の余白 |
+| `.page-heading`一式 | タイトル、リード文、状態、主要操作をまとめる見出しグループ |
+| `.collection-region` / `.collection-toolbar` / `.search-field` | 一覧とToolbarの間隔、SearchFieldの幅（16rem⇄100%）切り替え |
+| `.collection-table-wrap` / `.collection-list-mobile`一式 | 767px以下でテーブルをモバイルリストへ切り替える |
+| `.table-link` / `.table-cell--numeric` / `.numeric-text` | 行内リンクと`tabular-nums`の数値表示 |
+| `.detail-page__heading` / `.detail-grid` / `.detail-content` | 詳細（1カラム）の見出しグループとセクション構造 |
+| `.drawer-form` | Drawer内フォームの`space.6` gap |
 
 ### Shadow
 
@@ -227,11 +244,13 @@ Patternの正本は`design/patterns/page-layout.json`。Issue固有の画面名�
 |---|---|---|
 | 主要操作 | `component.button` primary | 一画面の視線の起点を一つにする |
 | 補助操作 | `component.button` secondary / ghost | 主要操作と競合させない |
-| 構造化データの比較 | `component.table` | 行と列を走査できる |
+| 別画面・別ビューへの移動 | `component.link` | ブラウザ標準のリンク操作と移動先を保つ |
+| 構造化データの比較 | `component.table` | 列定義、row header、幅、揃えを共有し、行と列を走査できる |
 | 状態表示 | `component.chip` + text | 色以外でも状態を理解できる |
 | 軽い編集 | `component.drawer` | 元の閲覧文脈を保つ |
-| 契約・権限・削除の確定 | `component.alert-dialog` | 結果と変更前後を確認する |
-| 入力固有の失敗 | NumberField / Selectのinline error | 対象と回復方法を近接させる |
+| 文字情報の入力 | `component.text-field` | Label、説明、エラーを一つの入力単位として扱う |
+| 削除など取り消せない操作の確定 | `component.alert-dialog` | 結果と変更対象を確認する |
+| 入力固有の失敗 | TextField / NumberField / Selectのinline error | 対象と回復方法を近接させる |
 | 保存結果 | `component.toast` + 文脈内状態 | 一時通知だけに結果を依存しない |
 
 ### Composition Rules
@@ -242,11 +261,37 @@ Patternの正本は`design/patterns/page-layout.json`。Issue固有の画面名�
 
 #### 追記可能 Rule
 
-Loading、Success、Failure、Unauthorized、Invalidを通常画面と同じ構造の中で表現する。状態ごとに別のレイアウトを発明しない。
+Loading、Empty、Success、Failure、Invalidを通常画面と同じ構造の中で表現する。状態ごとに別のレイアウトを発明しない。
 
 #### 編集分離 Rule
 
 一覧や詳細の軽い編集はDrawerへ分離する。複数セクションにまたがる編集や長い入力は別ページを使う。
+
+#### 一覧列定義 Rule
+
+Tableは列のid、見出し、幅、最小幅、揃えを一つの定義配列で管理する。HeaderとRowは同じ列定義を参照し、識別子になる列へ`isRowHeader`、日付と数値へ末尾揃えと`tabular-nums`を指定する。
+
+#### Table標準表現 Rule
+
+TableはHeroUIの`primary` variantを標準とする。背景、角丸、影はTable自身が持ち、外側のコンテナへ同じsurface表現を重ねない。Issue固有の列順と属性は`design/examples/*.json`の`componentUsage`を正本とする。
+
+#### 移動と操作 Rule
+
+詳細ビューや一覧へ移動するだけの要素には、`href`または`to`を持つLinkを使う。Tableでは行を識別するオブジェクト名をリンクにし、Buttonの`onPress`で画面遷移させない。React Routerを使う場合はRouterLinkへHeroUIの`link`クラスを適用する。編集、削除、保存など現在の対象を変更する処理だけをButtonにする。
+
+#### 戻るナビゲーション Rule
+
+親の一覧や上位ビューへ戻るLinkはPageHeadingの前に置き、LinkとPageHeadingを一つの見出しグループとして扱う。見出しグループ内は`space.4`、PageHeadingから詳細コンテンツまでは`space.8`とする。LinkやButton自身の高さ、padding、marginをページ間隔として利用しない。
+
+#### 一覧操作Toolbar Rule
+
+検索、並び替え、絞り込みなど同じ一覧へ作用する操作は、Tableと同じCollectionRegionのToolbarへまとめる。検索にはTextFieldではなくHeroUI SearchFieldを使い、`SearchField.Group`内にSearchIcon、Input、ClearButtonを置く。Issueにない操作は見た目だけ追加しない。
+
+デスクトップではToolbarルートを`width: 100%; display: flex; justify-content: flex-end`としてSearchFieldを末尾側へ置き、顧客一覧の標準幅は16remとする。子要素の`margin-inline-start: auto`だけで末尾揃えを代用しない。狭幅ではSearchFieldも100%幅へ積み替える。ToolbarとTableの間は`space.3`、ページ見出しからCollectionRegionまでは`space.6`を使う。
+
+#### 複合部品 Rule
+
+Cardは`Card.Header`と`Card.Content`、Drawerは`Drawer.Header`、`Drawer.Body`、`Drawer.Footer`で組み立てる。TextFieldのルートへ入力枠を当てず、枠とpaddingは`Input`または`Select.Trigger`へ適用する。SearchFieldはGroup、SearchIcon、Input、ClearButtonの構造を省略しない。
 
 ### State Handling
 
@@ -267,6 +312,9 @@ Loading、Success、Failure、Unauthorized、Invalidを通常画面と同じ構�
 ### Sources
 
 - `design/tokens.json` — color、spacing、radius、content width、typeの値
+- `design/theme.css` — `design/tokens.json`から生成するCSS custom properties
+- `design/component-theme.css` — `design/theme.css`を読み込み、Atlas tokenをHeroUI v3へ対応付けるtheme adapter
+- `design/layout.css` — 契約が参照するレイアウトクラスの実装正本。`breakpoint.narrow`のmediaリテラルを含む
 - `design/components/*.json` — HeroUIコンポーネントの許可variantと必須状態
 - `design/patterns/page-layout.json` — Page Layoutのanatomyとvariant
 - `design/examples/*.json` — Issue固有のPattern適用例

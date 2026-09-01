@@ -3,7 +3,7 @@ function kebab(value) {
 }
 
 export function renderTheme(tokens) {
-  const baseRadius = tokens.radius.base;
+  const baseRadius = "var(--dh-radius-base)";
   const declarations = [
     ...Object.entries(tokens.color).map(([key, value]) => [`--dh-${kebab(key)}`, value]),
     ["--accent", tokens.color.accent],
@@ -14,13 +14,20 @@ export function renderTheme(tokens) {
     ...Object.entries(tokens.shadow).map(([key, value]) => [`--dh-shadow-${key}`, value]),
     ["--surface-shadow", tokens.shadow.raised],
     ["--overlay-shadow", tokens.shadow.overlay],
-    ["--radius", baseRadius],
+    ["--radius", `calc(${baseRadius} / 3)`],
     ["--field-radius", baseRadius],
     ["--radius-field", baseRadius],
-    ...["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl"]
-      .map((key) => [`--radius-${key}`, baseRadius]),
+    ["--radius-xs", `calc(var(--radius) * .25)`],
+    ["--radius-sm", `calc(var(--radius) * .5)`],
+    ["--radius-md", `calc(var(--radius) * .75)`],
+    ["--radius-lg", "var(--radius)"],
+    ["--radius-xl", `calc(var(--radius) * 1.5)`],
+    ["--radius-2xl", `calc(var(--radius) * 2)`],
+    ["--radius-3xl", `calc(var(--radius) * 3)`],
+    ["--radius-4xl", `calc(var(--radius) * 4)`],
     ["--dh-content-max", tokens.content.maxWidth],
     ["--dh-reading-width", tokens.content.readingWidth],
+    ...Object.entries(tokens.breakpoint ?? {}).map(([key, value]) => [`--dh-breakpoint-${kebab(key)}`, value]),
     ...Object.entries(tokens.type).map(([key, value]) => [`--dh-type-${kebab(key)}`, value]),
   ];
 

@@ -4,14 +4,25 @@
   "name": "Drawer",
   "implementation": "Drawer",
   "import": "@heroui/react",
-  "variants": ["default"],
+  "variants": ["opaque", "blur", "transparent"],
   "sizes": ["md", "lg"],
+  "defaults": { "variant": "opaque", "size": "md" },
+  "visual": { "surfaceOwner": "component", "outerShadow": "required", "radiusToken": "radius.base" },
   "requirements": [
     "タイトルと閉じる操作を持つ",
     "保存中は閉じる前に状態を確認できる",
     "フォーカスをDrawer内へ管理し、閉じた後は起点へ戻す",
     "Drawer.Root内でDrawer.TriggerとDrawer.Backdropを組にし、外部Buttonだけで開閉しない",
-    "Drawer.Triggerには主要Buttonと同じ視覚スタイルを適用し、無装飾のテキストにしない"
+    "Drawer.Triggerには主要Buttonと同じ視覚スタイルを適用し、無装飾のテキストにしない",
+    "Drawer.Dialog内はDrawer.Header、Drawer.Body、Drawer.Footerで構成する",
+    "TextFieldのルートへ入力枠や高さを指定せず、枠とpaddingはInputまたはSelect.Triggerだけへ適用する"
   ],
-  "relatedRules": ["component.approved", "a11y.focus-management", "state.loading"]
+  "relatedRules": ["component.approved", "a11y.focus-management", "state.loading"],
+  "layout": {
+    "placement": "right",
+    "width": "20rem",
+    "widthFromSm": "24rem",
+    "maxWidth": "85vw",
+    "dialogPadding": "space.6"
+  }
 }

@@ -7,7 +7,7 @@
     {
       "id": "predictable-order",
       "title": "読む順序を固定する",
-      "description": "アプリケーションヘッダー、ページ見出し、補助ナビゲーション、コンテンツの順に配置する"
+      "description": "アプリケーションヘッダー、戻るナビゲーション、ページ見出し、補助ナビゲーション、コンテンツの順に配置する"
     },
     {
       "id": "object-first",
@@ -26,6 +26,12 @@
       "name": "アプリケーションヘッダー",
       "required": true,
       "description": "サービス全体の移動と利用者コンテキストを提供する"
+    },
+    {
+      "id": "back-navigation",
+      "name": "戻るナビゲーション",
+      "required": false,
+      "description": "親の一覧や上位ビューへ戻る経路がある詳細画面では、ページ見出しの前に配置する"
     },
     {
       "id": "page-heading",
@@ -58,9 +64,30 @@
       "name": "一覧（テーブル）",
       "useWhen": "複数のオブジェクトを属性で比較しながら探す",
       "avoidWhen": "項目数が少ない、または狭い画面での利用が中心",
-      "structure": ["ページ見出し", "検索・絞り込み", "テーブル", "ページネーション"],
+      "structure": ["ページ見出し", "一覧操作Toolbar", "テーブル", "ページネーション"],
       "desktop": "コンテンツ幅を広く使い、比較に必要な列を優先して表示する",
-      "narrow": "一覧（リスト）へ切り替え、主要属性以外は詳細画面へ移す"
+      "narrow": "一覧（リスト）へ切り替え、主要属性以外は詳細画面へ移す",
+      "layout": {
+        "breakpoint": "breakpoint.narrow",
+        "classes": [
+          ".page-shell",
+          ".page-shell--stack",
+          ".page-heading",
+          ".collection-region",
+          ".collection-toolbar",
+          ".search-field",
+          ".collection-table-wrap",
+          ".collection-list-mobile"
+        ],
+        "values": {
+          "maxWidth": "content.maxWidth",
+          "pagePaddingBlock": "space.8",
+          "toolbarGapBeforeTable": "space.3",
+          "headingToCollectionGap": "space.6",
+          "searchDesktopWidth": "16rem",
+          "searchNarrowWidth": "100%"
+        }
+      }
     },
     {
       "id": "collection-list",
@@ -69,23 +96,54 @@
       "avoidWhen": "複数列を横断して比較することが主要タスク",
       "structure": ["ページ見出し", "検索・絞り込み", "リスト", "追加読み込み"],
       "desktop": "短い一覧や補助領域で使用し、必要以上にカード化しない",
-      "narrow": "1行に識別情報、状態、主要操作を置き、詳細は次画面に分ける"
+      "narrow": "1行に識別情報、状態、主要操作を置き、詳細は次画面に分ける",
+      "layout": {
+        "breakpoint": "breakpoint.narrow",
+        "classes": [
+          ".collection-list-mobile",
+          ".collection-list-mobile__content",
+          ".collection-list-mobile__link",
+          ".collection-list-mobile__meta"
+        ],
+        "values": {
+          "itemGap": "space.4",
+          "contentGap": "space.3"
+        }
+      }
     },
     {
       "id": "single-one-column",
       "name": "詳細（1カラム）",
       "useWhen": "一つのオブジェクトを、並列な情報セクションに分けて確認・操作する",
       "avoidWhen": "主情報と副情報の重要度や情報量に大きな差がある",
-      "structure": ["ページ見出し", "概要", "詳細セクション", "関連オブジェクト"],
+      "structure": ["戻るナビゲーション", "ページ見出し", "概要", "詳細セクション", "関連オブジェクト"],
       "desktop": "最大1200pxの中で、セクションを重要度順に縦へ配置する",
-      "narrow": "モバイルでは1カラムに積み替える"
+      "narrow": "モバイルでは1カラムに積み替える",
+      "layout": {
+        "breakpoint": "breakpoint.narrow",
+        "classes": [
+          ".page-shell",
+          ".page-shell--stack",
+          ".detail-page__heading",
+          ".page-heading",
+          ".detail-grid",
+          ".detail-content"
+        ],
+        "values": {
+          "maxWidth": "content.maxWidth",
+          "backNavigationGap": "space.4",
+          "headingToContentGap": "space.8",
+          "sectionGap": "space.6",
+          "groupGap": "space.4"
+        }
+      }
     },
     {
       "id": "single-two-column",
       "name": "詳細（2カラム）",
       "useWhen": "主情報を操作しながら、識別情報や履歴などの副情報を参照する",
       "avoidWhen": "二つの領域が同じ重要度、または狭い画面で同時表示する必要がない",
-      "structure": ["ページ見出し", "副情報", "主情報"],
+      "structure": ["戻るナビゲーション", "ページ見出し", "副情報", "主情報"],
       "desktop": "主情報を副情報の2倍以上の幅にする",
       "narrow": "利用者が先に確認する情報から1カラムに積む"
     },
@@ -111,16 +169,22 @@
   "states": ["loading", "empty", "error", "permission-limited"],
   "components": [
     "component.button",
+    "component.link",
     "component.table",
+    "component.toolbar",
+    "component.search-field",
     "component.card",
     "component.chip",
     "component.surface"
   ],
   "rules": [
     "layout.grouping",
+    "layout.collection-toolbar",
+    "layout.back-navigation",
     "layout.narrow",
     "a11y.control-name",
     "a11y.color-only",
+    "navigation.link-semantics",
     "color.semantic"
   ]
 }

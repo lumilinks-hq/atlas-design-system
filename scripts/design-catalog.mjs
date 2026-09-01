@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { relative, resolve, sep } from "node:path";
 import { rootDir } from "./lib.mjs";
+import { resolveAgentSkills } from "./skill-catalog.mjs";
 
 const jsonDirectories = [
   { directory: "design/components", uriSegment: "components" },
@@ -52,6 +53,27 @@ export const atlasResources = [
     path: "design/rules.json",
     mimeType: "application/json",
   },
+  {
+    id: "design.theme",
+    name: "Atlas generated CSS theme",
+    uri: "atlas://design/theme",
+    path: "design/theme.css",
+    mimeType: "text/css",
+  },
+  {
+    id: "design.component-theme",
+    name: "Atlas HeroUI theme adapter",
+    uri: "atlas://design/component-theme",
+    path: "design/component-theme.css",
+    mimeType: "text/css",
+  },
+  {
+    id: "design.layout",
+    name: "Atlas layout partials",
+    uri: "atlas://design/layout",
+    path: "design/layout.css",
+    mimeType: "text/css",
+  },
   ...generatedResources,
 ];
 
@@ -88,7 +110,7 @@ export function resolveDesignContract({ patterns = [], examples = [] }) {
   if (patterns.length === 0 && examples.length === 0) throw new Error("At least one pattern or example reference is required");
 
   const selected = new Map();
-  for (const id of ["design.quick-reference", "design.tokens", "design.rules"]) {
+  for (const id of ["design.quick-reference", "design.tokens", "design.rules", "design.theme", "design.component-theme", "design.layout"]) {
     const resource = resourcesById.get(id);
     selected.set(resource.uri, resource);
   }
@@ -121,8 +143,12 @@ export function resolveManifest(manifestPath) {
   const relativePath = relative(rootDir, absolutePath);
   if (relativePath.startsWith(`..${sep}`) || relativePath === "..") throw new Error("Manifest must be inside the Atlas repository");
   const manifest = JSON.parse(readFileSync(absolutePath, "utf8"));
-  return resolveDesignContract({
+  const contract = resolveDesignContract({
     patterns: manifest.designRefs?.patterns ?? [],
     examples: manifest.designRefs?.examples ?? [],
   });
+  return {
+    ...contract,
+    agentSkills: resolveAgentSkills(manifest.conditions?.harness?.agentSkills ?? []),
+  };
 }

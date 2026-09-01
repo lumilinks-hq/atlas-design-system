@@ -54,7 +54,19 @@
       "avoidWhen": "コンポーネント内部だけの局所的な配置を調整する",
       "structure": ["ページ内側 space.8", "セクション間 space.8", "グループ間 space.6", "見出しと内容 space.4"],
       "desktop": "外周32px、セクション間32px、グループ間24px、見出しと内容16px",
-      "narrow": "外周を上下24px・左右16pxに縮め、内容間の余白は原則として維持する"
+      "narrow": "外周を上下24px・左右16pxに縮め、内容間の余白は原則として維持する",
+      "layout": {
+        "breakpoint": "breakpoint.narrow",
+        "classes": [".page-shell", ".page-shell--stack"],
+        "values": {
+          "pagePadding": "space.8",
+          "sectionGap": "space.8",
+          "groupGap": "space.6",
+          "headingGap": "space.4",
+          "narrowPagePaddingBlock": "space.6",
+          "narrowPagePaddingInline": "space.4"
+        }
+      }
     },
     {
       "id": "surface-content",
@@ -63,7 +75,16 @@
       "avoidWhen": "余白だけでまとまりを十分に示せるため、枠自体が不要な場合",
       "structure": ["内側 space.6", "グループ間 space.4", "要素間 space.2"],
       "desktop": "内側24px、グループ間16px、強く関連する要素間8px",
-      "narrow": "内側を16pxに縮め、グループ間16pxと要素間8pxは維持する"
+      "narrow": "内側を16pxに縮め、グループ間16pxと要素間8pxは維持する",
+      "layout": {
+        "breakpoint": "breakpoint.narrow",
+        "values": {
+          "padding": "space.6",
+          "groupGap": "space.4",
+          "elementGap": "space.2",
+          "narrowPadding": "space.4"
+        }
+      }
     },
     {
       "id": "dialog-content",
@@ -72,7 +93,18 @@
       "avoidWhen": "常時参照する情報や、複数画面にまたがる長い操作を収める",
       "structure": ["内側 space.6", "説明とフォーム space.8", "フォーム間 space.6", "ラベルと入力 space.2"],
       "desktop": "内側24px、説明とフォーム32px、フォーム間24px、ラベルと入力8px",
-      "narrow": "内側を16pxに縮め、内容同士の関係を示す余白は維持する"
+      "narrow": "内側を16pxに縮め、内容同士の関係を示す余白は維持する",
+      "layout": {
+        "breakpoint": "breakpoint.narrow",
+        "classes": [".drawer-form"],
+        "values": {
+          "padding": "space.6",
+          "introToFormGap": "space.8",
+          "formGap": "space.6",
+          "labelGap": "space.2",
+          "narrowPadding": "space.4"
+        }
+      }
     },
     {
       "id": "inline-actions",
@@ -81,7 +113,14 @@
       "avoidWhen": "狭い画面で折り返すと操作順序や対応関係が崩れる",
       "structure": ["アイコンと文字 space.1〜2", "ボタン間 space.2〜4", "入力欄間 space.4"],
       "desktop": "アイコンと文字4〜8px、ボタン間8〜16px、入力欄間16px",
-      "narrow": "同じ値を維持する。幅が足りない場合は余白を削らず縦に積み替える"
+      "narrow": "同じ値を維持する。幅が足りない場合は余白を削らず縦に積み替える",
+      "layout": {
+        "values": {
+          "iconGap": "space.1",
+          "buttonGap": "space.2",
+          "fieldGap": "space.4"
+        }
+      }
     }
   ],
   "states": ["default", "narrow"],
@@ -90,7 +129,14 @@
     "component.card",
     "component.surface",
     "component.alert-dialog",
-    "component.number-field"
+    "component.number-field",
+    "component.drawer",
+    "component.table",
+    "component.toolbar",
+    "component.search-field",
+    "component.text-field",
+    "component.select",
+    "component.link"
   ],
   "rules": [
     "layout.grouping",

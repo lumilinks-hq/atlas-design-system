@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "tokens.schema.json",
   "type": "object",
-  "required": ["version", "color", "space", "radius", "shadow", "content", "type"],
+  "required": ["version", "color", "space", "radius", "shadow", "content", "breakpoint", "type"],
   "properties": {
     "$schema": { "type": "string" },
     "version": { "type": "string" },
@@ -36,6 +36,14 @@
       "properties": {
         "maxWidth": { "type": "string" },
         "readingWidth": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "breakpoint": {
+      "type": "object",
+      "required": ["narrow"],
+      "properties": {
+        "narrow": { "type": "string", "pattern": "^\\d+px$" }
       },
       "additionalProperties": false
     },

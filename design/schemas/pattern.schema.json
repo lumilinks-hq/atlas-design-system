@@ -59,7 +59,18 @@
         "avoidWhen": { "type": "string", "minLength": 1 },
         "structure": { "type": "array", "minItems": 1, "items": { "type": "string" } },
         "desktop": { "type": "string", "minLength": 1 },
-        "narrow": { "type": "string", "minLength": 1 }
+        "narrow": { "type": "string", "minLength": 1 },
+        "layout": { "$ref": "#/$defs/layout" }
+      },
+      "additionalProperties": false
+    },
+    "layout": {
+      "type": "object",
+      "required": ["values"],
+      "properties": {
+        "breakpoint": { "type": "string", "pattern": "^breakpoint\\." },
+        "classes": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^\\." }, "uniqueItems": true },
+        "values": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "string" } }
       },
       "additionalProperties": false
     }
