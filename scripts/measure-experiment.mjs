@@ -162,6 +162,8 @@ export async function measureRun({ pairId, mode, outDir }) {
           };
           try {
             runtimeErrors.length = 0;
+            // hashのみの遷移は再マウントされず、viewport変更がJS側の分岐に反映される前にprobeが走りうる
+            await page.goto("about:blank");
             await page.setViewportSize({ width: entry.viewport.width, height: entry.viewport.height });
             await page.goto(`http://127.0.0.1:${address.port}/#${entry.path}?state=${entry.state}`, {
               waitUntil: "networkidle",
