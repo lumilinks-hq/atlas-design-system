@@ -1,7 +1,8 @@
 import { cp, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { evaluateRun } from "./evaluate-experiment.mjs";
-import { hashPath, parseArgs, rootDir, runCommand, runCommandToFiles } from "./lib.mjs";
+import { hashHarnessContext, syncHarnessContext } from "./harness-context.mjs";
+import { parseArgs, rootDir, runCommand, runCommandToFiles } from "./lib.mjs";
 import { sanitizeRunArtifacts } from "./sanitize-run-artifacts.mjs";
 
 const args = parseArgs(process.argv.slice(2));
@@ -14,23 +15,37 @@ const outputDir = resolve(rootDir, "experiments", "account-management", "runs", 
 const runPath = resolve(outputDir, "run.json");
 const run = JSON.parse(await readFile(runPath, "utf8"));
 
-await cp(resolve(rootDir, "DESIGN.md"), resolve(workspaceDir, "DESIGN.md"), { force: true });
-await cp(resolve(rootDir, "design"), resolve(workspaceDir, "design"), { recursive: true, force: true });
+await syncHarnessContext(workspaceDir, "experiments/account-management/manifest.json");
 const beforeRefinement = await evaluateRun({ pairId, mode });
+const hasFailedChecks = run.checks?.some((check) => check.status === "failed") ?? false;
 
-if (beforeRefinement.summary.failed === 0) {
+if (beforeRefinement.summary.failed === 0 && !hasFailedChecks) {
   const currentRun = JSON.parse(await readFile(runPath, "utf8"));
-  currentRun.status = "completed";
-  currentRun.input.designContractSha256 = await hashPath(resolve(rootDir, "design"));
+  const checks = [];
+  for (const [name, commandArgs] of [["typecheck", ["exec", "tsc", "-p", "tsconfig.app.json", "--pretty", "false", "--noUncheckedIndexedAccess"]], ["test", ["test:run"]], ["build", ["build"]]]) {
+    const check = await runCommand("pnpm", commandArgs, { cwd: workspaceDir, timeoutMs: 30_000 });
+    await writeFile(resolve(outputDir, `${name}.log`), `${check.stdout}${check.stderr}`);
+    checks.push({ name, status: check.code === 0 ? "passed" : "failed", exitCode: check.code });
+  }
+  checks.push({ name: "design-rules", status: "passed", exitCode: 0 });
+  currentRun.status = checks.every((check) => check.status === "passed") ? "completed" : "failed";
+  currentRun.input.designContractSha256 = await hashHarnessContext("experiments/account-management/manifest.json");
+  currentRun.checks = checks;
+  currentRun.artifacts = [...new Set([...currentRun.artifacts, "source", "design", "typecheck.log", "test.log", "build.log", "design-evaluation.json"])];
+  await cp(resolve(workspaceDir, "src"), resolve(outputDir, "source"), { recursive: true, force: true });
+  await cp(resolve(workspaceDir, "design"), resolve(outputDir, "design"), { recursive: true, force: true });
   await writeFile(runPath, `${JSON.stringify(currentRun, null, 2)}\n`);
   const diff = await runCommand("git", ["diff", "--binary", "HEAD"], { cwd: workspaceDir });
   await writeFile(resolve(outputDir, "changes.diff"), diff.stdout);
   await sanitizeRunArtifacts(outputDir);
-  console.log(`${mode}: no failed design rules; contract hash updated`);
-  process.exit(0);
+  if (!checks.some((check) => check.status === "failed")) {
+    console.log(`${mode}: no failed design rules or runtime checks; contract hash updated`);
+    process.exit(0);
+  }
+  console.log(`${mode}: runtime check failed; continuing to agent refinement`);
 }
 
-const prompt = "VALIDATION.mdの失敗項目だけを修正してください。DESIGN.mdとdesign/は変更せず、既存の画面要件と機能を保ってください。修正後にtypecheck、test:run、buildを実行してください。";
+const prompt = "$atlas-design-system、$heroui-react、$ui-writingを使い、VALIDATION.mdの失敗項目、pnpm exec tsc -p tsconfig.app.json --pretty false --noUncheckedIndexedAccess、pnpm test:runで再現する失敗だけを修正してください。各項目の証拠と修正指示を文字通り確認し、削除対象として挙がったUIは別部品へ置き換えず削除してください。修正方法はHARNESS_RESOLVED.jsonが指すAtlas契約（screensのvariant、pattern・componentのlayout、exampleのcomposition、design/layout.cssのクラス）に従い、レイアウトを独自に再発明しないでください。DESIGN.mdとdesign/は変更せず、既存の画面要件と機能を保ってください。テストではHeroUI操作前にfake timersを有効化するとuserEventやDrawerの完了処理が停止するため、操作はreal timersで行い、保存完了だけwaitForで待ってください。debug.test.tsxは残さないでください。修正後に厳格typecheck、test:run、buildを実行してください。";
 const result = await runCommandToFiles("codex", [
   "exec",
   "--ignore-user-config",
@@ -52,10 +67,11 @@ const result = await runCommandToFiles("codex", [
 const diff = await runCommand("git", ["diff", "--binary", "HEAD"], { cwd: workspaceDir });
 await writeFile(resolve(outputDir, "changes.diff"), diff.stdout);
 await cp(resolve(workspaceDir, "src"), resolve(outputDir, "source"), { recursive: true, force: true });
+await cp(resolve(workspaceDir, "design"), resolve(outputDir, "design"), { recursive: true, force: true });
 
 const checks = [];
-for (const [name, commandArgs] of [["typecheck", ["typecheck"]], ["test", ["test:run"]], ["build", ["build"]]]) {
-  const check = await runCommand("pnpm", commandArgs, { cwd: workspaceDir });
+for (const [name, commandArgs] of [["typecheck", ["exec", "tsc", "-p", "tsconfig.app.json", "--pretty", "false", "--noUncheckedIndexedAccess"]], ["test", ["test:run"]], ["build", ["build"]]]) {
+  const check = await runCommand("pnpm", commandArgs, { cwd: workspaceDir, timeoutMs: 30_000 });
   await writeFile(resolve(outputDir, `${name}.log`), `${check.stdout}${check.stderr}`);
   checks.push({ name, status: check.code === 0 ? "passed" : "failed", exitCode: check.code });
 }
@@ -63,8 +79,8 @@ for (const [name, commandArgs] of [["typecheck", ["typecheck"]], ["test", ["test
 const updatedRun = {
   ...run,
   status: result.code === 0 ? "completed" : "failed",
-  input: { ...run.input, designContractSha256: await hashPath(resolve(rootDir, "design")) },
-  artifacts: [...new Set([...run.artifacts, "refinement-events.jsonl", "refinement-stderr.log"])],
+  input: { ...run.input, designContractSha256: await hashHarnessContext("experiments/account-management/manifest.json") },
+  artifacts: [...new Set([...run.artifacts, "design", "refinement-events.jsonl", "refinement-stderr.log"])],
   checks,
 };
 await writeFile(runPath, `${JSON.stringify(updatedRun, null, 2)}\n`);

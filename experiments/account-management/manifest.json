@@ -1,17 +1,44 @@
 {
   "$schema": "../../design/schemas/experiment.schema.json",
   "id": "experiment.account-management",
-  "title": "顧客企業の契約・利用状況管理",
+  "title": "顧客管理",
   "brief": "./brief.md",
   "starter": "./starter",
   "conditions": {
-    "baseline": { "includesDesignContract": false },
-    "harness": { "includesDesignContract": true }
+    "baseline": {
+      "includesDesignContract": false,
+      "agentSkills": []
+    },
+    "harness": {
+      "includesDesignContract": true,
+      "agentSkills": ["atlas-design-system", "heroui-react", "ui-writing"]
+    }
   },
   "designRefs": {
-    "patterns": ["pattern.page-layout#single-one-column"],
+    "patterns": [
+      "pattern.page-layout#collection-table",
+      "pattern.page-layout#single-one-column",
+      "pattern.spacing-layout#page-content",
+      "pattern.spacing-layout#dialog-content"
+    ],
     "examples": ["example.account-management"]
   },
-  "requiredStates": ["default", "drawer-open", "invalid-seat-count", "unauthorized", "loading", "success", "failure"],
+  "screens": [
+    {
+      "id": "collection",
+      "route": "/customers",
+      "pattern": "pattern.page-layout#collection-table"
+    },
+    {
+      "id": "detail",
+      "route": "/customers/:customerId",
+      "pattern": "pattern.page-layout#single-one-column",
+      "overlays": [
+        { "id": "edit-drawer", "component": "component.drawer", "pattern": "pattern.spacing-layout#dialog-content" },
+        { "id": "delete-confirm", "component": "component.alert-dialog", "pattern": "pattern.spacing-layout#dialog-content" }
+      ]
+    }
+  ],
+  "requiredStates": ["default", "empty", "drawer-open", "invalid-email", "loading", "success", "failure"],
   "checks": ["build", "typecheck", "test", "design-rules", "accessibility", "responsive"]
 }

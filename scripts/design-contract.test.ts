@@ -203,6 +203,41 @@ describe("Atlas design contract references", () => {
     }
   });
 
+  it("wires the demo flow into the experiment manifest as machine-readable screens", async () => {
+    const manifest = await readJson("experiments/account-management/manifest.json");
+    const example = await readJson("design/examples/account-management.json");
+
+    expect(manifest.designRefs.patterns).toContain("pattern.spacing-layout#page-content");
+    expect(manifest.designRefs.patterns).toContain("pattern.spacing-layout#dialog-content");
+    expect(manifest.screens.map((screen: { route: string }) => screen.route)).toEqual([
+      "/customers",
+      "/customers/:customerId",
+    ]);
+    const detail = manifest.screens.find((screen: { id: string }) => screen.id === "detail");
+    expect(detail.pattern).toBe("pattern.page-layout#single-one-column");
+    expect(detail.overlays.map((overlay: { component: string }) => overlay.component)).toEqual([
+      "component.drawer",
+      "component.alert-dialog",
+    ]);
+    expect(example.components).toContain("component.alert-dialog");
+  });
+
+  it("keeps layout knowledge out of the refinement prompt", async () => {
+    const refine = await readFile(resolve(rootDir, "scripts/refine-experiment.mjs"), "utf8");
+
+    expect(refine).not.toContain("detail-page__heading");
+    expect(refine).not.toContain("justify-content");
+    expect(refine).not.toContain("16rem");
+    expect(refine).not.toContain("margin-inline-start");
+  });
+
+  it("instructs implementers to follow screens and import the layout partials", async () => {
+    const skill = await readFile(resolve(rootDir, "skills/atlas-design-system/SKILL.md"), "utf8");
+
+    expect(skill).toContain("`screens`");
+    expect(skill).toContain("design/layout.css");
+  });
+
   it("locks HeroUI overlay dimensions into the component contracts", async () => {
     const drawer = await readJson("design/components/drawer.json");
     const alertDialog = await readJson("design/components/alert-dialog.json");

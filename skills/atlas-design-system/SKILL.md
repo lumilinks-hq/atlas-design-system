@@ -11,19 +11,25 @@ Use Atlas as an implementation contract. Do not copy its design data into this S
 
 1. Confirm the Issue identifies the user, task, business constraints, required states, and completion checks. Stop and ask for the missing business decision when it would change the screen structure or behavior.
 2. Read `DESIGN.md` at the Atlas repository root.
-3. Resolve the experiment manifest:
+3. Read the resolved experiment context when it exists:
+
+   `HARNESS_RESOLVED.json`
+
+   When working in the Atlas repository without a prepared Harness workspace, resolve the experiment manifest:
 
    `node scripts/resolve-design-contract.mjs experiments/<scenario>/manifest.json`
 
-4. Read only the files returned in `resources`. Treat missing IDs, variants, and component references as errors.
+4. Read only the files returned in `resources`. Treat missing IDs, variants, component references, and Agent Skills as errors.
+5. Use the official `heroui-react` Skill for current HeroUI v3 component APIs, anatomy, source styles, and theme variables. Atlas component contracts remain the authority for which components and variants are allowed.
 
 ## Implementation
 
-1. Keep the Issue unchanged. Use the resolved Pattern to choose the page structure and the Example for feature-specific composition, states, components, and business rules.
-2. Use HeroUI components listed by the resolved component contracts. Do not recreate an approved component with custom HTML.
-3. Use semantic tokens. Do not place raw color values in JSX or feature CSS.
-4. Implement every required state and recovery path before visual polish.
-5. Apply the repository's `smarthr-ui-writing` Skill when writing Japanese UI text. Do not copy SmartHR-specific product terminology into Atlas.
+1. Keep the Issue unchanged. Use the resolved Pattern to choose the page structure and the Example for feature-specific composition, states, components, and business rules. When the resolved contract contains `screens`, build each route with the Pattern variant assigned to it and implement every overlay (Drawer, AlertDialog) with the component and spacing variant the overlay entry names.
+2. Import `design/layout.css` and use the class names listed in each resolved `layout` contract (`layout.classes` on Pattern variants). Do not reimplement those classes with custom CSS; add feature CSS only for concerns the layout partials do not cover.
+3. Fetch the relevant HeroUI v3 documentation through the `heroui-react` Skill before implementing a component. Use only HeroUI components and variants allowed by the resolved Atlas contracts. Do not recreate an approved component with custom HTML.
+4. Use semantic tokens. Do not place raw color values in JSX or feature CSS.
+5. Implement every required state and recovery path before visual polish.
+6. Apply the repository's `ui-writing` Skill when writing Japanese UI text. Do not copy product-specific terminology from external references into Atlas.
 
 ## Validation and correction
 

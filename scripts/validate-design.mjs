@@ -1,5 +1,6 @@
 import Ajv2020 from "ajv/dist/2020.js";
-import { readFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { readFile, readdir } from "node:fs/promises";
 import { basename, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { rootDir, walk } from "./lib.mjs";
@@ -162,6 +163,41 @@ for (const example of examples) {
   }
   for (const ruleId of example.rules) {
     if (!ruleIds.has(ruleId)) throw new Error(`${example.id}: 存在しないrule ${ruleId} を参照しています`);
+  }
+}
+
+const experimentsDir = resolve(rootDir, "experiments");
+const manifestPaths = (await readdir(experimentsDir, { withFileTypes: true }))
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => resolve(experimentsDir, entry.name, "manifest.json"))
+  .filter((path) => existsSync(path));
+const manifests = await Promise.all(manifestPaths.map(json));
+
+const reachableIds = new Set();
+const stripVariant = (ref) => ref.split("#")[0];
+for (const manifest of manifests) {
+  for (const ref of manifest.designRefs?.patterns ?? []) reachableIds.add(stripVariant(ref));
+  for (const exampleId of manifest.designRefs?.examples ?? []) reachableIds.add(exampleId);
+  for (const screen of manifest.screens ?? []) {
+    reachableIds.add(stripVariant(screen.pattern));
+    for (const overlay of screen.overlays ?? []) {
+      reachableIds.add(overlay.component);
+      reachableIds.add(stripVariant(overlay.pattern));
+    }
+  }
+}
+for (const example of examples) {
+  if (!reachableIds.has(example.id)) continue;
+  reachableIds.add(example.pattern);
+  for (const componentId of example.components) reachableIds.add(componentId);
+}
+for (const pattern of patterns) {
+  if (!reachableIds.has(pattern.id)) continue;
+  for (const componentId of pattern.components) reachableIds.add(componentId);
+}
+for (const item of [...patterns, ...examples, ...components]) {
+  if (!reachableIds.has(item.id)) {
+    throw new Error(`${item.id}: どのmanifest / design参照からも辿れない孤児です。manifestのdesignRefs・screens、またはexample/patternからの参照を追加してください`);
   }
 }
 

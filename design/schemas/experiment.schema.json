@@ -28,14 +28,48 @@
       "additionalProperties": false
     },
     "requiredStates": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
-    "checks": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true }
+    "checks": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+    "screens": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/screen" }
+    }
   },
   "$defs": {
+    "screen": {
+      "type": "object",
+      "required": ["id", "route", "pattern"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "route": { "type": "string", "minLength": 1 },
+        "pattern": { "type": "string", "pattern": "^pattern\\.[a-z0-9-]+#[a-z0-9-]+$" },
+        "overlays": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "component", "pattern"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "component": { "type": "string", "pattern": "^component\\." },
+              "pattern": { "type": "string", "pattern": "^pattern\\.[a-z0-9-]+#[a-z0-9-]+$" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "condition": {
       "type": "object",
-      "required": ["includesDesignContract"],
+      "required": ["includesDesignContract", "agentSkills"],
       "properties": {
-        "includesDesignContract": { "type": "boolean" }
+        "includesDesignContract": { "type": "boolean" },
+        "agentSkills": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "uniqueItems": true
+        }
       },
       "additionalProperties": false
     }

@@ -1,24 +1,90 @@
 {
   "$schema": "../schemas/example.schema.json",
   "id": "example.account-management",
-  "name": "顧客企業の契約・利用状況管理",
-  "purpose": "CS担当者が企業の契約状態を把握し、権限と業務制約を守って契約内容を変更する",
+  "name": "顧客管理",
+  "purpose": "営業・CS担当者が一覧から顧客を探し、独立した詳細画面で情報を確認・更新する",
   "pattern": "pattern.page-layout",
-  "variant": "single-one-column",
+  "variant": "collection-table",
   "composition": [
-    "ページ見出しに企業名、契約状態、契約変更の主要操作を置く",
-    "概要セクションにプランと契約期間を表示する",
-    "利用状況セクションに契約席数、利用席数、残り席数を並べる",
-    "関連オブジェクトとしてメンバー一覧を表示する",
-    "契約変更はDrawerへ分離し、確定前に変更内容を確認する"
+    "顧客一覧は/customersで集合を扱う独立した画面とし、企業名、担当者、最終対応日、ステータスをHeroUI Tableの列定義から表示する",
+    "企業名をrow header、最終対応日を末尾揃えとし、列幅と最小幅を列定義へ持たせる",
+    "企業名から詳細画面への移動にはLinkを使い、Buttonを使わない",
+    "一覧操作とTableは一つのCollectionRegionにまとめ、Table直前のToolbarをflexの末尾揃えにしてSearchFieldを置く",
+    "SearchFieldはデスクトップで16rem、狭幅で100%とし、検索アイコン、入力、クリア操作を表示する",
+    "顧客詳細は一人の顧客を扱う独立した画面とし、一覧から/customers/:customerIdへ遷移する",
+    "顧客一覧に戻るLinkはPageHeadingの前に置き、LinkとPageHeadingをspace.4、PageHeadingと詳細コンテンツをspace.8で分ける",
+    "一覧ではCustomerSummary、詳細ではCustomerDetailの読み取りモデルを使用する",
+    "詳細画面に一覧へ戻る経路を置き、顧客情報の編集はHeader、Body、Footerを持つDrawerへ分離する",
+    "詳細の情報群はCard.HeaderとCard.Contentを使い、HeroUI標準のspace.4の内側余白を保つ",
+    "ページ見出しにはIssueにない追加操作やデモ用説明を設けない"
   ],
-  "states": ["default", "drawer-open", "invalid-seat-count", "unauthorized", "loading", "success", "failure"],
+  "componentUsage": {
+    "component.link": {
+      "purpose": "back-navigation",
+      "placement": "before-page-heading",
+      "target": "/customers",
+      "gapToPageHeading": "space.4",
+      "gapAfterPageHeading": "space.8"
+    },
+    "component.toolbar": {
+      "placement": "before-table",
+      "gapBeforeTable": "space.3",
+      "search": {
+        "component": "component.search-field",
+        "ariaLabel": "企業名で検索",
+        "placeholder": "企業名で検索",
+        "desktopWidth": "16rem",
+        "narrowWidth": "100%",
+        "align": "end"
+      }
+    },
+    "component.table": {
+      "variant": "primary",
+      "narrowVariant": "collection-list",
+      "columns": [
+        {
+          "id": "companyName",
+          "label": "企業名",
+          "isRowHeader": true,
+          "width": "38%",
+          "minWidth": 240,
+          "align": "start"
+        },
+        {
+          "id": "contactName",
+          "label": "担当者",
+          "width": "22%",
+          "minWidth": 160,
+          "align": "start"
+        },
+        {
+          "id": "lastContactedAt",
+          "label": "最終対応日",
+          "width": "22%",
+          "minWidth": 160,
+          "align": "end",
+          "tabular": true
+        },
+        {
+          "id": "status",
+          "label": "ステータス",
+          "width": "18%",
+          "minWidth": 128,
+          "align": "start"
+        }
+      ]
+    }
+  },
+  "states": ["default", "empty", "drawer-open", "invalid-email", "loading", "success", "failure"],
   "components": [
     "component.button",
+    "component.link",
     "component.table",
+    "component.toolbar",
+    "component.search-field",
     "component.card",
+    "component.text-field",
     "component.select",
-    "component.number-field",
     "component.chip",
     "component.surface",
     "component.drawer",
@@ -26,14 +92,19 @@
     "component.toast"
   ],
   "rules": [
-    "business.permission",
-    "business.seat-limit",
+    "business.customer-name",
+    "business.contact-email",
     "state.complete",
     "state.loading",
     "state.failure",
-    "action.confirmation",
     "a11y.form-label",
     "a11y.error-recovery",
-    "a11y.focus-management"
+    "a11y.focus-management",
+    "layout.collection-toolbar",
+    "layout.back-navigation",
+    "layout.narrow",
+    "navigation.customer-routes",
+    "navigation.link-semantics",
+    "architecture.customer-read-models"
   ]
 }

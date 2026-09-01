@@ -106,24 +106,36 @@ function resolveExampleRef(ref) {
   return resource;
 }
 
-export function resolveDesignContract({ patterns = [], examples = [] }) {
+export function resolveDesignContract({ patterns = [], examples = [], screens = [] }) {
   if (patterns.length === 0 && examples.length === 0) throw new Error("At least one pattern or example reference is required");
 
   const selected = new Map();
+  const patternVariants = new Map();
   for (const id of ["design.quick-reference", "design.tokens", "design.rules", "design.theme", "design.component-theme", "design.layout"]) {
     const resource = resourcesById.get(id);
     selected.set(resource.uri, resource);
   }
 
-  for (const ref of patterns) {
+  function selectPatternRef(ref) {
     const resource = resolvePatternRef(ref);
     selected.set(resource.uri, resource);
+    const variant = ref.split("#")[1];
+    if (!patternVariants.has(resource.id)) patternVariants.set(resource.id, new Set());
+    if (variant) patternVariants.get(resource.id).add(variant);
+    return resource;
+  }
+
+  for (const ref of patterns) {
+    selectPatternRef(ref);
   }
 
   for (const ref of examples) {
     const resource = resolveExampleRef(ref);
     selected.set(resource.uri, resource);
     const example = readJson(resource.path);
+    if (example.pattern) {
+      selectPatternRef(example.variant ? `${example.pattern}#${example.variant}` : example.pattern);
+    }
     for (const componentId of example.components ?? []) {
       const component = resourcesById.get(componentId);
       if (!component) throw new Error(`Unknown component reference in ${ref}: ${componentId}`);
@@ -131,10 +143,30 @@ export function resolveDesignContract({ patterns = [], examples = [] }) {
     }
   }
 
+  for (const screen of screens) {
+    selectPatternRef(screen.pattern);
+    for (const overlay of screen.overlays ?? []) {
+      const component = resourcesById.get(overlay.component);
+      if (!component || !component.uri.includes("/components/")) {
+        throw new Error(`Unknown component reference in screen ${screen.id}: ${overlay.component}`);
+      }
+      selected.set(component.uri, component);
+      selectPatternRef(overlay.pattern);
+    }
+  }
+
   return {
-    version: "1.0.0",
+    version: "1.1.0",
     requested: { patterns, examples },
-    resources: [...selected.values()].map(({ id, name, uri, path, mimeType }) => ({ id, name, uri, path, mimeType })),
+    screens,
+    resources: [...selected.values()].map(({ id, name, uri, path, mimeType }) => ({
+      id,
+      name,
+      uri,
+      path,
+      mimeType,
+      ...(patternVariants.has(id) ? { variants: [...patternVariants.get(id)] } : {}),
+    })),
   };
 }
 
@@ -146,6 +178,7 @@ export function resolveManifest(manifestPath) {
   const contract = resolveDesignContract({
     patterns: manifest.designRefs?.patterns ?? [],
     examples: manifest.designRefs?.examples ?? [],
+    screens: manifest.screens ?? [],
   });
   return {
     ...contract,
