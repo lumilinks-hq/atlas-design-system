@@ -199,7 +199,7 @@ describe("evaluateSource", () => {
     const valid = evaluateSource({
       app: `
         <Table.Cell><RouterLink className="link" to={\`/customers/\${customer.id}\`}>{customer.companyName}</RouterLink></Table.Cell>
-        <RouterLink className="link" to={\`/customers/\${customer.id}\`}>顧客を確認</RouterLink>
+        <div className="collection-list-mobile"><Card.Root><Card.Title><RouterLink className="collection-list-mobile__link" to={\`/customers/\${customer.id}\`}>{customer.companyName}</RouterLink></Card.Title></Card.Root></div>
         <RouterLink className="link" to="/customers">顧客一覧に戻る</RouterLink>
         <Button onPress={saveCustomer}>保存</Button>
       `,
@@ -208,6 +208,34 @@ describe("evaluateSource", () => {
 
     expect(invalid.find((rule) => rule.id === "navigation.link-semantics")?.status).toBe("failed");
     expect(valid.find((rule) => rule.id === "navigation.link-semantics")?.status).toBe("passed");
+  });
+
+  it("judges the mobile detail link by the contract container, not a hardcoded label", () => {
+    const containerLinkWithoutLabel = evaluateSource({
+      app: `
+        <Table.Cell><Link className="table-link" href={\`/customers/\${customer.id}\`}>{customer.companyName}</Link></Table.Cell>
+        <div className="collection-list-mobile"><Card.Root><Card.Title><Link className="table-link" href={\`/customers/\${customer.id}\`}>{customer.companyName}</Link></Card.Title></Card.Root></div>
+        <Link className="back-link" href="/customers">顧客一覧に戻る</Link>
+        <Button onPress={saveCustomer}>保存</Button>
+      `,
+      styles: "",
+    });
+    const labeledLinkOutsideContainer = evaluateSource({
+      app: `
+        <Table.Cell><Link className="table-link" href={\`/customers/\${customer.id}\`}>{customer.companyName}</Link></Table.Cell>
+        <Link className="link" href={\`/customers/\${customer.id}\`}>顧客を確認</Link>
+        <Link className="back-link" href="/customers">顧客一覧に戻る</Link>
+        <Button onPress={saveCustomer}>保存</Button>
+      `,
+      styles: "",
+    });
+
+    expect(
+      containerLinkWithoutLabel.find((rule) => rule.id === "navigation.link-semantics")?.status,
+    ).toBe("passed");
+    expect(
+      labeledLinkOutsideContainer.find((rule) => rule.id === "navigation.link-semantics")?.status,
+    ).toBe("failed");
   });
 
   it("places back navigation before the page heading with explicit group spacing", () => {

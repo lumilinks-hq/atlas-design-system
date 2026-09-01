@@ -767,7 +767,11 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
     /<(?:Link|RouterLink)\b[^>]*(?:href|to)=/.test(tableObjectNameCell.getText(sourceFile)),
   );
   const hasMobileDetailLink = navigationLinks.some((element) =>
-    hasNavigationTarget(element) && /顧客を確認/.test(element.getText(sourceFile)),
+    hasNavigationTarget(element) &&
+    Boolean(findAncestorJsxElement(element.openingElement, (ancestor) => {
+      const className = getJsxAttributeValue(getJsxAttribute(ancestor.openingElement, "className"));
+      return typeof className === "string" && className.split(/\s+/).includes("collection-list-mobile");
+    })),
   );
   const hasBackLink = navigationLinks.some((element) =>
     hasNavigationTarget(element) && /顧客一覧(?:へ|に)戻る/.test(element.getText(sourceFile)),
@@ -947,7 +951,7 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
       [
         hasLinkSemantics
           ? "Tableのオブジェクト名、モバイル詳細導線、一覧へ戻る導線をLinkとして実装"
-          : "画面移動にButtonを使わず、Tableの企業名、モバイルの顧客を確認、顧客一覧に戻るをhrefまたはtoを持つLinkにしてください",
+          : "画面移動にButtonを使わず、Tableの企業名、モバイル一覧（.collection-list-mobile内）の詳細導線、顧客一覧に戻るをhrefまたはtoを持つLinkにしてください",
       ],
     ),
     result(
