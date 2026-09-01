@@ -28,6 +28,18 @@ if (baseline.environment.cliVersion !== harness.environment.cliVersion) throw ne
 const blindOrder = createHash("sha256").update(args.pair).digest()[0] % 2 === 0
   ? { A: "baseline", B: "harness" }
   : { A: "harness", B: "baseline" };
+
+// review-experiment.mjs が design-evaluation.json へ保存したAI所見を転記する（無ければ欄ごと省略）
+const review = {};
+for (const [key, dir] of [["baseline", "baseline"], ["harness", "harness"], ...(corrected ? [["corrected", "harness-corrected"]] : [])]) {
+  try {
+    const evaluation = JSON.parse(await readFile(resolve(runsDir, dir, "design-evaluation.json"), "utf8"));
+    if (evaluation.review) review[key] = evaluation.review;
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+}
+
 const comparison = {
   pairId: args.pair,
   experimentId: baseline.experimentId,
@@ -35,6 +47,7 @@ const comparison = {
   blindOrder,
   reveal: { baseline: baseline.id, harness: harness.id, ...(corrected ? { corrected: corrected.id } : {}) },
   checks: { baseline: baseline.checks, harness: harness.checks, ...(corrected ? { corrected: corrected.checks } : {}) },
+  ...(Object.keys(review).length > 0 ? { review } : {}),
 };
 
 await mkdir(runsDir, { recursive: true });
