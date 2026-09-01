@@ -69,7 +69,7 @@
   - ドキュメント同期: README（シナリオ削除追記・mvp-11 数値・delete-confirm・spacing-layout/layout.css 正本・パイプライン順序と evaluate/review 注意）、MVP.md 正本ツリー実構成化、TASKS.md DH-242 2項目消化
   - 検証パス: `pnpm test:run` 12 files / 98 tests、`pnpm demo:check` 全チェーン（bundle 9 assets / 16 MiB）、`pnpm test:e2e`「Site browser check OK」
   - コミット構成: ①theme:check 機能（theme.mjs / theme.test.mjs / generate-theme.mjs）②mvp-11 配線+docs（play×2 / DemoPage / conformance / preview / audit / verify-site / package.json / README / MVP / TASKS / 本ファイル）。**前セッションWIP（docs/, skills/, DocsPages.tsx, styles.css, design/components/*.json, 旧run mvp-07..10 等）はコミットしない**
-  - 残: Chrome 実機確認（/demo 4場面・矢印キー・R、/play atlas/baseline × 8状態、1440/390/320、320px 横スクロールなし）
+  - **Chrome 実機確認完了（2026-09-02）**: /demo 4場面（矢印キー遷移・R リセット・横スクロールなし）、/play atlas・baseline × 8状態を確認。デスクトップは目視（delete-confirm の AlertDialog、success の更新完了表示、baseline の独自ダイアログ=検査 fail の根拠どおり）。モバイルは macOS Chrome がウィンドウを 390px まで縮められないため、**ページ内に正確な 390/320px 幅 iframe を生成して実描画・実測**する方式で全状態スイープ: atlas は 390/320 とも全状態 scrollWidth ≤ 幅（横スクロールなし）+ 390 でテーブル→モバイルカードリスト切替を確認、baseline も横スクロールなし。390px の一覧・Drawer は目視でも確認。コミット: `f08169e`(theme:check) `b32b03b`(mvp-11配線)
 
 ## 重要な教訓・注意
 
