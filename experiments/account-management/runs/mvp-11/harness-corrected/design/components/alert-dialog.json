@@ -1,0 +1,22 @@
+{
+  "$schema": "../schemas/component.schema.json",
+  "id": "component.alert-dialog",
+  "name": "AlertDialog",
+  "implementation": "AlertDialog",
+  "import": "@heroui/react",
+  "variants": ["opaque", "blur", "transparent"],
+  "sizes": ["xs", "sm", "md", "lg", "cover"],
+  "defaults": { "variant": "opaque", "size": "md" },
+  "visual": { "surfaceOwner": "component", "outerShadow": "required", "radiusToken": "radius.base" },
+  "requirements": [
+    "契約に影響する確定前に変更内容を要約する",
+    "確定とキャンセルを明確に分ける",
+    "起点と確定ボタンはダイアログの実装名ではなく利用者の操作を表す",
+    "AlertDialog.Rootの起点にはHeroUI Buttonを置き、標準のPressResponderとフォーカス復帰を維持する"
+  ],
+  "relatedRules": ["component.approved", "action.confirmation"],
+  "layout": {
+    "maxWidth": "28rem",
+    "dialogPadding": "space.6"
+  }
+}

@@ -1,0 +1,832 @@
+{
+  "pairId": "mvp-11",
+  "mode": "baseline",
+  "screens": [
+    {
+      "screenId": "collection",
+      "viewport": "desktop",
+      "width": 1440,
+      "height": 900,
+      "state": "default",
+      "route": "/customers",
+      "scrollWidth": 1440,
+      "anchors": {
+        ".page-shell": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 900
+          },
+          "styles": {
+            "display": "block",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "paddingTop": "32px",
+            "paddingRight": "16px",
+            "paddingBottom": "40px",
+            "paddingLeft": "16px",
+            "width": "1440px"
+          }
+        },
+        ".page-shell--stack": {
+          "found": false
+        },
+        ".page-heading": {
+          "found": false
+        },
+        ".collection-region": {
+          "found": false
+        },
+        ".collection-toolbar": {
+          "found": false
+        },
+        ".search-field": {
+          "found": false
+        },
+        ".collection-table-wrap": {
+          "found": false
+        },
+        ".collection-list-mobile": {
+          "found": false
+        }
+      },
+      "elements": {
+        "table": {
+          "found": false
+        },
+        "toolbar": {
+          "found": false
+        },
+        "searchInput": {
+          "found": false
+        },
+        "heading": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 193,
+            "y": 89.234375,
+            "width": 510.40625,
+            "height": 52.21875
+          },
+          "styles": {
+            "display": "block",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "6px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "510.406px"
+          }
+        },
+        "backLink": {
+          "found": false
+        },
+        "dialog": {
+          "found": false
+        }
+      }
+    },
+    {
+      "screenId": "collection",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "state": "default",
+      "route": "/customers",
+      "scrollWidth": 390,
+      "anchors": {
+        ".page-shell": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 1438.484375
+          },
+          "styles": {
+            "display": "block",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "paddingTop": "16px",
+            "paddingRight": "12px",
+            "paddingBottom": "28px",
+            "paddingLeft": "12px",
+            "width": "390px"
+          }
+        },
+        ".page-shell--stack": {
+          "found": false
+        },
+        ".page-heading": {
+          "found": false
+        },
+        ".collection-region": {
+          "found": false
+        },
+        ".collection-toolbar": {
+          "found": false
+        },
+        ".search-field": {
+          "found": false
+        },
+        ".collection-table-wrap": {
+          "found": false
+        },
+        ".collection-list-mobile": {
+          "found": false
+        }
+      },
+      "elements": {
+        "table": {
+          "found": false
+        },
+        "toolbar": {
+          "found": false
+        },
+        "searchInput": {
+          "found": false
+        },
+        "heading": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 31,
+            "y": 63.234375,
+            "width": 328,
+            "height": 32.625
+          },
+          "styles": {
+            "display": "block",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "6px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "328px"
+          }
+        },
+        "backLink": {
+          "found": false
+        },
+        "dialog": {
+          "found": false
+        }
+      }
+    },
+    {
+      "screenId": "collection",
+      "viewport": "tiny",
+      "width": 320,
+      "height": 568,
+      "state": "default",
+      "route": "/customers",
+      "scrollWidth": 320,
+      "anchors": {
+        ".page-shell": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 320,
+            "height": 1438.484375
+          },
+          "styles": {
+            "display": "block",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "paddingTop": "16px",
+            "paddingRight": "12px",
+            "paddingBottom": "28px",
+            "paddingLeft": "12px",
+            "width": "320px"
+          }
+        },
+        ".page-shell--stack": {
+          "found": false
+        },
+        ".page-heading": {
+          "found": false
+        },
+        ".collection-region": {
+          "found": false
+        },
+        ".collection-toolbar": {
+          "found": false
+        },
+        ".search-field": {
+          "found": false
+        },
+        ".collection-table-wrap": {
+          "found": false
+        },
+        ".collection-list-mobile": {
+          "found": false
+        }
+      },
+      "elements": {
+        "table": {
+          "found": false
+        },
+        "toolbar": {
+          "found": false
+        },
+        "searchInput": {
+          "found": false
+        },
+        "heading": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 31,
+            "y": 63.234375,
+            "width": 258,
+            "height": 32.625
+          },
+          "styles": {
+            "display": "block",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "6px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "258px"
+          }
+        },
+        "backLink": {
+          "found": false
+        },
+        "dialog": {
+          "found": false
+        }
+      }
+    },
+    {
+      "screenId": "detail",
+      "viewport": "desktop",
+      "width": 1440,
+      "height": 900,
+      "state": "default",
+      "route": "/customers/:customerId",
+      "scrollWidth": 1440,
+      "anchors": {
+        ".page-shell": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 900
+          },
+          "styles": {
+            "display": "block",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "paddingTop": "32px",
+            "paddingRight": "16px",
+            "paddingBottom": "40px",
+            "paddingLeft": "16px",
+            "width": "1440px"
+          }
+        },
+        ".page-shell--stack": {
+          "found": false
+        },
+        ".detail-page__heading": {
+          "found": false
+        },
+        ".page-heading": {
+          "found": false
+        },
+        ".detail-grid": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 193,
+            "y": 253.046875,
+            "width": 1054,
+            "height": 316.625
+          },
+          "styles": {
+            "display": "grid",
+            "rowGap": "20px",
+            "columnGap": "20px",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "24px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "1054px"
+          }
+        },
+        ".detail-content": {
+          "found": false
+        }
+      },
+      "elements": {
+        "table": {
+          "found": false
+        },
+        "toolbar": {
+          "found": false
+        },
+        "searchInput": {
+          "found": false
+        },
+        "heading": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 193,
+            "y": 137.234375,
+            "width": 510.40625,
+            "height": 52.21875
+          },
+          "styles": {
+            "display": "block",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "6px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "510.406px"
+          }
+        },
+        "backLink": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 193,
+            "y": 66,
+            "width": 112,
+            "height": 22
+          },
+          "styles": {
+            "display": "inline",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "auto"
+          }
+        },
+        "dialog": {
+          "found": false
+        }
+      }
+    },
+    {
+      "screenId": "detail",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "state": "default",
+      "route": "/customers/:customerId",
+      "scrollWidth": 390,
+      "anchors": {
+        ".page-shell": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 965.78125
+          },
+          "styles": {
+            "display": "block",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "paddingTop": "16px",
+            "paddingRight": "12px",
+            "paddingBottom": "28px",
+            "paddingLeft": "12px",
+            "width": "390px"
+          }
+        },
+        ".page-shell--stack": {
+          "found": false
+        },
+        ".detail-page__heading": {
+          "found": false
+        },
+        ".page-heading": {
+          "found": false
+        },
+        ".detail-grid": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 31,
+            "y": 333.046875,
+            "width": 328,
+            "height": 581.734375
+          },
+          "styles": {
+            "display": "grid",
+            "rowGap": "20px",
+            "columnGap": "20px",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "24px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "328px"
+          }
+        },
+        ".detail-content": {
+          "found": false
+        }
+      },
+      "elements": {
+        "table": {
+          "found": false
+        },
+        "toolbar": {
+          "found": false
+        },
+        "searchInput": {
+          "found": false
+        },
+        "heading": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 31,
+            "y": 111.234375,
+            "width": 328,
+            "height": 32.625
+          },
+          "styles": {
+            "display": "block",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "6px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "328px"
+          }
+        },
+        "backLink": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 31,
+            "y": 40,
+            "width": 112,
+            "height": 22
+          },
+          "styles": {
+            "display": "inline",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "auto"
+          }
+        },
+        "dialog": {
+          "found": false
+        }
+      }
+    },
+    {
+      "screenId": "detail",
+      "viewport": "tiny",
+      "width": 320,
+      "height": 568,
+      "state": "default",
+      "route": "/customers/:customerId",
+      "scrollWidth": 320,
+      "anchors": {
+        ".page-shell": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 320,
+            "height": 998.40625
+          },
+          "styles": {
+            "display": "block",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "paddingTop": "16px",
+            "paddingRight": "12px",
+            "paddingBottom": "28px",
+            "paddingLeft": "12px",
+            "width": "320px"
+          }
+        },
+        ".page-shell--stack": {
+          "found": false
+        },
+        ".detail-page__heading": {
+          "found": false
+        },
+        ".page-heading": {
+          "found": false
+        },
+        ".detail-grid": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 31,
+            "y": 365.671875,
+            "width": 258,
+            "height": 581.734375
+          },
+          "styles": {
+            "display": "grid",
+            "rowGap": "20px",
+            "columnGap": "20px",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "24px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "258px"
+          }
+        },
+        ".detail-content": {
+          "found": false
+        }
+      },
+      "elements": {
+        "table": {
+          "found": false
+        },
+        "toolbar": {
+          "found": false
+        },
+        "searchInput": {
+          "found": false
+        },
+        "heading": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 31,
+            "y": 111.234375,
+            "width": 258,
+            "height": 65.25
+          },
+          "styles": {
+            "display": "block",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "6px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "258px"
+          }
+        },
+        "backLink": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 31,
+            "y": 40,
+            "width": 112,
+            "height": 22
+          },
+          "styles": {
+            "display": "inline",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "auto"
+          }
+        },
+        "dialog": {
+          "found": false
+        }
+      }
+    },
+    {
+      "screenId": "detail",
+      "viewport": "desktop",
+      "width": 1440,
+      "height": 900,
+      "state": "drawer-open",
+      "route": "/customers/:customerId",
+      "scrollWidth": 1440,
+      "anchors": {
+        ".page-shell": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 900
+          },
+          "styles": {
+            "display": "block",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "paddingTop": "32px",
+            "paddingRight": "16px",
+            "paddingBottom": "40px",
+            "paddingLeft": "16px",
+            "width": "1440px"
+          }
+        },
+        ".page-shell--stack": {
+          "found": false
+        },
+        ".detail-page__heading": {
+          "found": false
+        },
+        ".page-heading": {
+          "found": false
+        },
+        ".detail-grid": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 193,
+            "y": 253.046875,
+            "width": 1054,
+            "height": 316.625
+          },
+          "styles": {
+            "display": "grid",
+            "rowGap": "20px",
+            "columnGap": "20px",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "24px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "1054px"
+          }
+        },
+        ".detail-content": {
+          "found": false
+        },
+        ".drawer-form": {
+          "found": false
+        }
+      },
+      "elements": {
+        "table": {
+          "found": false
+        },
+        "toolbar": {
+          "found": false
+        },
+        "searchInput": {
+          "found": false
+        },
+        "heading": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 193,
+            "y": 137.234375,
+            "width": 510.40625,
+            "height": 52.21875
+          },
+          "styles": {
+            "display": "block",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "6px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "510.406px"
+          }
+        },
+        "backLink": {
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 193,
+            "y": 66,
+            "width": 112,
+            "height": 22
+          },
+          "styles": {
+            "display": "inline",
+            "rowGap": "normal",
+            "columnGap": "normal",
+            "justifyContent": "normal",
+            "alignItems": "normal",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "auto"
+          }
+        },
+        "dialog": {
+          "found": false
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tokens.schema.json",
+  "type": "object",
+  "required": ["version", "color", "space", "radius", "shadow", "content", "breakpoint", "type"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "string" },
+    "color": { "type": "object", "minProperties": 8, "additionalProperties": { "type": "string" } },
+    "space": { "type": "object", "minProperties": 5, "additionalProperties": { "type": "string" } },
+    "radius": {
+      "type": "object",
+      "required": ["base", "pill", "circle"],
+      "additionalProperties": false,
+      "properties": {
+        "base": { "type": "string" },
+        "pill": { "type": "string" },
+        "circle": { "type": "string" }
+      }
+    },
+    "shadow": {
+      "type": "object",
+      "required": ["none", "raised", "dragging", "overlay", "floating"],
+      "additionalProperties": false,
+      "properties": {
+        "none": { "type": "string" },
+        "raised": { "type": "string" },
+        "dragging": { "type": "string" },
+        "overlay": { "type": "string" },
+        "floating": { "type": "string" }
+      }
+    },
+    "content": {
+      "type": "object",
+      "required": ["maxWidth", "readingWidth"],
+      "properties": {
+        "maxWidth": { "type": "string" },
+        "readingWidth": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "breakpoint": {
+      "type": "object",
+      "required": ["narrow"],
+      "properties": {
+        "narrow": { "type": "string", "pattern": "^\\d+px$" }
+      },
+      "additionalProperties": false
+    },
+    "type": { "type": "object", "minProperties": 4, "additionalProperties": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

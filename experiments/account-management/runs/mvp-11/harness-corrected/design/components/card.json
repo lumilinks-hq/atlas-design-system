@@ -1,0 +1,20 @@
+{
+  "$schema": "../schemas/component.schema.json",
+  "id": "component.card",
+  "name": "Card",
+  "implementation": "Card",
+  "import": "@heroui/react",
+  "variants": ["default", "secondary", "tertiary", "transparent"],
+  "sizes": ["md"],
+  "defaults": { "variant": "default", "size": "md" },
+  "visual": { "surfaceOwner": "component", "outerShadow": "required", "radiusToken": "radius.base" },
+  "requirements": [
+    "default variantはshadow.raisedで背景から一段持ち上げる",
+    "通常状態ではborderを使わず、選択やフォーカスなど状態を示す場合だけ境界を加える",
+    "同じ階層の情報だけをまとめる",
+    "入れ子のCardを避ける",
+    "余白だけで区切れる場合はCardを増やさない",
+    "Card.HeaderとCard.Contentを使い、HeroUI標準の内側余白space.4を保つ"
+  ],
+  "relatedRules": ["component.approved", "layout.grouping"]
+}

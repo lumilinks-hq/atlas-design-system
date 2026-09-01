@@ -1,0 +1,22 @@
+Reading additional input from stdin...
+2026-09-01T16:16:53.097279Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in <repo>/.runs/account-management/mvp-11/harness-corrected/src/styles.css:
+.detail-content {
+  display: grid;
+  gap: var(--dh-space-4);
+}
+
+.drawer-form {
+  display: grid;
+  gap: var(--dh-space-6);
+}
+
+@media (max-width: 767px) {
+  .detail-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .detail-actions .button {
+    width: 100%;
+  }
+}

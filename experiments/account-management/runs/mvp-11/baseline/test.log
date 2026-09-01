@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 <repo>/.runs/account-management/mvp-11/baseline
+
+ ❯ src/App.test.tsx (5 tests | 1 failed) 1801ms
+     × keeps the edit drawer open when the email is invalid 169ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  01:01:02
+   Duration  2.97s (transform 28ms, setup 0ms, import 693ms, tests 1.80s, environment 414ms)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/App.test.tsx > account management > keeps the edit drawer open when the email is invalid
+Error: [2mexpect([22m[31melement[39m[2m).toHaveValue([22m[32minvalid-email[39m[2m)[22m
+
+Expected the element to have value:
+[32m  invalid-email[39m
+Received:
+[31m  aoi.sato@example.com[39m
+ ❯ src/App.test.tsx:52:46
+     50|
+     51|     expect(await screen.findByRole("heading", { name: "株式会社ノーススター" }))…
+     52|     expect(screen.getByLabelText("メールアドレス")).toHaveValue("invalid-emai…
+       |                                              ^
+     53|     await user.click(screen.getByRole("button", { name: "保存する" }));
+     54|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

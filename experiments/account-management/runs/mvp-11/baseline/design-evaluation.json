@@ -1,0 +1,230 @@
+{
+  "pairId": "mvp-11",
+  "mode": "baseline",
+  "summary": {
+    "passed": 10,
+    "failed": 15,
+    "review": 2
+  },
+  "rules": [
+    {
+      "id": "component.approved",
+      "status": "failed",
+      "evidence": [
+        "button: 1件",
+        "select: 1件"
+      ]
+    },
+    {
+      "id": "component.variants",
+      "status": "passed",
+      "evidence": [
+        "静的に指定されたvariantはAtlas契約内"
+      ]
+    },
+    {
+      "id": "component.table.variant",
+      "status": "failed",
+      "evidence": [
+        "Table.Rootを確認できません"
+      ]
+    },
+    {
+      "id": "component.table.columns",
+      "status": "failed",
+      "evidence": [
+        "期待する列順: companyName → contactName → lastContactedAt → status",
+        "HeaderとRowが同じ列定義を参照していません",
+        "tabular列の適用を確認できません"
+      ]
+    },
+    {
+      "id": "component.table.surface",
+      "status": "failed",
+      "evidence": [
+        "Table.Rootを確認できません"
+      ]
+    },
+    {
+      "id": "token.radius",
+      "status": "failed",
+      "evidence": [
+        "design/component-theme.cssの読み込みまたはradius adapterを確認できません"
+      ]
+    },
+    {
+      "id": "token.no-raw-color",
+      "status": "failed",
+      "evidence": [
+        "raw color: 37件"
+      ]
+    },
+    {
+      "id": "a11y.control-name",
+      "status": "review",
+      "evidence": [
+        "実ブラウザのaccessibility treeで確認する"
+      ]
+    },
+    {
+      "id": "a11y.collection-item-name",
+      "status": "passed",
+      "evidence": [
+        "複合表示のListBox.ItemにtextValueあり"
+      ]
+    },
+    {
+      "id": "a11y.form-label",
+      "status": "passed",
+      "evidence": [
+        "視覚ラベルまたはaria-labelあり"
+      ]
+    },
+    {
+      "id": "a11y.error-recovery",
+      "status": "passed",
+      "evidence": [
+        "原因または回復方法の文言あり"
+      ]
+    },
+    {
+      "id": "a11y.color-only",
+      "status": "passed",
+      "evidence": [
+        "状態名を文字で表示"
+      ]
+    },
+    {
+      "id": "business.customer-name",
+      "status": "failed",
+      "evidence": [
+        "顧客名の必須制御を確認できません"
+      ]
+    },
+    {
+      "id": "business.contact-email",
+      "status": "failed",
+      "evidence": [
+        "メール形式の入力制御を確認できません"
+      ]
+    },
+    {
+      "id": "navigation.customer-routes",
+      "status": "passed",
+      "evidence": [
+        "/customersと/customers/:customerIdを独立した画面として実装"
+      ]
+    },
+    {
+      "id": "navigation.link-semantics",
+      "status": "failed",
+      "evidence": [
+        "画面移動にButtonを使わず、Tableの企業名、モバイル一覧（.collection-list-mobile内）の詳細導線、顧客一覧に戻るをhrefまたはtoを持つLinkにしてください"
+      ]
+    },
+    {
+      "id": "architecture.customer-read-models",
+      "status": "passed",
+      "evidence": [
+        "CustomerSummaryとCustomerDetailの取得経路を分離"
+      ]
+    },
+    {
+      "id": "state.complete",
+      "status": "passed",
+      "evidence": [
+        "必須8状態あり"
+      ]
+    },
+    {
+      "id": "layout.grouping",
+      "status": "failed",
+      "evidence": [
+        "要素の重なりを起こしやすい負のmarginがあります",
+        ".field-error: margin: -10px 0 0",
+        ".detail-grid row-gap: 実測20px（契約24px）",
+        "契約クラス .detail-content がDOMにありません",
+        "drawer-openでrole=dialogを確認できません"
+      ]
+    },
+    {
+      "id": "layout.collection-toolbar",
+      "status": "failed",
+      "evidence": [
+        "契約クラス .collection-region が1440pxのDOMにありません",
+        "契約クラス .collection-toolbar が1440pxのDOMにありません",
+        "契約クラス .search-field が1440pxのDOMにありません",
+        "契約クラス .collection-toolbar / .search-field が390pxのDOMにありません"
+      ]
+    },
+    {
+      "id": "layout.back-navigation",
+      "status": "failed",
+      "evidence": [
+        "戻るLinkがページ見出しより前",
+        "契約クラス .detail-page__heading がDOMにありません"
+      ]
+    },
+    {
+      "id": "layout.narrow",
+      "status": "failed",
+      "evidence": [
+        "/customers 320px: scrollWidth 320px",
+        "/customers/:customerId 320px: scrollWidth 320px",
+        "1440pxでTableを確認できません",
+        "契約クラス .collection-list-mobile が390pxのDOMにありません"
+      ]
+    },
+    {
+      "id": "state.loading",
+      "status": "passed",
+      "evidence": [
+        "保存中のdisabled制御あり"
+      ]
+    },
+    {
+      "id": "state.failure",
+      "status": "passed",
+      "evidence": [
+        "失敗後の再試行経路あり"
+      ]
+    },
+    {
+      "id": "color.semantic",
+      "status": "review",
+      "evidence": [
+        "semantic colorの意味はblind reviewする"
+      ]
+    },
+    {
+      "id": "action.confirmation",
+      "status": "failed",
+      "evidence": [
+        "取り消せない操作にHeroUI AlertDialog.Triggerがありません"
+      ]
+    },
+    {
+      "id": "a11y.focus-management",
+      "status": "failed",
+      "evidence": [
+        "Drawer.CloseTriggerがないか、狭い標準枠へ表示テキストを入れています"
+      ]
+    }
+  ],
+  "review": {
+    "reviewedAt": "2026-09-01T16:54:12.679Z",
+    "model": "gpt-5.4",
+    "findings": [
+      {
+        "ruleId": "layout.grouping",
+        "verdict": "concern",
+        "note": "見出し領域とカード一覧の間には一定の余白がありますが、詳細画面は戻るリンクとローディング文だけが同じ広い空白に置かれ、見出し領域とコンテンツ領域の分離が弱く見えます。モバイルでも一覧画面はヘッダー、件数バー、検索、状態表示が近接して並び、セクション間がグループ内余白の2倍以上あるとは言いにくいです。"
+      },
+      {
+        "ruleId": "color.semantic",
+        "verdict": "pass",
+        "note": "通常操作の戻るリンクや検索欄、件数表示にはネイビー、グレー、ブルー系が使われており、赤や警告色は見当たりません。ステータスも緑・水色・グレーで意味づけされていて、危険色を通常操作へ流用している観察はありません。"
+      }
+    ]
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "example.schema.json",
+  "type": "object",
+  "required": ["id", "name", "purpose", "pattern", "variant", "composition", "componentUsage", "states", "components", "rules"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string", "pattern": "^example\\." },
+    "name": { "type": "string", "minLength": 1 },
+    "purpose": { "type": "string", "minLength": 1 },
+    "pattern": { "type": "string", "pattern": "^pattern\\." },
+    "variant": { "type": "string", "minLength": 1 },
+    "composition": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "componentUsage": {
+      "type": "object",
+      "required": ["component.table", "component.toolbar", "component.link", "component.alert-dialog"],
+      "properties": {
+        "component.table": { "$ref": "#/$defs/tableUsage" },
+        "component.toolbar": { "$ref": "#/$defs/toolbarUsage" },
+        "component.link": { "$ref": "#/$defs/backNavigationUsage" },
+        "component.alert-dialog": { "$ref": "#/$defs/alertDialogUsage" }
+      },
+      "additionalProperties": false
+    },
+    "states": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+    "components": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^component\\." }, "uniqueItems": true },
+    "rules": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "backNavigationUsage": {
+      "type": "object",
+      "required": ["purpose", "placement", "target", "gapToPageHeading", "gapAfterPageHeading"],
+      "properties": {
+        "purpose": { "const": "back-navigation" },
+        "placement": { "const": "before-page-heading" },
+        "target": { "const": "/customers" },
+        "gapToPageHeading": { "const": "space.4" },
+        "gapAfterPageHeading": { "const": "space.8" }
+      },
+      "additionalProperties": false
+    },
+    "toolbarUsage": {
+      "type": "object",
+      "required": ["placement", "gapBeforeTable", "search"],
+      "properties": {
+        "placement": { "const": "before-table" },
+        "gapBeforeTable": { "const": "space.3" },
+        "search": {
+          "type": "object",
+          "required": ["component", "ariaLabel", "placeholder", "desktopWidth", "narrowWidth", "align"],
+          "properties": {
+            "component": { "const": "component.search-field" },
+            "ariaLabel": { "type": "string", "minLength": 1 },
+            "placeholder": { "type": "string", "minLength": 1 },
+            "desktopWidth": { "const": "16rem" },
+            "narrowWidth": { "const": "100%" },
+            "align": { "const": "end" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "alertDialogUsage": {
+      "type": "object",
+      "required": ["purpose", "state", "trigger", "confirm", "cancel", "content", "onSuccess", "onFailure"],
+      "properties": {
+        "purpose": { "const": "delete-confirmation" },
+        "state": { "const": "delete-confirm" },
+        "trigger": {
+          "type": "object",
+          "required": ["component", "variant", "label", "placement"],
+          "properties": {
+            "component": { "const": "component.button" },
+            "variant": { "const": "danger-soft" },
+            "label": { "type": "string", "minLength": 1 },
+            "placement": { "const": "page-heading-actions" }
+          },
+          "additionalProperties": false
+        },
+        "confirm": { "$ref": "#/$defs/dialogAction" },
+        "cancel": { "$ref": "#/$defs/dialogAction" },
+        "content": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "onSuccess": {
+          "type": "object",
+          "required": ["toast", "navigateTo"],
+          "properties": {
+            "toast": { "type": "string", "minLength": 1 },
+            "navigateTo": { "const": "/customers" }
+          },
+          "additionalProperties": false
+        },
+        "onFailure": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "dialogAction": {
+      "type": "object",
+      "required": ["component", "label"],
+      "properties": {
+        "component": { "const": "component.button" },
+        "variant": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "tableUsage": {
+      "type": "object",
+      "required": ["variant", "columns", "narrowVariant"],
+      "properties": {
+        "variant": { "type": "string", "minLength": 1 },
+        "narrowVariant": { "type": "string", "minLength": 1 },
+        "columns": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "label", "width", "minWidth", "align"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "label": { "type": "string", "minLength": 1 },
+              "width": { "type": "string", "minLength": 1 },
+              "minWidth": { "type": "integer", "minimum": 1 },
+              "align": { "enum": ["start", "center", "end"] },
+              "isRowHeader": { "type": "boolean" },
+              "tabular": { "type": "boolean" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

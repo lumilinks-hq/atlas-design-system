@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "experiment.schema.json",
+  "type": "object",
+  "required": ["id", "title", "brief", "starter", "conditions", "designRefs", "requiredStates", "checks"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string", "pattern": "^experiment\\." },
+    "title": { "type": "string", "minLength": 1 },
+    "brief": { "type": "string" },
+    "starter": { "type": "string" },
+    "conditions": {
+      "type": "object",
+      "required": ["baseline", "harness"],
+      "properties": {
+        "baseline": { "$ref": "#/$defs/condition" },
+        "harness": { "$ref": "#/$defs/condition" }
+      },
+      "additionalProperties": false
+    },
+    "designRefs": {
+      "type": "object",
+      "required": ["patterns", "examples"],
+      "properties": {
+        "patterns": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^pattern\\." }, "uniqueItems": true },
+        "examples": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^example\\." }, "uniqueItems": true }
+      },
+      "additionalProperties": false
+    },
+    "requiredStates": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+    "checks": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+    "screens": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/screen" }
+    }
+  },
+  "$defs": {
+    "screen": {
+      "type": "object",
+      "required": ["id", "route", "pattern"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "route": { "type": "string", "minLength": 1 },
+        "pattern": { "type": "string", "pattern": "^pattern\\.[a-z0-9-]+#[a-z0-9-]+$" },
+        "sampleParams": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": "string", "minLength": 1 }
+        },
+        "overlays": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "component", "pattern"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "component": { "type": "string", "pattern": "^component\\." },
+              "pattern": { "type": "string", "pattern": "^pattern\\.[a-z0-9-]+#[a-z0-9-]+$" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "condition": {
+      "type": "object",
+      "required": ["includesDesignContract", "agentSkills"],
+      "properties": {
+        "includesDesignContract": { "type": "boolean" },
+        "agentSkills": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

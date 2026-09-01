@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 <repo>/.runs/account-management/mvp-11/harness
+
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  01:11:39
+   Duration  2.41s (transform 31ms, setup 0ms, import 709ms, tests 1.20s, environment 439ms)
+
+$ vitest run

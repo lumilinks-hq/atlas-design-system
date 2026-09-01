@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "run.schema.json",
+  "type": "object",
+  "required": ["id", "experimentId", "condition", "status", "createdAt", "input", "environment", "artifacts", "checks"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string", "minLength": 1 },
+    "experimentId": { "type": "string", "pattern": "^experiment\\." },
+    "condition": { "enum": ["baseline", "harness", "harness-corrected"] },
+    "status": { "enum": ["prepared", "running", "completed", "failed"] },
+    "createdAt": { "type": "string", "minLength": 20 },
+    "input": {
+      "type": "object",
+      "required": ["briefSha256", "starterSha256", "promptSha256", "designContractSha256"],
+      "properties": {
+        "briefSha256": { "type": "string" },
+        "starterSha256": { "type": "string" },
+        "promptSha256": { "type": "string" },
+        "designContractSha256": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "environment": {
+      "type": "object",
+      "required": ["runner", "model", "cliVersion"],
+      "properties": {
+        "runner": { "const": "codex" },
+        "model": { "type": "string" },
+        "cliVersion": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "artifacts": { "type": "array", "items": { "type": "string" } },
+    "checks": { "type": "array", "items": { "type": "object" } }
+  },
+  "additionalProperties": false
+}

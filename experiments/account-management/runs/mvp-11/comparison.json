@@ -1,0 +1,132 @@
+{
+  "pairId": "mvp-11",
+  "experimentId": "experiment.account-management",
+  "conditionsMatch": true,
+  "blindOrder": {
+    "A": "baseline",
+    "B": "harness"
+  },
+  "reveal": {
+    "baseline": "mvp-11-baseline",
+    "harness": "mvp-11-harness",
+    "corrected": "mvp-11-harness-corrected"
+  },
+  "checks": {
+    "baseline": [
+      {
+        "name": "typecheck",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "test",
+        "status": "failed",
+        "exitCode": 1
+      },
+      {
+        "name": "build",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "design-rules",
+        "status": "failed",
+        "exitCode": 1
+      }
+    ],
+    "harness": [
+      {
+        "name": "typecheck",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "test",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "build",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "design-rules",
+        "status": "failed",
+        "exitCode": 1
+      }
+    ],
+    "corrected": [
+      {
+        "name": "typecheck",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "test",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "build",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "design-rules",
+        "status": "passed",
+        "exitCode": 0
+      }
+    ]
+  },
+  "review": {
+    "baseline": {
+      "reviewedAt": "2026-09-01T16:54:12.679Z",
+      "model": "gpt-5.4",
+      "findings": [
+        {
+          "ruleId": "layout.grouping",
+          "verdict": "concern",
+          "note": "見出し領域とカード一覧の間には一定の余白がありますが、詳細画面は戻るリンクとローディング文だけが同じ広い空白に置かれ、見出し領域とコンテンツ領域の分離が弱く見えます。モバイルでも一覧画面はヘッダー、件数バー、検索、状態表示が近接して並び、セクション間がグループ内余白の2倍以上あるとは言いにくいです。"
+        },
+        {
+          "ruleId": "color.semantic",
+          "verdict": "pass",
+          "note": "通常操作の戻るリンクや検索欄、件数表示にはネイビー、グレー、ブルー系が使われており、赤や警告色は見当たりません。ステータスも緑・水色・グレーで意味づけされていて、危険色を通常操作へ流用している観察はありません。"
+        }
+      ]
+    },
+    "harness": {
+      "reviewedAt": "2026-09-01T16:54:23.104Z",
+      "model": "gpt-5.4",
+      "findings": [
+        {
+          "ruleId": "layout.grouping",
+          "verdict": "pass",
+          "note": "各画面とも見出し領域が上部にまとまり、その下に検索欄やカード・テーブルが配置されていて、見出しとコンテンツの関係は明確です。見出し内の要素間隔より、見出しブロックと最初のコンテンツ要素の間隔が十分に大きく取られており、グルーピングも読み取りやすいです。"
+        },
+        {
+          "ruleId": "color.semantic",
+          "verdict": "concern",
+          "note": "詳細画面では通常の主要操作である「顧客を削除」に淡い赤系のボタン色が使われており、危険操作の意味づけ自体は一貫していますが、一覧や他の通常操作との色の差が弱く見えます。削除以外に危険色は使われていないものの、赤系がアクションボタンとして目立っているため、通常操作に危険色を使わないという観点では運用ルールの厳密さにやや不安があります。"
+        }
+      ]
+    },
+    "corrected": {
+      "reviewedAt": "2026-09-01T16:54:36.989Z",
+      "model": "gpt-5.4",
+      "findings": [
+        {
+          "ruleId": "layout.grouping",
+          "verdict": "concern",
+          "note": "見出し領域とコンテンツ領域自体は分かれていますが、詳細画面の「基本情報」と「対応状況」のカード間隔が、カード内の項目間隔と大きく変わらず、セクションの切れ目が強く出ていません。一覧画面でもタイトル領域から検索・表領域への移行は見える一方、セクション間をグループ内の2倍以上空けているとは読み取りにくいです。"
+        },
+        {
+          "ruleId": "color.semantic",
+          "verdict": "pass",
+          "note": "危険色は「顧客を削除」ボタンにだけ使われており、通常操作の「顧客を編集」や検索には青やニュートラル色が使われています。画面上の色の意味づけは一貫していて、危険色の誤用は見当たりません。"
+        }
+      ]
+    }
+  }
+}

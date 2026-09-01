@@ -1,0 +1,249 @@
+{
+  "$schema": "./schemas/rules.schema.json",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "id": "component.approved",
+      "title": "承認済みHeroUIコンポーネントを使う",
+      "category": "component",
+      "severity": "error",
+      "method": "automatic",
+      "description": "契約に存在しないUI部品を追加しない",
+      "fix": "独自HTML部品はHeroUIへ置き換え、IssueやExampleで対象外とした製品ヘッダー、操作、説明は削除する"
+    },
+    {
+      "id": "component.variants",
+      "title": "Atlasで承認したHeroUI variantを使う",
+      "category": "component",
+      "severity": "error",
+      "method": "automatic",
+      "description": "HeroUIのvariant名とAtlasのコンポーネント契約を一致させる",
+      "fix": "design/componentsのvariantsとdefaultsを確認し、存在しないvariantやcolorとの混同を修正する"
+    },
+    {
+      "id": "component.table.variant",
+      "title": "Tableの標準variantを使う",
+      "category": "component",
+      "severity": "error",
+      "method": "automatic",
+      "description": "顧客一覧のTableは契約で定義したprimary variantを使う",
+      "fix": "Table.Rootのvariantをprimaryにし、secondary固有の見た目を持ち込まない"
+    },
+    {
+      "id": "component.table.columns",
+      "title": "Tableの列定義をExampleと一致させる",
+      "category": "component",
+      "severity": "error",
+      "method": "automatic",
+      "description": "列順、見出し、幅、最小幅、揃え、row header、等幅数字をExampleの定義から変えない",
+      "fix": "design/examples/account-management.jsonのcomponent.table列定義を参照してHeaderとRowで共有する"
+    },
+    {
+      "id": "component.table.surface",
+      "title": "Table自身にsurfaceを持たせる",
+      "category": "component",
+      "severity": "error",
+      "method": "automatic",
+      "description": "Tableの外側へ独自の背景、角丸、影を重ねない",
+      "fix": "Tableを囲む要素のbox-shadowを削除し、primary variantのsurfaceを使う"
+    },
+    {
+      "id": "token.radius",
+      "title": "AtlasのHeroUI角丸アダプターを使う",
+      "category": "token",
+      "severity": "error",
+      "method": "automatic",
+      "description": "基本角丸8pxをHeroUIの倍率と複合コンポーネント構造を保ったまま適用する",
+      "fix": "src/styles.cssからdesign/component-theme.cssを読み込み、個別の.button上書きを削除する"
+    },
+    {
+      "id": "token.no-raw-color",
+      "title": "JSXへ色コードを書かない",
+      "category": "token",
+      "severity": "error",
+      "method": "automatic",
+      "description": "色はsemantic tokenを介して利用する",
+      "fix": "design/tokens.jsonに対応するCSS変数を使う"
+    },
+    {
+      "id": "a11y.control-name",
+      "title": "操作要素に名前を付ける",
+      "category": "accessibility",
+      "severity": "error",
+      "method": "automatic",
+      "description": "アイコンだけの操作にも支援技術が読める名前を付ける",
+      "fix": "視覚ラベルまたはaria-labelを追加する"
+    },
+    {
+      "id": "a11y.collection-item-name",
+      "title": "複合表示の選択肢にテキスト名を付ける",
+      "category": "accessibility",
+      "severity": "error",
+      "method": "automatic",
+      "description": "ListBox.Itemの表示をJSXで組み立てる場合も検索と支援技術が使える名前を渡す",
+      "fix": "ListBox.Itemへ表示内容と一致するtextValueを指定する"
+    },
+    {
+      "id": "a11y.form-label",
+      "title": "入力に視覚ラベルを付ける",
+      "category": "accessibility",
+      "severity": "error",
+      "method": "automatic",
+      "description": "placeholderだけをLabelとして使わない",
+      "fix": "HeroUIのLabelを入力へ関連付ける"
+    },
+    {
+      "id": "a11y.error-recovery",
+      "title": "エラーに回復方法を示す",
+      "category": "accessibility",
+      "severity": "error",
+      "method": "human",
+      "description": "何が起きたかと次に行う操作を表示する",
+      "fix": "対象入力の近くに原因と有効な値を表示する"
+    },
+    {
+      "id": "a11y.color-only",
+      "title": "色だけで状態を伝えない",
+      "category": "accessibility",
+      "severity": "error",
+      "method": "human",
+      "description": "状態名を文字またはアイコンと併記する",
+      "fix": "Chipへ状態名を表示する"
+    },
+    {
+      "id": "business.customer-name",
+      "title": "顧客名を必須にする",
+      "category": "business",
+      "severity": "error",
+      "method": "automatic",
+      "description": "顧客を識別できない空の会社名を保存しない",
+      "fix": "TextFieldをrequiredにし、空白だけの値も送信前に検証する"
+    },
+    {
+      "id": "business.contact-email",
+      "title": "連絡先メールアドレスの形式を検証する",
+      "category": "business",
+      "severity": "error",
+      "method": "automatic",
+      "description": "連絡先として利用できない形式を保存しない",
+      "fix": "TextFieldへtype=emailを指定し、送信前にも形式を検証する"
+    },
+    {
+      "id": "navigation.customer-routes",
+      "title": "顧客一覧と顧客詳細を別ルートに分ける",
+      "category": "navigation",
+      "severity": "error",
+      "method": "automatic",
+      "description": "一覧は/customers、詳細は/customers/:customerIdで扱い、戻る経路を提供する",
+      "fix": "HashRouterのRoutesで一覧と詳細を分け、一覧の行から詳細へ、詳細から一覧へ遷移できるようにする"
+    },
+    {
+      "id": "navigation.link-semantics",
+      "title": "移動にはLink、操作にはButtonを使う",
+      "category": "navigation",
+      "severity": "error",
+      "method": "automatic",
+      "description": "詳細ビューや一覧へ移動する要素はhrefまたはtoを持つLinkとし、ButtonのonPressで画面遷移させない",
+      "fix": "Tableのオブジェクト名、モバイル一覧の詳細導線、一覧へ戻る導線をLinkにする。編集、削除、保存だけをButtonとして残す"
+    },
+    {
+      "id": "architecture.customer-read-models",
+      "title": "一覧と詳細の読み取りモデルを分ける",
+      "category": "architecture",
+      "severity": "error",
+      "method": "automatic",
+      "description": "一覧へ詳細項目を渡さず、画面の用途に必要なデータだけを取得する",
+      "fix": "CustomerSummaryとCustomerDetailを定義し、一覧取得とID指定の詳細取得を分ける"
+    },
+    {
+      "id": "state.complete",
+      "title": "必要な画面状態を実装する",
+      "category": "state",
+      "severity": "error",
+      "method": "automatic",
+      "description": "Default、Empty、Drawer open、Invalid、Loading、Success、Failure、Delete confirmを欠かさない",
+      "fix": "不足するfixtureと表示を追加する"
+    },
+    {
+      "id": "layout.grouping",
+      "title": "ページの関係を余白と見出しで示す",
+      "category": "layout",
+      "severity": "warning",
+      "method": "ai-review",
+      "description": "見出し領域とコンテンツ領域を分け、セクション間をグループ内の2倍以上空ける",
+      "fix": "ページ見出し、セクション見出し、余白の順で情報の関係を表す"
+    },
+    {
+      "id": "layout.collection-toolbar",
+      "title": "一覧操作をTableと同じ領域にまとめる",
+      "category": "layout",
+      "severity": "error",
+      "method": "automatic",
+      "description": "ToolbarとTableを一つのCollectionRegionに置き、検索はHeroUI SearchFieldとしてTable直前の末尾側へ配置する",
+      "fix": "Toolbarルートをwidth:100%、display:flex、justify-content:flex-endにし、その中にSearchFieldのGroup、SearchIcon、Input、ClearButtonを置く。SearchFieldはデスクトップ16rem、狭幅100%にする"
+    },
+    {
+      "id": "layout.back-navigation",
+      "title": "戻るLinkをページ見出しの前に置く",
+      "category": "layout",
+      "severity": "error",
+      "method": "automatic",
+      "description": "親の一覧へ戻るLinkとPageHeadingを一つの見出しグループにまとめ、読む順序と余白を固定する",
+      "fix": "BackNavigation、PageHeadingの順に配置し、間をspace.4、PageHeadingから詳細コンテンツまでをspace.8にする。Button固有のpaddingへ位置を依存させない"
+    },
+    {
+      "id": "layout.narrow",
+      "title": "狭い画面では1カラムへ積み替える",
+      "category": "layout",
+      "severity": "error",
+      "method": "automatic",
+      "description": "320px幅または200% zoomで横スクロールを発生させず、主要情報と操作を欠落させない",
+      "fix": "モバイル一覧を縦に積み、詳細画面への移動はLinkとして表示する"
+    },
+    {
+      "id": "state.loading",
+      "title": "非同期処理中の状態を示す",
+      "category": "state",
+      "severity": "error",
+      "method": "automatic",
+      "description": "保存中であることを示し、二重送信を防ぐ",
+      "fix": "Buttonのloadingとdisabledを同期する"
+    },
+    {
+      "id": "state.failure",
+      "title": "失敗後も再試行できる",
+      "category": "state",
+      "severity": "error",
+      "method": "human",
+      "description": "Toastだけで失敗情報を消さない",
+      "fix": "Drawer内にエラーと再試行操作を残す"
+    },
+    {
+      "id": "color.semantic",
+      "title": "semantic colorを意味に合わせる",
+      "category": "color",
+      "severity": "warning",
+      "method": "ai-review",
+      "description": "危険色を通常操作へ使わない",
+      "fix": "操作の意味に対応するtokenへ置き換える"
+    },
+    {
+      "id": "action.confirmation",
+      "title": "取り消せない変更を確定前に確認する",
+      "category": "interaction",
+      "severity": "error",
+      "method": "automatic",
+      "description": "削除など取り消せない操作の対象と結果を、AlertDialog.Triggerから開いた確認画面で確認する",
+      "fix": "取り消せない操作だけにAlertDialogを使い、対象と結果を表示する"
+    },
+    {
+      "id": "a11y.focus-management",
+      "title": "Drawerのフォーカスを管理する",
+      "category": "accessibility",
+      "severity": "error",
+      "method": "automatic",
+      "description": "開閉時にフォーカスを失わず、起点を主要操作として識別できる",
+      "fix": "Drawer.Root内でDrawer.TriggerとDrawer.Backdropを組にし、Triggerへ主要Buttonの視覚スタイルを適用する"
+    }
+  ]
+}
