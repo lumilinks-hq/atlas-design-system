@@ -39,3 +39,7 @@ export function renderTheme(tokens) {
     "",
   ].join("\n");
 }
+
+export function findStaleThemeFiles(theme, files) {
+  return files.filter((file) => file.content !== theme).map((file) => file.path);
+}
