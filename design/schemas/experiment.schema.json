@@ -43,6 +43,11 @@
         "id": { "type": "string", "minLength": 1 },
         "route": { "type": "string", "minLength": 1 },
         "pattern": { "type": "string", "pattern": "^pattern\\.[a-z0-9-]+#[a-z0-9-]+$" },
+        "sampleParams": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": "string", "minLength": 1 }
+        },
         "overlays": {
           "type": "array",
           "minItems": 1,

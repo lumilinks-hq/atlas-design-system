@@ -2,6 +2,7 @@ import { cp, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { evaluateRun } from "./evaluate-experiment.mjs";
 import { hashHarnessContext, syncHarnessContext } from "./harness-context.mjs";
+import { measureRun } from "./measure-experiment.mjs";
 import { parseArgs, rootDir, runCommand, runCommandToFiles } from "./lib.mjs";
 import { sanitizeRunArtifacts } from "./sanitize-run-artifacts.mjs";
 
@@ -16,6 +17,7 @@ const runPath = resolve(outputDir, "run.json");
 const run = JSON.parse(await readFile(runPath, "utf8"));
 
 await syncHarnessContext(workspaceDir, "experiments/account-management/manifest.json");
+await measureRun({ pairId, mode });
 const beforeRefinement = await evaluateRun({ pairId, mode });
 const hasFailedChecks = run.checks?.some((check) => check.status === "failed") ?? false;
 
@@ -84,6 +86,7 @@ const updatedRun = {
   checks,
 };
 await writeFile(runPath, `${JSON.stringify(updatedRun, null, 2)}\n`);
+await measureRun({ pairId, mode });
 const evaluation = await evaluateRun({ pairId, mode });
 await sanitizeRunArtifacts(outputDir);
 

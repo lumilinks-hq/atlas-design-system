@@ -33,6 +33,7 @@
       "id": "detail",
       "route": "/customers/:customerId",
       "pattern": "pattern.page-layout#single-one-column",
+      "sampleParams": { "customerId": "customer_northstar" },
       "overlays": [
         { "id": "edit-drawer", "component": "component.drawer", "pattern": "pattern.spacing-layout#dialog-content" },
         { "id": "delete-confirm", "component": "component.alert-dialog", "pattern": "pattern.spacing-layout#dialog-content" }
