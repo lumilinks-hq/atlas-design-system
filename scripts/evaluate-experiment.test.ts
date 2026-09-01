@@ -81,6 +81,17 @@ describe("evaluateSource", () => {
     expect(rule?.evidence.join(" ")).toContain("表示テキスト");
   });
 
+  it("rejects a HeroUI Button nested inside the Drawer trigger", () => {
+    const rules = evaluateSource({
+      app: '<Drawer.Root><Drawer.Trigger className="button button--md button--primary"><Button variant="primary">開く</Button></Drawer.Trigger><Drawer.Backdrop><Drawer.CloseTrigger aria-label="閉じる" /></Drawer.Backdrop></Drawer.Root>',
+      styles: "",
+    });
+
+    const rule = rules.find((item) => item.id === "a11y.focus-management");
+    expect(rule?.status).toBe("failed");
+    expect(rule?.evidence.join(" ")).toContain("入れ子");
+  });
+
   it("accepts a saving state paired with disabled controls", () => {
     const rules = evaluateSource({
       app: '<Button isDisabled={saving}>{saving ? "保存中" : "保存"}</Button>',

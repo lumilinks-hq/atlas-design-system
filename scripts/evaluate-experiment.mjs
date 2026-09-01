@@ -724,9 +724,12 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
     drawerCloseElements.every((element) =>
       element.children.every((child) => !ts.isJsxText(child) || child.text.trim().length === 0),
     );
+  const drawerTriggerElements = findJsxElements(sourceFile, "Drawer.Trigger");
+  const drawerTriggerHasNestedButton = drawerTriggerElements.some((element) => containsJsxTag(element, "Button"));
   const hasManagedDrawer =
     /<Drawer(?:\.Root)?(?:\s|>)/.test(app) &&
     /<Drawer\.Trigger\b[^>]*className=/.test(app) &&
+    !drawerTriggerHasNestedButton &&
     /<Drawer\.Backdrop(?:\s|>)/.test(app) &&
     hasIconOnlyDrawerClose;
   const hasMobileList = /className=[^\n]*mobile-list/.test(app);
@@ -1016,9 +1019,11 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
       [
         hasManagedDrawer
           ? "Drawer.Triggerの視覚スタイルとアイコンのみのCloseTriggerあり"
-          : !hasIconOnlyDrawerClose
-            ? "Drawer.CloseTriggerがないか、狭い標準枠へ表示テキストを入れています"
-            : "Drawer.Triggerの構造または主要Buttonの視覚スタイルを確認できません",
+          : drawerTriggerHasNestedButton
+            ? "Drawer.Trigger内にHeroUI Buttonが入れ子です（buttonの入れ子はHTML違反）。Buttonを削除し、Drawer.Trigger自体へ主要Buttonの視覚スタイルのclassNameを付けてラベルテキストを直接入れてください"
+            : !hasIconOnlyDrawerClose
+              ? "Drawer.CloseTriggerがないか、狭い標準枠へ表示テキストを入れています"
+              : "Drawer.Trigger自体にclassName（主要Buttonの視覚スタイル）を確認できません。ラベルはTriggerに直接入れます",
       ],
     ),
   ];

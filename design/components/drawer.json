@@ -13,7 +13,7 @@
     "保存中は閉じる前に状態を確認できる",
     "フォーカスをDrawer内へ管理し、閉じた後は起点へ戻す",
     "Drawer.Root内でDrawer.TriggerとDrawer.Backdropを組にし、外部Buttonだけで開閉しない",
-    "Drawer.Triggerには主要Buttonと同じ視覚スタイルを適用し、無装飾のテキストにしない",
+    "Drawer.Trigger自体へclassNameで主要Buttonと同じ視覚スタイルを適用し、ラベルテキストを直接入れる。内側にButtonを入れ子にしない（buttonの入れ子はHTML違反）",
     "Drawer.Dialog内はDrawer.Header、Drawer.Body、Drawer.Footerで構成する",
     "TextFieldのルートへ入力枠や高さを指定せず、枠とpaddingはInputまたはSelect.Triggerだけへ適用する"
   ],
