@@ -18,6 +18,22 @@ export function parseReviewFindings(text) {
   }
 }
 
+export function buildReviewArgs({ model, images, prompt }) {
+  // codex execの-i/--imageは可変長のため、promptは--区切りの後に置かないと画像パス扱いされる
+  return [
+    "exec",
+    "--ignore-user-config",
+    "--ignore-rules",
+    "--ephemeral",
+    "--approve-for-me",
+    "--model",
+    model,
+    ...images.flatMap((path) => ["-i", path]),
+    "--",
+    prompt,
+  ];
+}
+
 async function reviewRun({ pairId, mode }) {
   const outputDir = resolve(rootDir, "experiments", "account-management", "runs", pairId, mode);
   const screenshotsDir = resolve(rootDir, "public", "experiments", "account-management", "runs", pairId);
@@ -44,17 +60,7 @@ async function reviewRun({ pairId, mode }) {
 
   const result = await runCommand(
     "codex",
-    [
-      "exec",
-      "--ignore-user-config",
-      "--ignore-rules",
-      "--ephemeral",
-      "--approve-for-me",
-      "--model",
-      run.environment.model,
-      ...images.flatMap((path) => ["-i", path]),
-      prompt,
-    ],
+    buildReviewArgs({ model: run.environment.model, images, prompt }),
     { timeoutMs: 300_000 },
   );
   if (result.code !== 0) {

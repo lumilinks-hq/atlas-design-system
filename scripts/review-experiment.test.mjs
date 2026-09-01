@@ -1,5 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { parseReviewFindings } from "./review-experiment.mjs";
+import { buildReviewArgs, parseReviewFindings } from "./review-experiment.mjs";
+
+describe("buildReviewArgs", () => {
+  it("可変長の-iにpromptが飲まれないよう--区切りの後にpromptを置く", () => {
+    const args = buildReviewArgs({
+      model: "gpt-5.4",
+      images: ["/shots/a.png", "/shots/b.png"],
+      prompt: "レビューしてください",
+    });
+
+    expect(args.at(-1)).toBe("レビューしてください");
+    expect(args.at(-2)).toBe("--");
+    const separatorIndex = args.indexOf("--");
+    expect(args.indexOf("-i")).toBeGreaterThan(-1);
+    expect(args.lastIndexOf("/shots/b.png")).toBeLessThan(separatorIndex);
+  });
+});
 
 describe("parseReviewFindings", () => {
   it("素のJSONからfindingsを取り出す", () => {
