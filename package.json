@@ -2,6 +2,9 @@
   "name": "design-harness-demo",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=24 <25"
+  },
   "type": "module",
   "packageManager": "pnpm@11.13.1",
   "scripts": {
@@ -12,19 +15,28 @@
     "lint": "eslint .",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:e2e": "node scripts/verify-site.mjs",
     "design:check": "node scripts/validate-design.mjs",
+    "design:conformance": "node scripts/check-design-conformance.mjs",
     "theme:generate": "node scripts/generate-theme.mjs",
+    "theme:check": "node scripts/generate-theme.mjs --check",
     "runs:check": "node scripts/validate-runs.mjs",
     "runs:sanitize": "node scripts/sanitize-run-artifacts.mjs",
+    "public:audit": "node scripts/audit-public-data.mjs",
+    "links:check": "node scripts/check-links.mjs",
+    "bundle:check": "node scripts/check-bundle-size.mjs",
     "skills:check": "node scripts/validate-skills.mjs",
     "mcp:start": "node scripts/mcp/server.mjs",
     "experiment:run": "node scripts/run-experiment.mjs",
+    "experiment:finalize": "node scripts/finalize-experiment.mjs",
     "experiment:compare": "node scripts/compare-experiment.mjs",
     "experiment:evaluate": "node scripts/evaluate-experiment.mjs",
+    "experiment:measure": "node scripts/measure-experiment.mjs",
+    "experiment:review": "node scripts/review-experiment.mjs",
     "experiment:refine": "node scripts/refine-experiment.mjs",
     "experiment:capture": "node scripts/capture-experiment.mjs",
     "experiment:preview": "node scripts/preview-experiment.mjs",
-    "demo:check": "pnpm design:check && pnpm runs:check && pnpm skills:check && pnpm typecheck && pnpm lint && pnpm test:run && pnpm build"
+    "demo:check": "pnpm design:check && pnpm theme:check && pnpm design:conformance && pnpm runs:check && pnpm skills:check && pnpm public:audit && pnpm links:check && pnpm typecheck && pnpm lint && pnpm test:run && pnpm build && pnpm bundle:check"
   },
   "dependencies": {
     "@heroui/react": "3.2.4",

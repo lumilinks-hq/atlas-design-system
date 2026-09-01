@@ -128,38 +128,29 @@ Issueだけで生成したBaselineと、Atlasを適用して検査後に補正�
 DESIGN.md
 design/
   tokens.json
-  components/
-    button.json
-    table.json
-    card.json
-    select.json
-    number-field.json
-    chip.json
-    surface.json
-    drawer.json
-    alert-dialog.json
-    toast.json
+  theme.css            # tokens.jsonから生成（pnpm theme:generate）
+  layout.css           # レイアウト実装部品の正本CSS
+  component-theme.css
+  components/          # button、table、drawer、alert-dialogなど14契約
   patterns/
     page-layout.json
+    spacing-layout.json
   examples/
     account-management.json
   rules.json
-  schemas/
-    tokens.schema.json
-    component.schema.json
-    pattern.schema.json
-    example.schema.json
-    rules.schema.json
+  schemas/             # tokens、component、pattern、example、rules、experiment、runの7 schema
 experiments/
   account-management/
     manifest.json
     brief.md
+    prompt.md
     starter/
-    fixtures/
     runs/
-      baseline.json
-      harness.json
-      harness-corrected.json
+      mvp-11/          # 保存済みRunのペア（旧pairはアーカイブ）
+        comparison.json
+        baseline/      # run.json、design-evaluation.json、measurements.json、source/、各種ログ
+        harness/
+        harness-corrected/
 ```
 
 公開ページ、Presenter mode、検証処理はこの正本を読む。表示用の説明と検証用データを別々に管理しない。
