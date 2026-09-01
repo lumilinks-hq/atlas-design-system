@@ -95,6 +95,9 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .spec-list dd { display: grid; gap: var(--dh-space-2); margin: 0; }
 .spec-list dd strong { font-size: 1rem; }
 .spec-list dd span { max-width: 44em; color: var(--dh-text-muted); font-size: 1rem; line-height: 1.7; }
+.spec-repo-links { display: flex; flex-wrap: wrap; gap: var(--dh-space-2) var(--dh-space-4); margin: 0; padding: 0; list-style: none; }
+.spec-repo-links a { display: inline-flex; align-items: center; gap: 6px; color: var(--dh-accent); font-size: .875rem; font-weight: 600; }
+.spec-repo-links a:hover { text-decoration: underline; }
 .file-reference-list { margin-top: var(--dh-space-6); border-block-start: 1px solid var(--dh-border); }
 .file-reference-list > div { display: grid; align-items: baseline; gap: var(--dh-space-6); border-block-end: 1px solid var(--dh-border); padding-block: var(--dh-space-4); grid-template-columns: minmax(220px, .9fr) minmax(0, 1.5fr); }
 .file-reference-list span { color: var(--dh-text-muted); font-size: 1rem; line-height: 1.6; }

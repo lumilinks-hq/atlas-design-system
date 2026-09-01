@@ -15,7 +15,7 @@ import {
   Toast,
   useOverlayState,
 } from "@heroui/react";
-import { ArrowRight, Check, ChevronDown, ChevronUp, Code2, Copy, FileCode2, FileText, FlaskConical, GitFork, LayoutTemplate, Monitor, Plug, ScanSearch, Smartphone, Sparkles } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, ChevronUp, Code2, Copy, ExternalLink, FileCode2, FileText, FlaskConical, GitFork, LayoutTemplate, Monitor, Plug, ScanSearch, Smartphone, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { designData } from "../data/design";
@@ -164,20 +164,119 @@ export function GettingStartedPage() {
 }
 
 const implementationStack = [
-  { name: "アプリケーション", value: "React 19.2.8 / TypeScript 6.0.3", description: "画面と設計データを型付きのコンポーネントとして実装します。" },
-  { name: "開発環境", value: "Vite 8.2.2", description: "開発サーバーと公開用ビルドを担います。" },
-  { name: "UIライブラリ", value: "HeroUI 3.2.4", description: "操作部品の実装基盤です。Atlasでは利用できる部品とバリエーションを限定します。" },
-  { name: "書体", value: "Gen Interface JP 0.8.0", description: "本文は16pxを基準にし、見出しにはDisplay書体を使います。" },
-  { name: "アイコン", value: "Lucide React 1.37.0", description: "機能を補助するアイコンを一つのセットに統一します。" },
-  { name: "ルーティング", value: "React Router DOM 7.18.3", description: "ドキュメント、比較デモ、操作画面をURLで分けます。" },
+  {
+    name: "アプリケーション",
+    value: "React 19.2.8 / TypeScript 6.0.3",
+    description: "画面と設計データを型付きのコンポーネントとして実装します。",
+    repositories: [
+      { label: "React", href: "https://github.com/react/react" },
+      { label: "TypeScript", href: "https://github.com/microsoft/TypeScript" },
+    ],
+  },
+  {
+    name: "開発環境",
+    value: "Vite 8.2.2",
+    description: "開発サーバーと公開用ビルドを担います。",
+    repositories: [{ label: "Vite", href: "https://github.com/vitejs/vite" }],
+  },
+  {
+    name: "UIライブラリ",
+    value: "HeroUI 3.2.4",
+    description: "操作部品の実装基盤です。Atlasでは利用できる部品とバリエーションを限定します。",
+    repositories: [{ label: "HeroUI", href: "https://github.com/heroui-inc/heroui" }],
+  },
+  {
+    name: "書体",
+    value: "Gen Interface JP 0.8.0",
+    description: "本文は16pxを基準にし、見出しにはDisplay書体を使います。",
+    repositories: [{ label: "Gen Interface JP", href: "https://github.com/yamatoiizuka/gen-interface-jp" }],
+  },
+  {
+    name: "アイコン",
+    value: "Lucide React 1.37.0",
+    description: "機能を補助するアイコンを一つのセットに統一します。",
+    repositories: [{ label: "Lucide", href: "https://github.com/lucide-icons/lucide" }],
+  },
+  {
+    name: "ルーティング",
+    value: "React Router DOM 7.18.3",
+    description: "ドキュメント、比較デモ、操作画面をURLで分けます。",
+    repositories: [{ label: "React Router", href: "https://github.com/remix-run/react-router" }],
+  },
 ] as const;
 
 const designContractStack = [
-  { name: "設計データ", value: "JSON", description: "トークン、コンポーネント、パターン、利用例、検証ルールを機械可読な形式で管理します。" },
-  { name: "データ検証", value: "JSON Schema / Ajv 8.20.0", description: "設計データの構造と参照先をビルド前に検査します。" },
-  { name: "AIからの参照", value: "Agent Skill / MCP", description: "AIが必要な設計契約を検索し、実装時の入力として使えるようにします。" },
-  { name: "品質確認", value: "Vitest / Testing Library / Playwright / ESLint", description: "型、振る舞い、画面、設計ルールを別々に確認します。" },
+  {
+    name: "設計データ",
+    value: "JSON",
+    description: "トークン、コンポーネント、パターン、利用例、検証ルールを機械可読な形式で管理します。",
+    repositories: [],
+  },
+  {
+    name: "データ検証",
+    value: "JSON Schema / Ajv 8.20.0",
+    description: "設計データの構造と参照先をビルド前に検査します。",
+    repositories: [
+      { label: "JSON Schema", href: "https://github.com/json-schema-org/json-schema-spec" },
+      { label: "Ajv", href: "https://github.com/ajv-validator/ajv" },
+    ],
+  },
+  {
+    name: "AIからの参照",
+    value: "Agent Skill / MCP",
+    description: "AIが必要な設計契約を検索し、実装時の入力として使えるようにします。",
+    repositories: [
+      { label: "Agent Skills", href: "https://github.com/anthropics/skills" },
+      { label: "MCP TypeScript SDK", href: "https://github.com/modelcontextprotocol/typescript-sdk" },
+    ],
+  },
+  {
+    name: "品質確認",
+    value: "Vitest / Testing Library / Playwright / ESLint",
+    description: "型、振る舞い、画面、設計ルールを別々に確認します。",
+    repositories: [
+      { label: "Vitest", href: "https://github.com/vitest-dev/vitest" },
+      { label: "Testing Library", href: "https://github.com/testing-library/react-testing-library" },
+      { label: "Playwright", href: "https://github.com/microsoft/playwright" },
+      { label: "ESLint", href: "https://github.com/eslint/eslint" },
+    ],
+  },
 ] as const;
+
+type StackItem = {
+  readonly name: string;
+  readonly value: string;
+  readonly description: string;
+  readonly repositories: readonly { readonly label: string; readonly href: string }[];
+};
+
+function StackList({ items }: { items: readonly StackItem[] }) {
+  return (
+    <dl className="spec-list">
+      {items.map((item) => (
+        <div key={item.name}>
+          <dt>{item.name}</dt>
+          <dd>
+            <strong>{item.value}</strong>
+            <span>{item.description}</span>
+            {item.repositories.length > 0 && (
+              <ul className="spec-repo-links" aria-label={`${item.name}のリポジトリ`}>
+                {item.repositories.map((repository) => (
+                  <li key={repository.href}>
+                    <a href={repository.href} rel="noreferrer" target="_blank">
+                      <ExternalLink size={14} aria-hidden="true" />
+                      {repository.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
 
 export function TechnicalSpecsPage() {
   return (
@@ -189,26 +288,12 @@ export function TechnicalSpecsPage() {
 
       <section className="spec-section" aria-labelledby="implementation-stack-title">
         <h2 id="implementation-stack-title">実装基盤</h2>
-        <dl className="spec-list">
-          {implementationStack.map((item) => (
-            <div key={item.name}>
-              <dt>{item.name}</dt>
-              <dd><strong>{item.value}</strong><span>{item.description}</span></dd>
-            </div>
-          ))}
-        </dl>
+        <StackList items={implementationStack} />
       </section>
 
       <section className="spec-section" aria-labelledby="design-contract-stack-title">
         <h2 id="design-contract-stack-title">設計契約と検証</h2>
-        <dl className="spec-list">
-          {designContractStack.map((item) => (
-            <div key={item.name}>
-              <dt>{item.name}</dt>
-              <dd><strong>{item.value}</strong><span>{item.description}</span></dd>
-            </div>
-          ))}
-        </dl>
+        <StackList items={designContractStack} />
       </section>
 
       <section className="spec-section" aria-labelledby="source-structure-title">
