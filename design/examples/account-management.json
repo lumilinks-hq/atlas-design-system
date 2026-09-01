@@ -16,6 +16,9 @@
     "一覧ではCustomerSummary、詳細ではCustomerDetailの読み取りモデルを使用する",
     "詳細画面に一覧へ戻る経路を置き、顧客情報の編集はHeader、Body、Footerを持つDrawerへ分離する",
     "詳細の情報群はCard.HeaderとCard.Contentを使い、HeroUI標準のspace.4の内側余白を保つ",
+    "顧客の削除はPageHeadingの操作領域に置き、主要操作は「顧客を編集」1つを維持して削除はdanger-softの副次操作とする",
+    "削除の確定前にAlertDialogで対象の会社名と取り消せないことを確認し、確定はdangerのButton、キャンセルを併置する",
+    "削除成功はToastで通知して顧客一覧へ戻り、削除失敗は理由を表示して再試行できるようにする",
     "ページ見出しにはIssueにない追加操作やデモ用説明を設けない"
   ],
   "componentUsage": {
@@ -37,6 +40,21 @@
         "narrowWidth": "100%",
         "align": "end"
       }
+    },
+    "component.alert-dialog": {
+      "purpose": "delete-confirmation",
+      "state": "delete-confirm",
+      "trigger": {
+        "component": "component.button",
+        "variant": "danger-soft",
+        "label": "顧客を削除",
+        "placement": "page-heading-actions"
+      },
+      "confirm": { "component": "component.button", "variant": "danger", "label": "削除する" },
+      "cancel": { "component": "component.button", "variant": "tertiary", "label": "キャンセル" },
+      "content": ["対象の会社名", "削除は取り消せないことの説明"],
+      "onSuccess": { "toast": "顧客を削除しました", "navigateTo": "/customers" },
+      "onFailure": "AlertDialog内に理由を表示し再試行できる"
     },
     "component.table": {
       "variant": "primary",
@@ -75,7 +93,7 @@
       ]
     }
   },
-  "states": ["default", "empty", "drawer-open", "invalid-email", "loading", "success", "failure"],
+  "states": ["default", "empty", "drawer-open", "invalid-email", "loading", "success", "failure", "delete-confirm"],
   "components": [
     "component.button",
     "component.link",
@@ -100,6 +118,7 @@
     "a11y.form-label",
     "a11y.error-recovery",
     "a11y.focus-management",
+    "action.confirmation",
     "layout.collection-toolbar",
     "layout.back-navigation",
     "layout.narrow",

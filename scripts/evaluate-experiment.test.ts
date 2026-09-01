@@ -29,6 +29,33 @@ describe("evaluateSource", () => {
     expect(withTrigger.find((rule) => rule.id === "action.confirmation")?.status).toBe("passed");
   });
 
+  it("requires a HeroUI Button inside AlertDialog.Trigger", () => {
+    const withoutButton = evaluateSource({
+      app: "<AlertDialog.Root><AlertDialog.Trigger>顧客を削除</AlertDialog.Trigger><AlertDialog.Dialog /></AlertDialog.Root>",
+      styles: "",
+    });
+
+    const rule = withoutButton.find((item) => item.id === "action.confirmation");
+    expect(rule?.status).toBe("failed");
+    expect(rule?.evidence.join(" ")).toContain("Button");
+  });
+
+  it("requires every state listed in the manifest", () => {
+    const withoutDeleteConfirm = evaluateSource({
+      app: '"default empty drawer-open invalid-email loading success failure"',
+      styles: "",
+    });
+    const withAllStates = evaluateSource({
+      app: '"default empty drawer-open invalid-email loading success failure delete-confirm"',
+      styles: "",
+    });
+
+    const failedRule = withoutDeleteConfirm.find((item) => item.id === "state.complete");
+    expect(failedRule?.status).toBe("failed");
+    expect(failedRule?.evidence.join(" ")).toContain("delete-confirm");
+    expect(withAllStates.find((item) => item.id === "state.complete")?.status).toBe("passed");
+  });
+
   it("requires the Drawer trigger contract", () => {
     const withoutTrigger = evaluateSource({
       app: "<Drawer.Root><Drawer.Backdrop /></Drawer.Root>",

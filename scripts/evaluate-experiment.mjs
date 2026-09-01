@@ -7,17 +7,10 @@ import ts from "typescript";
 import { resolveManifest } from "./design-catalog.mjs";
 import { parseArgs, rootDir } from "./lib.mjs";
 
-const requiredStates = [
-  "default",
-  "empty",
-  "drawer-open",
-  "invalid-email",
-  "loading",
-  "success",
-  "failure",
-];
 const manifestPath = "experiments/account-management/manifest.json";
 const designContract = resolveManifest(manifestPath);
+const experimentManifest = JSON.parse(readFileSync(resolve(rootDir, manifestPath), "utf8"));
+const requiredStates = experimentManifest.requiredStates;
 const exampleResource = designContract.resources.find((resource) => resource.uri.includes("/examples/"));
 if (!exampleResource) throw new Error(`${manifestPath}: 契約にexampleがありません`);
 const accountManagementExample = JSON.parse(readFileSync(resolve(rootDir, exampleResource.path), "utf8"));
@@ -145,6 +138,20 @@ function findJsxElements(sourceFile, tagName) {
   };
   visit(sourceFile);
   return matches;
+}
+
+function containsJsxTag(node, tagName) {
+  let found = false;
+  const visit = (child) => {
+    if (found) return;
+    if ((ts.isJsxOpeningElement(child) || ts.isJsxSelfClosingElement(child)) && getJsxTagName(child.tagName) === tagName) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(child, visit);
+  };
+  visit(node);
+  return found;
 }
 
 function getJsxAttribute(opening, name) {
@@ -679,7 +686,7 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
     .map(([name, pattern]) => [name, countMatches(app, pattern)])
     .filter(([, count]) => count > 0);
   const issueScopeMatches = [
-    ...app.matchAll(/(Atlas CRM|ワークスペース|顧客を追加|顧客を削除|契約管理|料金管理|利用人数|権限管理)/g),
+    ...app.matchAll(/(Atlas CRM|ワークスペース|顧客を追加|契約管理|料金管理|利用人数|権限管理)/g),
   ].map((match) => match[0]);
   if (issueScopeMatches.length > 0) {
     nativePrimitives.push([
@@ -698,7 +705,18 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
   const hasLoadingGuard = /(isSaving|isLoading|saving)/.test(app) && /(disabled|isDisabled|isPending)/.test(app);
   const hasRetry = /(failure|失敗)/i.test(app) && /(retry|再試行)/i.test(app);
   const hasDestructiveAction = /(削除|delete|remove)/i.test(app);
-  const hasConfirmation = /<AlertDialog(?:\.Root)?(?:\s|>)/.test(app) && /<AlertDialog\.Trigger(?:\s|>)/.test(app);
+  const hasAlertDialogRoot =
+    findJsxOpenings(sourceFile, "AlertDialog.Root").length > 0 || findJsxOpenings(sourceFile, "AlertDialog").length > 0;
+  const alertDialogTriggerElements = findJsxElements(sourceFile, "AlertDialog.Trigger");
+  const alertTriggerHasButton = alertDialogTriggerElements.some((element) => containsJsxTag(element, "Button"));
+  const hasConfirmation = hasAlertDialogRoot && alertTriggerHasButton;
+  const confirmationEvidence = !hasDestructiveAction
+    ? "取り消せない操作なし"
+    : !hasAlertDialogRoot || alertDialogTriggerElements.length === 0
+      ? "取り消せない操作にHeroUI AlertDialog.Triggerがありません"
+      : !alertTriggerHasButton
+        ? "AlertDialog.Triggerの内側にHeroUI Buttonがありません"
+        : "AlertDialog.Triggerから確認画面を開き、起点はHeroUI Button";
   const drawerCloseTriggers = findJsxOpenings(sourceFile, "Drawer.CloseTrigger");
   const drawerCloseElements = findJsxElements(sourceFile, "Drawer.CloseTrigger");
   const hasIconOnlyDrawerClose =
@@ -941,7 +959,7 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
           : "一覧用CustomerSummaryと詳細用CustomerDetailの分離を確認できません",
       ],
     ),
-    result("state.complete", missingStates.length === 0 ? "passed" : "failed", [missingStates.length === 0 ? "必須7状態あり" : `不足: ${missingStates.join(", ")}`]),
+    result("state.complete", missingStates.length === 0 ? "passed" : "failed", [missingStates.length === 0 ? `必須${requiredStates.length}状態あり` : `不足: ${missingStates.join(", ")}`]),
     measuredLayout?.grouping ??
       result(
         "layout.grouping",
@@ -987,7 +1005,7 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
     result("state.loading", hasLoadingGuard ? "passed" : "failed", [hasLoadingGuard ? "保存中のdisabled制御あり" : "二重送信防止を確認できません"]),
     result("state.failure", hasRetry ? "passed" : "failed", [hasRetry ? "失敗後の再試行経路あり" : "再試行経路を確認できません"]),
     result("color.semantic", "review", ["semantic colorの意味はblind reviewする"]),
-    result("action.confirmation", !hasDestructiveAction || hasConfirmation ? "passed" : "failed", [!hasDestructiveAction ? "取り消せない操作なし" : hasConfirmation ? "HeroUI AlertDialog.Triggerから確認画面を開く" : "取り消せない操作にHeroUI AlertDialog.Triggerがありません"]),
+    result("action.confirmation", !hasDestructiveAction || hasConfirmation ? "passed" : "failed", [confirmationEvidence]),
     result(
       "a11y.focus-management",
       hasManagedDrawer ? "passed" : "failed",
