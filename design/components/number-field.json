@@ -4,12 +4,14 @@
   "name": "NumberField",
   "implementation": "NumberField",
   "import": "@heroui/react",
-  "variants": ["default"],
+  "variants": ["primary", "secondary"],
   "sizes": ["md"],
+  "defaults": { "variant": "primary", "size": "md" },
+  "visual": { "surfaceOwner": "component", "outerShadow": "allowed", "radiusToken": "radius.base" },
   "requirements": [
     "単位をLabelまたはDescriptionへ示す",
     "業務制約をクライアント側でも検証する",
     "最小値と現在値の関係をエラー文で説明する"
   ],
-  "relatedRules": ["component.approved", "a11y.form-label", "business.seat-limit"]
+  "relatedRules": ["component.approved", "a11y.form-label", "a11y.error-recovery"]
 }
