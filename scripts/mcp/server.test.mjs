@@ -34,9 +34,40 @@ describe("Atlas MCP server", () => {
     const client = await connect();
     const result = await client.callTool({
       name: "resolve_design_contract",
-      arguments: { patterns: ["pattern.page-layout#single-one-column"], examples: ["example.account-management"] },
+      arguments: {
+        patterns: ["pattern.page-layout#collection-table", "pattern.page-layout#single-one-column"],
+        examples: ["example.account-management"],
+      },
     });
     expect(result.isError).not.toBe(true);
     expect(result.content[0].text).toContain("component.button");
+  });
+
+  it("returns protocol errors for unknown contract references", async () => {
+    const client = await connect();
+    const unknownPattern = await client.callTool({
+      name: "resolve_design_contract",
+      arguments: { patterns: ["pattern.unknown#missing"], examples: [] },
+    });
+    const unknownVariant = await client.callTool({
+      name: "resolve_design_contract",
+      arguments: { patterns: ["pattern.page-layout#missing"], examples: [] },
+    });
+    const emptyRequest = await client.callTool({
+      name: "resolve_design_contract",
+      arguments: { patterns: [], examples: [] },
+    });
+
+    expect(unknownPattern.isError).toBe(true);
+    expect(unknownPattern.content[0].text).toContain("Unknown pattern reference");
+    expect(unknownVariant.isError).toBe(true);
+    expect(unknownVariant.content[0].text).toContain("Unknown pattern variant");
+    expect(emptyRequest.isError).toBe(true);
+    expect(emptyRequest.content[0].text).toContain("At least one pattern or example reference is required");
+  });
+
+  it("rejects resources outside the published Atlas catalog", async () => {
+    const client = await connect();
+    await expect(client.readResource({ uri: "atlas://design/private-file" })).rejects.toThrow();
   });
 });
