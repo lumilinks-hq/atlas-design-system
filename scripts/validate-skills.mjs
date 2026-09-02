@@ -1,20 +1,22 @@
+import Ajv2020 from "ajv/dist/2020.js";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { rootDir } from "./lib.mjs";
+import { rootDir, walk } from "./lib.mjs";
+import { readSkillMetadata, readSkillsLock, resolveAgentSkills } from "./skill-catalog.mjs";
 
-const skillFiles = [
-  "skills/smarthr-ui-writing/SKILL.md",
-  "skills/atlas-design-system/SKILL.md",
-];
+const skillsLock = readSkillsLock();
+const skillsLockSchema = JSON.parse(readFileSync(resolve(rootDir, "skills", "skills-lock.schema.json"), "utf8"));
+const validateLock = new Ajv2020({ allErrors: true, strict: true }).compile(skillsLockSchema);
+if (!validateLock(skillsLock)) {
+  throw new Error(`skills.lock.json: ${validateLock.errors?.map((error) => error.message).join(", ")}`);
+}
 
-for (const relativePath of skillFiles) {
-  const absolutePath = resolve(rootDir, relativePath);
-  if (!existsSync(absolutePath)) throw new Error(`Missing Skill: ${relativePath}`);
-  const content = readFileSync(absolutePath, "utf8");
-  const frontmatter = content.match(/^---\n([\s\S]*?)\n---/);
-  if (!frontmatter) throw new Error(`Missing frontmatter: ${relativePath}`);
-  if (!/^name:\s*\S+/m.test(frontmatter[1])) throw new Error(`Missing Skill name: ${relativePath}`);
-  if (!/^description:\s*\S+/m.test(frontmatter[1])) throw new Error(`Missing Skill description: ${relativePath}`);
+const skillNames = Object.keys(skillsLock.skills);
+const resolvedSkills = resolveAgentSkills(skillNames);
+
+for (const { path: relativePath } of resolvedSkills) {
+  const absolutePath = resolve(rootDir, relativePath, "SKILL.md");
+  const { content } = readSkillMetadata(relativePath);
 
   for (const match of content.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
     const target = match[1];
@@ -23,4 +25,13 @@ for (const relativePath of skillFiles) {
   }
 }
 
-console.log(`Skills OK: ${skillFiles.length} packages`);
+const manifestFiles = (await walk(resolve(rootDir, "experiments")))
+  .filter((path) => path.endsWith("/manifest.json"));
+for (const manifestFile of manifestFiles) {
+  const manifest = JSON.parse(readFileSync(manifestFile, "utf8"));
+  for (const condition of Object.values(manifest.conditions ?? {})) {
+    resolveAgentSkills(condition.agentSkills ?? []);
+  }
+}
+
+console.log(`Skills OK: ${resolvedSkills.length} packages, ${manifestFiles.length} manifest`);

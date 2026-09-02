@@ -1,6 +1,6 @@
-import { createHash } from "node:crypto";
 import { cp, lstat, mkdir, readFile, symlink, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { hashHarnessContext, syncHarnessContext } from "./harness-context.mjs";
 import { hashPath, parseArgs, rootDir, runCommand, runCommandToFiles } from "./lib.mjs";
 import { sanitizeRunArtifacts } from "./sanitize-run-artifacts.mjs";
 
@@ -54,11 +54,10 @@ if (mode === "harness-corrected") {
   await cp(starterDir, workspaceDir, { recursive: true });
   await cp(briefPath, resolve(workspaceDir, "brief.md"));
   await cp(promptPath, resolve(workspaceDir, "prompt.md"));
-  if (mode === "harness") {
-    await cp(resolve(rootDir, "DESIGN.md"), resolve(workspaceDir, "DESIGN.md"));
-    await cp(resolve(rootDir, "design"), resolve(workspaceDir, "design"), { recursive: true });
-    await cp(resolve(experimentDir, "manifest.json"), resolve(workspaceDir, "HARNESS.json"));
-  }
+}
+
+if (mode !== "baseline") {
+  await syncHarnessContext(workspaceDir, "experiments/account-management/manifest.json");
 }
 
 if (!(await exists(resolve(workspaceDir, "node_modules")))) {
@@ -70,10 +69,7 @@ const starterSha256 = await hashPath(starterDir);
 const promptSha256 = await hashPath(promptPath);
 const designContractSha256 = mode === "baseline"
   ? null
-  : createHash("sha256")
-      .update(await hashPath(resolve(rootDir, "DESIGN.md")))
-      .update(await hashPath(resolve(rootDir, "design")))
-      .digest("hex");
+  : await hashHarnessContext("experiments/account-management/manifest.json");
 const cliVersionResult = await runCommand("codex", ["--version"]);
 const cliVersion = cliVersionResult.stdout.trim() || cliVersionResult.stderr.trim();
 const createdAt = new Date().toISOString();
@@ -103,7 +99,7 @@ await runCommand("git", ["add", "."], { cwd: workspaceDir });
 await runCommand("git", ["-c", "user.name=Design Harness", "-c", "user.email=demo@example.com", "commit", "--quiet", "-m", "starter"], { cwd: workspaceDir });
 
 const basePrompt = await readFile(promptPath, "utf8");
-const correctionPrompt = "VALIDATION.mdの失敗項目を確認し、設計契約とbrief.mdを保ったまま問題を修正してください。独自HTMLへ置き換えず、design/componentsで指定したHeroUIコンポーネントとsemantic tokenを使用してください。修正後に利用可能な検証を再実行してください。";
+const correctionPrompt = "VALIDATION.mdの失敗項目を確認し、$atlas-design-system、$heroui-react、$ui-writingを使って、設計契約とbrief.mdを保ったまま問題を修正してください。独自HTMLへ置き換えず、design/componentsで指定したHeroUIコンポーネントとsemantic tokenを使用してください。修正後に利用可能な検証を再実行してください。";
 const prompt = mode === "harness-corrected" ? correctionPrompt : basePrompt;
 const codexArgs = [
   "exec",
@@ -131,13 +127,13 @@ await writeFile(resolve(outputDir, "changes.diff"), diff.stdout);
 await cp(resolve(workspaceDir, "src"), resolve(outputDir, "source"), { recursive: true });
 
 const checkCommands = [
-  ["typecheck", ["typecheck"]],
+  ["typecheck", ["exec", "tsc", "-p", "tsconfig.app.json", "--pretty", "false", "--noUncheckedIndexedAccess"]],
   ["test", ["test:run"]],
   ["build", ["build"]],
 ];
 const checks = [];
 for (const [name, commandArgs] of checkCommands) {
-  const result = await runCommand("pnpm", commandArgs, { cwd: workspaceDir });
+  const result = await runCommand("pnpm", commandArgs, { cwd: workspaceDir, timeoutMs: 30_000 });
   await writeFile(resolve(outputDir, `${name}.log`), `${result.stdout}${result.stderr}`);
   checks.push({ name, status: result.code === 0 ? "passed" : "failed", exitCode: result.code });
 }

@@ -1,0 +1,21 @@
+{
+  "$schema": "./skills-lock.schema.json",
+  "skills": {
+    "atlas-design-system": {
+      "source": "local",
+      "path": "skills/atlas-design-system"
+    },
+    "heroui-react": {
+      "source": "https://github.com/heroui-inc/heroui",
+      "ref": "7546fff8136f538a2f56a52257c621a5cd616a1d",
+      "upstreamPath": "skills/heroui-react",
+      "upstreamVersion": "3.0.1",
+      "license": "Apache-2.0",
+      "path": "skills/heroui-react"
+    },
+    "ui-writing": {
+      "source": "local",
+      "path": "skills/ui-writing"
+    }
+  }
+}
