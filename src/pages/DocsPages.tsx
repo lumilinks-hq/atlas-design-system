@@ -12,7 +12,6 @@ import {
   Label,
   Link as HeroLink,
   ListBox,
-  NumberField,
   Select,
   Separator,
   SearchField,
@@ -562,22 +561,7 @@ export function CustomerStatusSelect() {
     </Select>
   );
 }`,
-  "component.number-field": `import { Description, Label, NumberField } from "@heroui/react";
-
-export function EmployeeCountField() {
-  return (
-    <NumberField defaultValue={120} minValue={0}>
-      <Label>従業員数</Label>
-      <NumberField.Group>
-        <NumberField.DecrementButton>-</NumberField.DecrementButton>
-        <NumberField.Input />
-        <NumberField.IncrementButton>+</NumberField.IncrementButton>
-      </NumberField.Group>
-      <Description>顧客企業の現在の従業員数を入力します。</Description>
-    </NumberField>
-  );
-}`,
-  "component.form": `import { Button, Description, FieldError, Form, Input, Label, TextField } from "@heroui/react";
+  "component.form":`import { Button, Description, FieldError, Form, Input, Label, TextField } from "@heroui/react";
 
 export function CustomerRegistrationForm() {
   return (
@@ -843,18 +827,6 @@ function ComponentPreview({ id }: { id: string }) {
           </Select.Popover>
         </Select>
       );
-    case "component.number-field":
-      return (
-        <NumberField aria-label="従業員数" defaultValue={120} minValue={0}>
-          <Label>従業員数</Label>
-          <NumberField.Group>
-            <NumberField.DecrementButton>-</NumberField.DecrementButton>
-            <NumberField.Input />
-            <NumberField.IncrementButton>+</NumberField.IncrementButton>
-          </NumberField.Group>
-          <Description>顧客企業の現在の従業員数を入力します。</Description>
-        </NumberField>
-      );
     case "component.form":
       return (
         <Form className="preview-form" onSubmit={(event) => event.preventDefault()}>
@@ -1106,7 +1078,7 @@ export function PatternPage() {
       <section className="pattern-section" aria-labelledby="variants-title">
         <div className="section-heading">
           <h2 id="variants-title">業務オブジェクトの関係から選ぶ</h2>
-          <p>画面名ではなく、比較するのか、一つを詳しく見るのか、頻繁に切り替えるのかで判断します。</p>
+          <p>画面名ではなく、複数を比較するのか、一つを詳しく見るのかで判断します。</p>
         </div>
         <div className="variant-grid">
           {pattern.variants.map((variant) => {
@@ -1143,7 +1115,7 @@ export function PatternPage() {
 
       <section className="pattern-section responsive-section" aria-labelledby="responsive-title">
         <div className="responsive-icon"><Smartphone size={24} /></div>
-        <div><h2 id="responsive-title">モバイルでは1カラムに積み替える</h2><p>主要情報から順に並べ、テーブルはリストへ、2カラムは別画面へ切り替えます。横スクロールをレイアウトの前提にしません。</p></div>
+        <div><h2 id="responsive-title">モバイルでは1カラムに積み替える</h2><p>主要情報から順に並べ、テーブルはリストへ切り替えます。横スクロールをレイアウトの前提にしません。</p></div>
       </section>
 
       <section className="pattern-section example-callout" aria-labelledby="example-title">

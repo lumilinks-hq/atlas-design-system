@@ -72,6 +72,23 @@ describe("component契約のanatomy", () => {
   });
 });
 
+describe("component契約のsurfaceOwnerとnote", () => {
+  it("どの契約も使っていないsurfaceOwnerのparentを拒否する", () => {
+    const component = componentFixture({
+      visual: { surfaceOwner: "parent", outerShadow: "forbidden", radiusToken: "radius.base" },
+    });
+    expect(validationErrorText(component)).toMatch(/visual\/surfaceOwner must be equal to one of the allowed values/);
+  });
+
+  it("維持理由を書き残すnoteを受け付ける", () => {
+    expect(validateComponent(componentFixture({ note: "禁止判定の基準点として維持する" }))).toBe(true);
+  });
+
+  it("noteが文字列以外を拒否する", () => {
+    expect(validationErrorText(componentFixture({ note: ["理由"] }))).toMatch(/note must be string/);
+  });
+});
+
 describe("複合コンポーネントの構成要素", () => {
   it("TextFieldがLabel、Description、FieldError、Inputを構成要素として持つ", async () => {
     expect((await readJson("design/components/text-field.json")).anatomy).toEqual([

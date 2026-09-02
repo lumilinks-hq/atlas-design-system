@@ -8,6 +8,7 @@
   "sizes": ["md"],
   "defaults": { "variant": "default", "size": "md" },
   "visual": { "surfaceOwner": "component", "outerShadow": "allowed", "radiusToken": "radius.base" },
+  "note": "シナリオでの直接使用はないが、surfaceOwnerとouterShadowの禁止判定、およびcomponent.approvedとlayout.groupingの基準点として維持する",
   "requirements": [
     "ページ背景と情報領域の階層を作る",
     "不要な影を追加しない"

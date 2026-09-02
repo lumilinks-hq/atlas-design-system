@@ -11,7 +11,6 @@ import textField from "../../design/components/text-field.json";
 import searchField from "../../design/components/search-field.json";
 import toolbar from "../../design/components/toolbar.json";
 import select from "../../design/components/select.json";
-import numberField from "../../design/components/number-field.json";
 import form from "../../design/components/form.json";
 import chip from "../../design/components/chip.json";
 import surface from "../../design/components/surface.json";
@@ -35,5 +34,5 @@ export const designData = {
   pattern,
   spacingPattern,
   example,
-  components: [button, link, table, toolbar, searchField, card, textField, select, numberField, form, chip, surface, drawer, alertDialog, alert, toast],
+  components: [button, link, table, toolbar, searchField, card, textField, select, form, chip, surface, drawer, alertDialog, alert, toast],
 };

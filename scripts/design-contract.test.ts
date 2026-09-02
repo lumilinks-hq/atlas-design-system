@@ -46,7 +46,6 @@ describe("Atlas design contract references", () => {
       "drawer",
       "form",
       "link",
-      "number-field",
       "search-field",
       "select",
       "surface",

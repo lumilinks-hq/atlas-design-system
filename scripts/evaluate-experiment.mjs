@@ -91,7 +91,6 @@ const approvedComponents = new Map(
     ["Select.Root", "select"],
     ["Input", "text-field"],
     ["Link", "link"],
-    ["NumberField", "number-field"],
     ["SearchField", "search-field"],
     ["Surface", "surface"],
     ["Table.Root", "table"],
