@@ -1,5 +1,5 @@
 import { Button, Chip, Label, ListBox, Select } from "@heroui/react";
-import { ArrowLeft, Presentation, RotateCcw } from "lucide-react";
+import { ArrowLeft, RotateCcw } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -75,9 +75,6 @@ export function PlayPage() {
           <span>Atlas Design System</span>
           <h1>生成された画面を操作する</h1>
         </div>
-        <Button size="sm" variant="secondary" onPress={() => navigate("/demo/runs/account-management")}>
-          <Presentation size={16} /> 実装比較デモを見る
-        </Button>
       </header>
 
       <section className="play-toolbar" aria-label="表示する実装を選ぶ">

@@ -90,9 +90,6 @@ export function HomePage() {
         <Button variant="primary" size="lg" onPress={() => navigate("/getting-started")}>
           導入方法を見る <ArrowRight size={16} />
         </Button>
-        <Button variant="secondary" size="lg" onPress={() => navigate("/demo/runs/account-management")}>
-          実装比較デモを見る
-        </Button>
       </div>
 
       <Separator className="section-separator" />
