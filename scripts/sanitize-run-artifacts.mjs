@@ -1,27 +1,56 @@
 import { readFile, readdir, writeFile } from "node:fs/promises";
+import { userInfo } from "node:os";
 import { extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseArgs, rootDir } from "./lib.mjs";
+import { escapeRegExp, parseArgs, rootDir } from "./lib.mjs";
 
 const textExtensions = new Set([".diff", ".json", ".jsonl", ".log", ".md", ".tsx", ".ts", ".css"]);
 
-export function sanitizeText(value) {
-  return value
+/**
+ * マスク対象のOSユーザー名を決める。対象がなければnullを返す。
+ * CIの実行ユーザー名はrunnerなど一般語になり、run.jsonの"runner"を壊すため適用しない。
+ * @param {{ env?: Record<string, string | undefined>, username?: string }} [options]
+ * @returns {string | null}
+ */
+export function resolveMaskedUsername(options = {}) {
+  const { env = process.env, username = userInfo().username } = options;
+  if (env.CI) return null;
+  if (typeof username !== "string" || username.length < 3) return null;
+  return username;
+}
+
+/**
+ * 端末固有のパス、秘密情報らしい文字列、OSユーザー名を置き換える。
+ * @param {string} value
+ * @param {{ env?: Record<string, string | undefined>, username?: string }} [options]
+ * @returns {string}
+ */
+export function sanitizeText(value, options = {}) {
+  const output = value
     .replaceAll(rootDir, "<repo>")
     .replace(/\/Users\/[A-Za-z0-9._-]+/g, "<home>")
     .replace(/\/(?:private\/)?var\/folders\/[A-Za-z0-9/_-]+/g, "<tmp>")
     .replace(/sk-[A-Za-z0-9_-]{20,}/g, "<redacted-openai-key>")
     .replace(/(authorization\s*[:=]\s*["']?bearer\s+)[A-Za-z0-9._-]+/gi, "$1<redacted>");
+
+  const username = resolveMaskedUsername(options);
+  if (!username) return output;
+  return output.replace(new RegExp(`\\b${escapeRegExp(username)}\\b`, "g"), "<user>");
 }
 
-export function sanitizeEventRecord(record) {
+/**
+ * イベント1件をsanitizeする。
+ * @param {unknown} record
+ * @param {{ env?: Record<string, string | undefined>, username?: string }} [options]
+ */
+export function sanitizeEventRecord(record, options = {}) {
   if (record?.item?.type === "command_execution" && /\/(?:\.agents|\.codex)\/skills\//.test(record.item.command ?? "")) {
     record.item.command = "[redacted: local agent instruction read]";
     record.item.aggregated_output = "[redacted: local agent instruction]";
   }
 
   const visit = (value) => {
-    if (typeof value === "string") return sanitizeText(value);
+    if (typeof value === "string") return sanitizeText(value, options);
     if (Array.isArray(value)) return value.map(visit);
     if (value && typeof value === "object") {
       for (const [key, child] of Object.entries(value)) value[key] = visit(child);
@@ -32,26 +61,31 @@ export function sanitizeEventRecord(record) {
   return visit(record);
 }
 
-async function sanitizeFile(path) {
+async function sanitizeFile(path, options) {
   const input = await readFile(path, "utf8");
   let output;
   if (extname(path) === ".jsonl") {
     output = input
       .split("\n")
-      .map((line) => line ? JSON.stringify(sanitizeEventRecord(JSON.parse(line))) : "")
+      .map((line) => line ? JSON.stringify(sanitizeEventRecord(JSON.parse(line), options)) : "")
       .join("\n");
   } else {
-    output = sanitizeText(input);
+    output = sanitizeText(input, options);
   }
   if (output !== input) await writeFile(path, output);
 }
 
-export async function sanitizeRunArtifacts(directory) {
+/**
+ * ディレクトリ配下のテキスト成果物をsanitizeする。
+ * @param {string} directory
+ * @param {{ env?: Record<string, string | undefined>, username?: string }} [options]
+ */
+export async function sanitizeRunArtifacts(directory, options = {}) {
   const entries = await readdir(directory, { withFileTypes: true });
   for (const entry of entries) {
     const path = resolve(directory, entry.name);
-    if (entry.isDirectory()) await sanitizeRunArtifacts(path);
-    else if (textExtensions.has(extname(entry.name))) await sanitizeFile(path);
+    if (entry.isDirectory()) await sanitizeRunArtifacts(path, options);
+    else if (textExtensions.has(extname(entry.name))) await sanitizeFile(path, options);
   }
 }
 
