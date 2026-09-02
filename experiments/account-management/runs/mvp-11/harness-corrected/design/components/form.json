@@ -1,0 +1,18 @@
+{
+  "$schema": "../schemas/component.schema.json",
+  "id": "component.form",
+  "name": "Form",
+  "implementation": "Form",
+  "import": "@heroui/react",
+  "variants": ["default"],
+  "sizes": ["md"],
+  "defaults": { "variant": "default", "size": "md" },
+  "visual": { "surfaceOwner": "none", "outerShadow": "forbidden", "radiusToken": "radius.base" },
+  "requirements": [
+    "ひとまとまりで送信する入力をFormへまとめ、素のform要素で代用しない",
+    "各入力にはLabelを付け、入力エラーは対象のFieldErrorで示す",
+    "送信中は送信Buttonのloadingとdisabledを同期し、二重送信を防ぐ",
+    "送信結果はFormの外側で消える通知だけに委ねず、失敗時は入力を保ったまま再試行できる状態にする"
+  ],
+  "relatedRules": ["component.approved", "a11y.form-label", "a11y.error-recovery", "state.loading"]
+}

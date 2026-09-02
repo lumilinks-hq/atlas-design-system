@@ -55,10 +55,11 @@
   - capture の getByRole「編集を閉じる」ハードコードがタイムアウト → 契約に無い文言（grep で不存在確認）。`/閉じる/` 正規表現 + `.first()` へ（コミット `7f61909`、mvp-11 画面構成対応の WIP も同梱・amend でメッセージ修正）
   - review 初回実行で「No prompt provided via stdin」→ codex exec の `-i` が可変長で positional prompt を画像パス扱い。TDD で `buildReviewArgs` を切り出し `--` 区切り追加（コミット `a4d3e52`）
   - **最終結果（DoD 達成）**: baseline **10 passed / 15 failed / 2 review**（test✗）、harness **22 passed / 3 failed / 2 review**（checks全✓）、corrected **25 passed / 0 failed / 2 review**（checks全✓・capture の console-error ゲート通過=実ブラウザエラーゼロ）。勾配 **15 > 3 > 0** 成立
+  - （2026-09-02 追記）評価器を28ルールへ拡張（component.usage 追加＋method 5件変更）して全パイプライン再実行: baseline **7/16/5**、harness **19/4/5**（旧3 fail＋component.usage=Toolbar未使用）、corrected **23/0/5**（refine 再実行で Toolbar.Root を採用、変更は App.tsx の import＋wrapper 置換のみ）。勾配 **16 > 4 > 0** 成立、demo:check 全12段通過
   - harness 残存3 fail は正当な静的検査: component.table.columns（列定義不共有）/ action.confirmation（AlertDialog.Trigger不在）/ a11y.focus-management（Drawer.Trigger className不在）— correction ループが直す類のもので、デモのストーリーとして健全
   - review findings 全モード保存済み: baseline concern=layout.grouping / harness concern=color.semantic（「顧客を削除」の淡い赤）/ corrected concern=layout.grouping（カード間隔がカード内間隔と大差ない）。comparison.json は conditionsMatch:true、blindOrder A=baseline/B=harness
   - Phase 5 コミット: `dacd21a`(link-semantics契約化) `a4ce1e2`(Trigger入れ子検出) `fbc44a3`(measureレース) `7f61909`(capture更新) `a4d3e52`(review引数) `a905b51`(**mvp-11成果物 87ファイル**)
-  - **【厳守】mvp-11 に対して evaluate / measure を再実行しない** — design-evaluation.json の review 欄が silently 消える（保存済み run が正本）
+  - **【厳守】mvp-11 に対して evaluate / measure を単発で再実行しない** — design-evaluation.json の review 欄が silently 消える（保存済み run が正本）。再評価が必要な場合は evaluate→(refine)→capture→review→compare の全パイプラインを通す（2026-09-02 の28ルール化ではこの手順で意図的に再実行済み）
   - 注意: `rm -rf` はユーザーの deny 設定で拒否される → 一時ディレクトリ削除は node の fs.rmSync を使用（dryrun-check 削除済み）
   - 注意: `navigationButtons` 検査は Button テキストに `customer.companyName` を含むと fail → 削除確認ボタンのラベルに会社名を interpolate すると誤爆しうる（現状「削除する」系で未発生）
 - [x] **Phase 6: デモ配線と仕上げ（編集・自動検証完了、実機確認のみ残）**

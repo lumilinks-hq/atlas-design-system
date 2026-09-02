@@ -2,9 +2,9 @@
   "pairId": "mvp-11",
   "mode": "baseline",
   "summary": {
-    "passed": 10,
-    "failed": 15,
-    "review": 2
+    "passed": 7,
+    "failed": 16,
+    "review": 5
   },
   "rules": [
     {
@@ -12,7 +12,19 @@
       "status": "failed",
       "evidence": [
         "button: 1件",
-        "select: 1件"
+        "select: 1件",
+        "契約にないHeroUI import: CardContent",
+        "契約にないHeroUI import: CardHeader",
+        "契約にないHeroUI import: Spinner"
+      ]
+    },
+    {
+      "id": "component.usage",
+      "status": "failed",
+      "evidence": [
+        "Toolbar: componentUsageで求められていますが実装に現れません",
+        "AlertDialog: componentUsageで求められていますが実装に現れません",
+        "Table: componentUsageで求められていますが実装に現れません"
       ]
     },
     {
@@ -82,16 +94,18 @@
     },
     {
       "id": "a11y.error-recovery",
-      "status": "passed",
+      "status": "review",
       "evidence": [
-        "原因または回復方法の文言あり"
+        "参考: 原因または回復方法の文言を検出",
+        "文言の実際の伝わり方はAIレビューと人の確認で判定する"
       ]
     },
     {
       "id": "a11y.color-only",
-      "status": "passed",
+      "status": "review",
       "evidence": [
-        "状態名を文字で表示"
+        "参考: 状態名の文字表示を検出",
+        "色以外の手掛かりが実画面で読めるかはAIレビューと人の確認で判定する"
       ]
     },
     {
@@ -184,9 +198,10 @@
     },
     {
       "id": "state.failure",
-      "status": "passed",
+      "status": "review",
       "evidence": [
-        "失敗後の再試行経路あり"
+        "参考: 失敗と再試行の文言を検出",
+        "失敗後に再試行できるかはAIレビューと人の確認で判定する"
       ]
     },
     {
@@ -212,18 +227,33 @@
     }
   ],
   "review": {
-    "reviewedAt": "2026-09-01T16:54:12.679Z",
+    "reviewedAt": "2026-09-02T01:57:20.722Z",
     "model": "gpt-5.4",
     "findings": [
       {
-        "ruleId": "layout.grouping",
+        "ruleId": "a11y.control-name",
         "verdict": "concern",
-        "note": "見出し領域とカード一覧の間には一定の余白がありますが、詳細画面は戻るリンクとローディング文だけが同じ広い空白に置かれ、見出し領域とコンテンツ領域の分離が弱く見えます。モバイルでも一覧画面はヘッダー、件数バー、検索、状態表示が近接して並び、セクション間がグループ内余白の2倍以上あるとは言いにくいです。"
+        "note": "詳細・一覧の両画面で、円形の件数バッジや読み込みスピナーのように見える要素はありますが、スクリーンショット上では操作名や代替ラベルの有無を確認できません。特にアイコン主体の要素が支援技術向けに名前を持っているかは画面から担保されていません。"
+      },
+      {
+        "ruleId": "a11y.error-recovery",
+        "verdict": "concern",
+        "note": "詳細画面は『顧客詳細を読み込んでいます。』という読み込み表示のみで、失敗時の説明や次の操作は見えていません。エラーになった場合に何が起きたかと再操作方法を示す設計が、この画面状態からは確認できません。"
+      },
+      {
+        "ruleId": "a11y.color-only",
+        "verdict": "pass",
+        "note": "一覧カードの状態表示は緑や青の色分けだけでなく、『利用中』『商談中』『休眠』という文字ラベルも併記されています。色だけに依存せず状態を読める構成です。"
+      },
+      {
+        "ruleId": "state.failure",
+        "verdict": "concern",
+        "note": "表示されているのは通常の読み込み中状態だけで、失敗後に画面内へ情報を残して再試行できるUIは見当たりません。Toast以外の持続的な失敗表示や再試行導線は、このスクリーンショットでは確認できません。"
       },
       {
         "ruleId": "color.semantic",
         "verdict": "pass",
-        "note": "通常操作の戻るリンクや検索欄、件数表示にはネイビー、グレー、ブルー系が使われており、赤や警告色は見当たりません。ステータスも緑・水色・グレーで意味づけされていて、危険色を通常操作へ流用している観察はありません。"
+        "note": "主要な操作や情報表示はネイビーや中立色が中心で、危険を想起させる赤系が通常操作に使われている様子はありません。状態色も成功・進行・休止の意味に概ね沿っています。"
       }
     ]
   }

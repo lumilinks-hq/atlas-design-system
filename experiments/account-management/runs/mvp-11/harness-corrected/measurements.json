@@ -118,10 +118,10 @@
           },
           "styles": {
             "display": "flex",
-            "rowGap": "normal",
-            "columnGap": "normal",
+            "rowGap": "8px",
+            "columnGap": "8px",
             "justifyContent": "flex-end",
-            "alignItems": "normal",
+            "alignItems": "center",
             "marginTop": "0px",
             "marginBottom": "0px",
             "paddingTop": "0px",
@@ -209,7 +209,28 @@
           }
         },
         "toolbar": {
-          "found": false
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 120,
+            "y": 215.375,
+            "width": 1200,
+            "height": 36
+          },
+          "styles": {
+            "display": "flex",
+            "rowGap": "8px",
+            "columnGap": "8px",
+            "justifyContent": "flex-end",
+            "alignItems": "center",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "1200px"
+          }
         },
         "searchInput": {
           "found": true,
@@ -383,10 +404,10 @@
           },
           "styles": {
             "display": "flex",
-            "rowGap": "normal",
-            "columnGap": "normal",
+            "rowGap": "8px",
+            "columnGap": "8px",
             "justifyContent": "flex-end",
-            "alignItems": "normal",
+            "alignItems": "center",
             "marginTop": "0px",
             "marginBottom": "0px",
             "paddingTop": "0px",
@@ -453,7 +474,28 @@
           "found": false
         },
         "toolbar": {
-          "found": false
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 12,
+            "y": 229.765625,
+            "width": 366,
+            "height": 36
+          },
+          "styles": {
+            "display": "flex",
+            "rowGap": "8px",
+            "columnGap": "8px",
+            "justifyContent": "flex-end",
+            "alignItems": "center",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "366px"
+          }
         },
         "searchInput": {
           "found": true,
@@ -627,10 +669,10 @@
           },
           "styles": {
             "display": "flex",
-            "rowGap": "normal",
-            "columnGap": "normal",
+            "rowGap": "8px",
+            "columnGap": "8px",
             "justifyContent": "flex-end",
-            "alignItems": "normal",
+            "alignItems": "center",
             "marginTop": "0px",
             "marginBottom": "0px",
             "paddingTop": "0px",
@@ -697,7 +739,28 @@
           "found": false
         },
         "toolbar": {
-          "found": false
+          "found": true,
+          "visible": true,
+          "rect": {
+            "x": 12,
+            "y": 229.765625,
+            "width": 296,
+            "height": 36
+          },
+          "styles": {
+            "display": "flex",
+            "rowGap": "8px",
+            "columnGap": "8px",
+            "justifyContent": "flex-end",
+            "alignItems": "center",
+            "marginTop": "0px",
+            "marginBottom": "0px",
+            "paddingTop": "0px",
+            "paddingRight": "0px",
+            "paddingBottom": "0px",
+            "paddingLeft": "0px",
+            "width": "296px"
+          }
         },
         "searchInput": {
           "found": true,

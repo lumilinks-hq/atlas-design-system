@@ -2,9 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "example.schema.json",
   "type": "object",
-  "required": ["id", "name", "purpose", "pattern", "variant", "composition", "componentUsage", "states", "components", "rules"],
+  "required": ["version", "id", "name", "purpose", "pattern", "variant", "composition", "componentUsage", "states", "components", "rules"],
   "properties": {
     "$schema": { "type": "string" },
+    "version": { "type": "string" },
     "id": { "type": "string", "pattern": "^example\\." },
     "name": { "type": "string", "minLength": 1 },
     "purpose": { "type": "string", "minLength": 1 },

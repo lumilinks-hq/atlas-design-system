@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { evaluateSource } from "./evaluate-experiment.mjs";
+import { approvedHeroUiImportNames, evaluateSource } from "./evaluate-experiment.mjs";
 
 describe("evaluateSource", () => {
   it("detects design contract escapes", () => {
@@ -391,6 +391,149 @@ describe("evaluateSource", () => {
 
     expect(rules.find((item) => item.id === "component.variants")?.status).toBe("passed");
     expect(rules.find((item) => item.id === "token.radius")?.status).toBe("passed");
+  });
+
+  it("契約にないHeroUI importをcomponent.approvedで検出する", () => {
+    const rules = evaluateSource({
+      app: `
+        import { Button, Spinner } from "@heroui/react";
+        <Button variant="primary">保存</Button>
+      `,
+      styles: '@import "../design/component-theme.css";',
+    });
+
+    const rule = rules.find((item) => item.id === "component.approved");
+    expect(rule?.status).toBe("failed");
+    expect(rule?.evidence.join(" ")).toContain("Spinner");
+  });
+
+  it("契約内のHeroUI importだけならcomponent.approvedをpassedのままにする", () => {
+    const rules = evaluateSource({
+      app: `
+        import { Button, Table, toast } from "@heroui/react";
+        <Button variant="primary">保存</Button>
+      `,
+      styles: '@import "../design/component-theme.css";',
+    });
+
+    expect(rules.find((item) => item.id === "component.approved")?.status).toBe("passed");
+  });
+
+  it("型だけのimportとasの別名はimport許可リストの判定を惑わせない", () => {
+    const rules = evaluateSource({
+      app: `
+        import type { ButtonProps } from "@heroui/react";
+        import { type ChipProps, Button as AtlasButton } from "@heroui/react";
+        <AtlasButton variant="primary">保存</AtlasButton>
+      `,
+      styles: '@import "../design/component-theme.css";',
+    });
+
+    expect(rules.find((item) => item.id === "component.approved")?.status).toBe("passed");
+  });
+
+  it("import許可セットはexampleが参照する契約のimplementationとanatomyの和集合", () => {
+    expect([...approvedHeroUiImportNames].sort()).toEqual(
+      [
+        "Alert",
+        "AlertDialog",
+        "Button",
+        "Card",
+        "Chip",
+        "Description",
+        "Drawer",
+        "FieldError",
+        "Form",
+        "Input",
+        "Label",
+        "Link",
+        "ListBox",
+        "SearchField",
+        "Select",
+        "Surface",
+        "Table",
+        "TextField",
+        "Toast",
+        "Toolbar",
+        "toast",
+      ].sort(),
+    );
+  });
+
+  it("componentUsageが要求する部品がJSXに出ていればcomponent.usageをpassedにする", () => {
+    const rules = evaluateSource({
+      app: `
+        <Toolbar.Root><Link href="/customers">顧客一覧</Link></Toolbar.Root>
+        <Table.Root variant="primary" />
+        <AlertDialog.Root><AlertDialog.Dialog /></AlertDialog.Root>
+      `,
+      styles: '@import "../design/component-theme.css";',
+    });
+
+    expect(rules.find((item) => item.id === "component.usage")?.status).toBe("passed");
+  });
+
+  it("importしただけでJSXに現れない部品はcomponent.usageをfailedにする", () => {
+    const rules = evaluateSource({
+      app: `
+        import { AlertDialog, Link, Table, Toolbar } from "@heroui/react";
+        <Toolbar.Root><Link href="/customers">顧客一覧</Link></Toolbar.Root>
+        <Table.Root variant="primary" />
+      `,
+      styles: '@import "../design/component-theme.css";',
+    });
+
+    const rule = rules.find((item) => item.id === "component.usage");
+    expect(rule?.status).toBe("failed");
+    expect(rule?.evidence.join(" ")).toContain("AlertDialog");
+  });
+
+  it("未使用の部品名をcomponent.usageのevidenceに列挙する", () => {
+    const rules = evaluateSource({
+      app: '<Link href="/customers">顧客一覧</Link>',
+      styles: '@import "../design/component-theme.css";',
+    });
+
+    const evidence = rules.find((item) => item.id === "component.usage")?.evidence.join(" ") ?? "";
+    expect(evidence).toContain("Toolbar");
+    expect(evidence).toContain("Table");
+    expect(evidence).toContain("AlertDialog");
+    expect(evidence).not.toContain("Link");
+  });
+
+  it("動的なvariantはcomponent.variantsをreviewにする", () => {
+    const rules = evaluateSource({
+      app: '<Button variant={isPrimary ? "primary" : "secondary"}>保存</Button>',
+      styles: '@import "../design/component-theme.css";',
+    });
+
+    const rule = rules.find((item) => item.id === "component.variants");
+    expect(rule?.status).toBe("review");
+    expect(rule?.evidence.join(" ")).toContain("Button");
+  });
+
+  it("リテラルのvariantは動的判定の影響を受けない", () => {
+    const rules = evaluateSource({
+      app: '<Button variant="primary">保存</Button>',
+      styles: '@import "../design/component-theme.css";',
+    });
+
+    expect(rules.find((item) => item.id === "component.variants")?.status).toBe("passed");
+  });
+
+  it("リテラルの契約違反は動的variantより優先してfailedにする", () => {
+    const rules = evaluateSource({
+      app: `
+        <Button variant="link">保存</Button>
+        <Chip variant={statusVariant}>利用中</Chip>
+      `,
+      styles: '@import "../design/component-theme.css";',
+    });
+
+    const rule = rules.find((item) => item.id === "component.variants");
+    expect(rule?.status).toBe("failed");
+    expect(rule?.evidence.join(" ")).toContain("Button: link");
+    expect(rule?.evidence.join(" ")).toContain("Chip");
   });
 
   it("requires textValue when a ListBox item label is composed from JSX", () => {

@@ -1,11 +1,14 @@
 {
   "$schema": "../schemas/component.schema.json",
+  "version": "1.0.0",
   "id": "component.chip",
   "name": "Chip",
   "implementation": "Chip",
   "import": "@heroui/react",
-  "variants": ["default", "soft"],
-  "sizes": ["sm", "md"],
+  "variants": ["primary", "secondary", "tertiary", "soft"],
+  "sizes": ["sm", "md", "lg"],
+  "defaults": { "variant": "secondary", "size": "md" },
+  "visual": { "surfaceOwner": "component", "outerShadow": "forbidden", "radiusToken": "radius.pill" },
   "requirements": [
     "状態名を文字で表示する",
     "操作要素の代わりに使わない",

@@ -1,0 +1,20 @@
+{
+  "$schema": "../schemas/component.schema.json",
+  "version": "1.0.0",
+  "id": "component.toolbar",
+  "name": "Toolbar",
+  "implementation": "Toolbar",
+  "import": "@heroui/react",
+  "variants": ["default", "attached"],
+  "sizes": ["md"],
+  "defaults": { "variant": "default", "size": "md" },
+  "visual": { "surfaceOwner": "none", "outerShadow": "forbidden", "radiusToken": "radius.base" },
+  "requirements": [
+    "同じ一覧へ作用する検索、並び替え、絞り込みだけをまとめる",
+    "Toolbarへ対象がわかるaria-labelを指定する",
+    "Issueにない並び替えや絞り込みを見た目だけ追加しない",
+    "一覧のToolbarはTableと同じCollectionRegionに置き、Tableの直前に配置する",
+    "末尾揃えは子要素のauto marginへ依存せず、Toolbarルートをwidth:100%、display:flex、justify-content:flex-endにする"
+  ],
+  "relatedRules": ["component.approved", "a11y.control-name", "layout.collection-toolbar"]
+}

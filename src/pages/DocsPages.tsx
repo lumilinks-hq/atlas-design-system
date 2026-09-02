@@ -1,24 +1,36 @@
 import {
+  Alert,
   AlertDialog,
   Button,
   Card,
   Chip,
   Description,
   Drawer,
+  FieldError,
+  Form,
+  Input,
   Label,
+  Link as HeroLink,
   ListBox,
-  NumberField,
   Select,
   Separator,
+  SearchField,
   Surface,
   Table,
+  TextField,
+  Toolbar,
   Toast,
   useOverlayState,
 } from "@heroui/react";
 import { ArrowRight, Check, ChevronDown, ChevronUp, Code2, Copy, FileCode2, FileText, FlaskConical, GitFork, LayoutTemplate, Monitor, Plug, ScanSearch, Smartphone, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { designData } from "../data/design";
+import {
+  accountManagementTableUsage,
+  createAccountManagementTableCodeExample,
+  designData,
+  type AccountManagementTableColumnId,
+} from "../data/design";
 
 const docsToastQueue = new Toast.Queue({
   // HeroUI's default queue starts a document-wide View Transition. Keep the
@@ -26,14 +38,34 @@ const docsToastQueue = new Toast.Queue({
   wrapUpdate: (update) => update(),
 });
 
-function showContractUpdateToast() {
+function showCustomerUpdateToast() {
   docsToastQueue.add(
     {
-      title: "契約内容を更新しました",
-      description: "Businessプランと50席を契約内容に反映しました。",
+      title: "顧客情報を更新しました",
+      description: "株式会社ノーススターの連絡先とステータスを更新しました。",
       variant: "success",
     },
     { timeout: 5000 },
+  );
+}
+
+function AtlasToastProvider() {
+  return (
+    <Toast.Provider queue={docsToastQueue} placement="bottom end">
+      {({ toast }) => {
+        const content = toast.content;
+        return (
+          <Toast toast={toast} variant={content.variant} placement="bottom end">
+            <Toast.Indicator variant={content.variant}>{content.indicator}</Toast.Indicator>
+            <Toast.Content>
+              {content.title && <Toast.Title>{content.title}</Toast.Title>}
+              {content.description && <Toast.Description>{content.description}</Toast.Description>}
+            </Toast.Content>
+            <Toast.CloseButton aria-label="通知を閉じる" />
+          </Toast>
+        );
+      }}
+    </Toast.Provider>
   );
 }
 
@@ -55,10 +87,10 @@ export function HomePage() {
         description="Design Harnessを用いて設計・検証する、デモ用のデザインシステムです。"
       />
       <div className="hero-actions">
-        <Button variant="primary" onPress={() => navigate("/getting-started")}>
+        <Button variant="primary" size="lg" onPress={() => navigate("/getting-started")}>
           導入方法を見る <ArrowRight size={16} />
         </Button>
-        <Button variant="secondary" onPress={() => navigate("/demo/runs/account-management")}>
+        <Button variant="secondary" size="lg" onPress={() => navigate("/demo/runs/account-management")}>
           実装比較デモを見る
         </Button>
       </div>
@@ -101,18 +133,20 @@ const setupMethods = [
     title: "GitHub",
     status: "初回推奨・公開準備中",
     description: "リポジトリを複製し、設計データ、検証スクリプト、デモ画面をまとめて手元で動かします。",
-    command: "git clone <repository-url>",
+    command: "git clone <repository-url>\ncd <repository-directory>\npnpm install --frozen-lockfile\npnpm dev",
     prerequisite: "公開後のGitHub URLと、Node.js 24、pnpm 11が必要です。",
     verification: "pnpm demo:check",
+    update: "git pull --ff-only\npnpm install --frozen-lockfile\npnpm demo:check",
   },
   {
     icon: Sparkles,
     title: "Skill",
     status: "リポジトリ内で利用可",
-    description: "AIエージェントへAtlasの設計判断と実装手順を渡し、既存プロジェクトで画面を作ります。",
+    description: "Atlasの設計判断、HeroUI v3の実装仕様、日本語UI文言の基準をAIエージェントへ渡します。",
     command: "node scripts/resolve-design-contract.mjs experiments/account-management/manifest.json",
     prerequisite: "Atlasリポジトリのルートで実行します。",
     verification: "pnpm skills:check",
+    update: "git pull --ff-only\npnpm skills:check",
   },
   {
     icon: Plug,
@@ -122,8 +156,48 @@ const setupMethods = [
     command: "pnpm mcp:start",
     prerequisite: "stdio接続に対応したMCPクライアントが必要です。",
     verification: "pnpm exec vitest run scripts/mcp/server.test.mjs",
+    update: "git pull --ff-only\npnpm install --frozen-lockfile\npnpm exec vitest run scripts/mcp/server.test.mjs",
   },
 ] as const;
+
+function SetupCommand({ title, command }: { title: string; command: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      if (!navigator.clipboard) throw new Error("Clipboard API is unavailable");
+      await Promise.race([
+        navigator.clipboard.writeText(command),
+        new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error("Clipboard API timed out")), 1000)),
+      ]);
+      setCopied(true);
+    } catch {
+      const textarea = document.createElement("textarea");
+      textarea.value = command;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.append(textarea);
+      textarea.select();
+      setCopied(document.execCommand("copy"));
+      textarea.remove();
+    }
+  };
+
+  return (
+    <div className="setup-command">
+      <pre><code>{command}</code></pre>
+      <Button
+        aria-label={copied ? `${title}の導入コマンドをコピーしました` : `${title}の導入コマンドをコピー`}
+        isIconOnly
+        size="sm"
+        variant="ghost"
+        onPress={copy}
+      >
+        {copied ? <Check size={16} /> : <Copy size={16} />}
+      </Button>
+    </div>
+  );
+}
 
 export function GettingStartedPage() {
   return (
@@ -134,7 +208,7 @@ export function GettingStartedPage() {
       />
 
       <section className="setup-grid" aria-label="導入方法の一覧">
-        {setupMethods.map(({ icon: Icon, title, status, description, command, prerequisite, verification }) => (
+        {setupMethods.map(({ icon: Icon, title, status, description, command, prerequisite, verification, update }) => (
           <article className="site-card setup-card" key={title}>
             <div className="setup-card-heading">
               <span className="setup-icon"><Icon size={20} /></span>
@@ -144,9 +218,11 @@ export function GettingStartedPage() {
             <p>{description}</p>
             <dl className="setup-details">
               <div><dt>前提</dt><dd>{prerequisite}</dd></div>
+              <div><dt>導入</dt><dd>下のコマンドを順に実行します。</dd></div>
               <div><dt>確認</dt><dd><code>{verification}</code></dd></div>
+              <div><dt>更新</dt><dd><pre className="setup-update"><code>{update}</code></pre></dd></div>
             </dl>
-            <code>{command}</code>
+            <SetupCommand command={command} title={title} />
           </article>
         ))}
       </section>
@@ -158,6 +234,25 @@ export function GettingStartedPage() {
         </div>
         <pre><code>{`pnpm install\npnpm dev`}</code></pre>
         <p className="setup-note">ブラウザで <code>http://localhost:4173</code> を開きます。</p>
+      </section>
+
+      <section className="client-setup" aria-labelledby="client-setup-title">
+        <div className="section-heading">
+          <h2 id="client-setup-title">MCPクライアントへ接続する</h2>
+          <p><code>/absolute/path/to/atlas-design-system-demo</code>は、cloneしたディレクトリの絶対パスへ置き換えます。</p>
+        </div>
+        <div className="client-setup-grid">
+          <article>
+            <h3>Codex</h3>
+            <SetupCommand title="Codex MCP" command={'codex mcp add atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system-demo mcp:start\ncodex mcp get atlas-design-system'} />
+            <p>削除: <code>codex mcp remove atlas-design-system</code></p>
+          </article>
+          <article>
+            <h3>Claude Code</h3>
+            <SetupCommand title="Claude Code MCP" command={'claude mcp add --scope project atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system-demo mcp:start\nclaude mcp get atlas-design-system'} />
+            <p>削除: <code>claude mcp remove --scope project atlas-design-system</code></p>
+          </article>
+        </div>
       </section>
     </article>
   );
@@ -226,6 +321,15 @@ export function TechnicalSpecsPage() {
   );
 }
 
+const contentTokenLabels: Record<string, string> = {
+  maxWidth: "ページ全体の最大幅",
+  readingWidth: "本文を読みやすい幅",
+};
+
+const breakpointTokenLabels: Record<string, string> = {
+  narrow: "狭い画面へ積み替える幅",
+};
+
 export function FoundationsPage() {
   return (
     <article className="doc-page">
@@ -251,6 +355,24 @@ export function FoundationsPage() {
             </li>
           ))}
         </ul>
+      </section>
+      <section className="token-section">
+        <h2>幅</h2>
+        <p className="token-section-description">ページの最大幅と、狭い画面へ積み替える基準はここで一度だけ決めます。画面ごとに別の値を持ち込みません。</p>
+        <dl className="measure-token-list">
+          {Object.entries(designData.tokens.content).map(([name, value]) => (
+            <div key={name}>
+              <dt>{contentTokenLabels[name] ?? name}<code>content.{name}</code></dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+          {Object.entries(designData.tokens.breakpoint).map(([name, value]) => (
+            <div key={name}>
+              <dt>{breakpointTokenLabels[name] ?? name}<code>breakpoint.{name}</code></dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
       </section>
       <section className="token-section">
         <h2>角丸</h2>
@@ -303,8 +425,8 @@ export function FoundationsPage() {
                 {name.startsWith("lineHeight")
                   ? "読みやすい行間は、情報を追いやすくし、業務画面での見落としを減らします。"
                   : name === "small" || name === "label"
-                    ? "契約更新日 2026年8月31日"
-                    : "顧客企業の契約情報"}
+                    ? "最終対応日 2026年8月31日"
+                    : "顧客情報"}
               </p>
             </figure>
           ))}
@@ -314,18 +436,31 @@ export function FoundationsPage() {
   );
 }
 
-const componentPreviewPlans = [
-  { id: "starter", label: "Starter" },
-  { id: "business", label: "Business" },
-  { id: "enterprise", label: "Enterprise" },
+const componentPreviewStatuses = [
+  { id: "prospect", label: "商談中" },
+  { id: "active", label: "利用中" },
+  { id: "dormant", label: "休眠" },
 ];
 
-const componentPreviewContracts = [
-  { id: "atlas", company: "アトラス株式会社", plan: "Business", seats: "42 / 50", status: "利用中", color: "success" },
-  { id: "hokuto", company: "北斗物流株式会社", plan: "Enterprise", seats: "118 / 150", status: "利用中", color: "success" },
-  { id: "aoba", company: "青葉商事株式会社", plan: "Starter", seats: "8 / 10", status: "確認待ち", color: "warning" },
-  { id: "nagumo", company: "南雲製作所", plan: "Business", seats: "0 / 30", status: "停止中", color: "danger" },
+const componentPreviewCustomers = [
+  { id: "atlas", companyName: "アトラス株式会社", contactName: "佐藤 葵", lastContactedAt: "2026/08/28", status: "利用中", color: "success" },
+  { id: "hokuto", companyName: "北斗物流株式会社", contactName: "田中 司", lastContactedAt: "2026/08/26", status: "商談中", color: "warning" },
+  { id: "aoba", companyName: "青葉商事株式会社", contactName: "鈴木 凪", lastContactedAt: "2026/08/22", status: "利用中", color: "success" },
+  { id: "nagumo", companyName: "南雲製作所", contactName: "伊藤 澪", lastContactedAt: "2026/07/18", status: "休眠", color: "default" },
 ] as const;
+
+function renderComponentPreviewTableCell(
+  customer: (typeof componentPreviewCustomers)[number],
+  columnId: AccountManagementTableColumnId,
+) {
+  if (columnId === "companyName") {
+    return <HeroLink href={`#/customers/${customer.id}`}>{customer.companyName}</HeroLink>;
+  }
+  if (columnId === "status") {
+    return <Chip color={customer.color} size="sm" variant="soft">{customer.status}</Chip>;
+  }
+  return customer[columnId];
+}
 
 const componentCodeExamples: Record<string, string> = {
   "component.button": `import { Button } from "@heroui/react";
@@ -339,129 +474,142 @@ export function Actions() {
     </div>
   );
 }`,
-  "component.table": `import { Chip, Table } from "@heroui/react";
+  "component.link": `import { Link } from "@heroui/react";
 
-const contracts = [
-  { id: "atlas", company: "アトラス株式会社", plan: "Business", seats: "42 / 50", status: "利用中", color: "success" },
-  { id: "hokuto", company: "北斗物流株式会社", plan: "Enterprise", seats: "118 / 150", status: "利用中", color: "success" },
-  { id: "aoba", company: "青葉商事株式会社", plan: "Starter", seats: "8 / 10", status: "確認待ち", color: "warning" },
-  { id: "nagumo", company: "南雲製作所", plan: "Business", seats: "0 / 30", status: "停止中", color: "danger" },
-] as const;
-
-export function ContractTable() {
+export function CustomerDetailLink() {
   return (
-    <Table.Root aria-label="契約一覧">
-      <Table.ScrollContainer>
-        <Table.Content>
-          <Table.Header>
-            <Table.Column isRowHeader>企業名</Table.Column>
-            <Table.Column>プラン</Table.Column>
-            <Table.Column>利用席数</Table.Column>
-            <Table.Column>状態</Table.Column>
-          </Table.Header>
-          <Table.Body>
-            {contracts.map((contract) => (
-              <Table.Row id={contract.id} key={contract.id}>
-                <Table.Cell>{contract.company}</Table.Cell>
-                <Table.Cell>{contract.plan}</Table.Cell>
-                <Table.Cell>{contract.seats}</Table.Cell>
-                <Table.Cell>
-                  <Chip color={contract.color} size="sm" variant="soft">{contract.status}</Chip>
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Content>
-      </Table.ScrollContainer>
-    </Table.Root>
+    <Link href="#/customers/customer_northstar">
+      株式会社ノーススター
+    </Link>
+  );
+}`,
+  "component.table": createAccountManagementTableCodeExample(),
+  "component.toolbar": `import { SearchField, Toolbar } from "@heroui/react";
+
+export function CustomerListToolbar() {
+  return (
+    <Toolbar aria-label="顧客一覧の操作" className="justify-end">
+      <SearchField aria-label="企業名で検索" className="w-full max-w-64">
+        <SearchField.Group>
+          <SearchField.SearchIcon />
+          <SearchField.Input placeholder="企業名で検索" />
+          <SearchField.ClearButton aria-label="検索語をクリア" />
+        </SearchField.Group>
+      </SearchField>
+    </Toolbar>
+  );
+}`,
+  "component.search-field": `import { SearchField } from "@heroui/react";
+
+export function CustomerSearch() {
+  return (
+    <SearchField aria-label="企業名で検索">
+      <SearchField.Group>
+        <SearchField.SearchIcon />
+        <SearchField.Input placeholder="企業名で検索" />
+        <SearchField.ClearButton aria-label="検索語をクリア" />
+      </SearchField.Group>
+    </SearchField>
   );
 }`,
   "component.card": `import { Card } from "@heroui/react";
 
-export function ContractSummary() {
+export function CustomerSummary() {
   return (
     <Card>
       <Card.Header>
-        <Card.Title>契約と利用状況</Card.Title>
-        <Card.Description>現在の契約内容を確認できます。</Card.Description>
+        <Card.Title>顧客情報</Card.Title>
+        <Card.Description>選択中の顧客の基本情報です。</Card.Description>
       </Card.Header>
       <Card.Content>
-        <strong>50席中42席を利用中</strong>
+        <strong>株式会社ノーススター / 佐藤 葵</strong>
       </Card.Content>
     </Card>
   );
 }`,
+  "component.text-field": `import { Description, FieldError, Input, Label, TextField } from "@heroui/react";
+
+export function ContactEmailField() {
+  return (
+    <TextField isRequired name="email" type="email">
+      <Label>メールアドレス</Label>
+      <Input autoComplete="email" placeholder="name@example.com" />
+      <Description>顧客への連絡に使用します。</Description>
+      <FieldError>メールアドレスの形式を確認してください。</FieldError>
+    </TextField>
+  );
+}`,
   "component.select": `import { Description, Label, ListBox, Select } from "@heroui/react";
 
-const plans = [
-  { id: "starter", label: "Starter" },
-  { id: "business", label: "Business" },
-  { id: "enterprise", label: "Enterprise" },
+const statuses = [
+  { id: "prospect", label: "商談中" },
+  { id: "active", label: "利用中" },
+  { id: "dormant", label: "休眠" },
 ];
 
-export function PlanSelect() {
+export function CustomerStatusSelect() {
   return (
-    <Select aria-label="契約プラン" selectedKey="business">
-      <Label>契約プラン</Label>
+    <Select aria-label="顧客ステータス" selectedKey="active">
+      <Label>ステータス</Label>
       <Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger>
-      <Description>選択したプランを契約内容に反映します。</Description>
+      <Description>現在の対応状況を選択します。</Description>
       <Select.Popover>
-        <ListBox items={plans}>
+        <ListBox items={statuses}>
           {(item) => <ListBox.Item id={item.id}>{item.label}</ListBox.Item>}
         </ListBox>
       </Select.Popover>
     </Select>
   );
 }`,
-  "component.number-field": `import { Description, Label, NumberField } from "@heroui/react";
+  "component.form":`import { Button, Description, FieldError, Form, Input, Label, TextField } from "@heroui/react";
 
-export function SeatCountField() {
+export function CustomerRegistrationForm() {
   return (
-    <NumberField defaultValue={50} minValue={42}>
-      <Label>契約席数</Label>
-      <NumberField.Group>
-        <NumberField.DecrementButton>-</NumberField.DecrementButton>
-        <NumberField.Input />
-        <NumberField.IncrementButton>+</NumberField.IncrementButton>
-      </NumberField.Group>
-      <Description>利用中の42席以上で設定します。</Description>
-    </NumberField>
+    <Form className="grid gap-6" onSubmit={(event) => event.preventDefault()}>
+      <TextField isRequired name="companyName">
+        <Label>会社名</Label>
+        <Input placeholder="アトラス株式会社" />
+        <Description>請求書に記載する正式名称を入力します。</Description>
+        <FieldError>会社名を入力してください。</FieldError>
+      </TextField>
+      <Button type="submit" variant="primary">顧客を登録</Button>
+    </Form>
   );
 }`,
   "component.chip": `import { Chip } from "@heroui/react";
 
-export function ContractStatuses() {
+export function CustomerStatuses() {
   return (
     <div className="flex gap-2">
+      <Chip color="warning" variant="soft">商談中</Chip>
       <Chip color="success" variant="soft">利用中</Chip>
-      <Chip color="warning" variant="soft">確認待ち</Chip>
-      <Chip color="danger" variant="soft">停止中</Chip>
+      <Chip variant="soft">休眠</Chip>
     </div>
   );
 }`,
   "component.surface": `import { Surface } from "@heroui/react";
 
-export function ContractSurface() {
+export function CustomerSurface() {
   return (
     <Surface className="grid gap-2 border p-6">
-      <strong>契約情報</strong>
-      <span>Businessプラン・50席</span>
+      <strong>顧客情報</strong>
+      <span>株式会社ノーススター・利用中</span>
     </Surface>
   );
 }`,
   "component.drawer": `import { Button, Drawer, useOverlayState } from "@heroui/react";
 
-export function ContractDrawer() {
+export function CustomerDrawer() {
   const state = useOverlayState({});
 
   return (
     <Drawer.Root state={state}>
-      <Drawer.Trigger>契約変更を開く</Drawer.Trigger>
+      <Drawer.Trigger>顧客情報を編集</Drawer.Trigger>
       <Drawer.Backdrop>
         <Drawer.Content placement="right">
-          <Drawer.Dialog aria-label="契約変更">
-            <Drawer.Header><Drawer.Heading>契約変更</Drawer.Heading></Drawer.Header>
-            <Drawer.Body>プランと契約席数を変更します。</Drawer.Body>
+          <Drawer.Dialog aria-label="顧客情報の編集">
+            <Drawer.Header><Drawer.Heading>顧客情報を編集</Drawer.Heading></Drawer.Header>
+            <Drawer.Body>会社名、担当者、連絡先、ステータスを変更します。</Drawer.Body>
             <Drawer.Footer>
               <Button variant="secondary" onPress={state.close}>閉じる</Button>
             </Drawer.Footer>
@@ -473,25 +621,47 @@ export function ContractDrawer() {
 }`,
   "component.alert-dialog": `import { AlertDialog, Button } from "@heroui/react";
 
-export function ContractConfirmation() {
+export function CustomerDeletion() {
   return (
     <AlertDialog.Root>
-      <Button className="dialog-trigger-button" variant="secondary">変更内容を確認</Button>
+      <Button className="dialog-trigger-button" variant="danger">顧客を削除</Button>
       <AlertDialog.Backdrop>
         <AlertDialog.Container size="md">
           <AlertDialog.Dialog>
             <AlertDialog.Header>
-              <AlertDialog.Heading>契約変更を確定しますか</AlertDialog.Heading>
+              <AlertDialog.Heading>顧客を削除しますか</AlertDialog.Heading>
             </AlertDialog.Header>
-            <AlertDialog.Body>Businessプラン、50席へ変更します。</AlertDialog.Body>
+            <AlertDialog.Body>株式会社ノーススターの顧客情報が削除されます。</AlertDialog.Body>
             <AlertDialog.Footer>
               <Button slot="close" variant="secondary">戻る</Button>
-              <Button slot="close" variant="danger">契約を変更</Button>
+              <Button slot="close" variant="danger">顧客を削除</Button>
             </AlertDialog.Footer>
           </AlertDialog.Dialog>
         </AlertDialog.Container>
       </AlertDialog.Backdrop>
     </AlertDialog.Root>
+  );
+}`,
+  "component.alert": `import { Alert } from "@heroui/react";
+
+export function CustomerSaveResult() {
+  return (
+    <div className="grid gap-4">
+      <Alert.Root status="danger">
+        <Alert.Indicator />
+        <Alert.Content>
+          <Alert.Title>顧客情報を保存できませんでした</Alert.Title>
+          <Alert.Description>通信が中断されました。入力内容は残っています。もう一度保存してください。</Alert.Description>
+        </Alert.Content>
+      </Alert.Root>
+      <Alert.Root status="success">
+        <Alert.Indicator />
+        <Alert.Content>
+          <Alert.Title>顧客情報を保存しました</Alert.Title>
+          <Alert.Description>株式会社ノーススターの連絡先とステータスを更新しました。</Alert.Description>
+        </Alert.Content>
+      </Alert.Root>
+    </div>
   );
 }`,
   "component.toast": `import { Button, Toast } from "@heroui/react";
@@ -500,20 +670,31 @@ const toastQueue = new Toast.Queue({
   wrapUpdate: (update) => update(),
 });
 
-export function ContractToast() {
+export function CustomerToast() {
   return (
     <>
       <Button
         variant="secondary"
         onPress={() => toastQueue.add({
-          title: "契約内容を更新しました",
-          description: "Businessプランと50席を契約内容に反映しました。",
+          title: "顧客情報を更新しました",
+          description: "株式会社ノーススターの連絡先とステータスを更新しました。",
           variant: "success",
         })}
       >
         更新結果を表示
       </Button>
-      <Toast.Provider queue={toastQueue} placement="bottom end" />
+      <Toast.Provider queue={toastQueue} placement="bottom end">
+        {({toast}) => (
+          <Toast toast={toast} variant={toast.content.variant} placement="bottom end">
+            <Toast.Indicator variant={toast.content.variant} />
+            <Toast.Content>
+              <Toast.Title>{toast.content.title}</Toast.Title>
+              <Toast.Description>{toast.content.description}</Toast.Description>
+            </Toast.Content>
+            <Toast.CloseButton aria-label="通知を閉じる" />
+          </Toast>
+        )}
+      </Toast.Provider>
     </>
   );
 }`,
@@ -524,15 +705,15 @@ function DrawerPreview() {
 
   return (
     <Drawer.Root state={state}>
-      <Drawer.Trigger className="button button--md button--secondary">契約変更を開く</Drawer.Trigger>
+      <Drawer.Trigger className="button button--md button--secondary">顧客情報を編集</Drawer.Trigger>
       <Drawer.Backdrop>
         <Drawer.Content placement="right">
-          <Drawer.Dialog aria-label="契約変更の例">
+          <Drawer.Dialog aria-label="顧客情報の編集例">
             <Drawer.Header>
-              <Drawer.Heading>契約変更</Drawer.Heading>
+              <Drawer.Heading>顧客情報を編集</Drawer.Heading>
             </Drawer.Header>
             <Drawer.Body>
-              <p>プランと契約席数を変更します。</p>
+              <p>会社名、担当者、連絡先、ステータスを変更します。</p>
             </Drawer.Body>
             <Drawer.Footer>
               <Button variant="secondary" onPress={state.close}>閉じる</Button>
@@ -554,101 +735,164 @@ function ComponentPreview({ id }: { id: string }) {
           <Button variant="danger">削除</Button>
         </div>
       );
+    case "component.link":
+      return <HeroLink href="#/customers/customer_northstar">株式会社ノーススター</HeroLink>;
     case "component.table":
       return (
-        <Table.Root aria-label="契約一覧の例">
+        <Table.Root aria-label="顧客一覧の例" variant={accountManagementTableUsage.variant}>
           <Table.ScrollContainer>
-            <Table.Content aria-label="契約一覧の例">
-              <Table.Header>
-                <Table.Column isRowHeader>企業名</Table.Column>
-                <Table.Column>プラン</Table.Column>
-                <Table.Column>利用席数</Table.Column>
-                <Table.Column>状態</Table.Column>
+            <Table.Content aria-label="顧客一覧の例">
+              <Table.Header columns={accountManagementTableUsage.columns}>
+                {(column) => (
+                  <Table.Column
+                    id={column.id}
+                    isRowHeader={column.isRowHeader}
+                    width={column.width}
+                    minWidth={column.minWidth}
+                    data-align={column.align}
+                  >
+                    {column.label}
+                  </Table.Column>
+                )}
               </Table.Header>
-              <Table.Body>
-                {componentPreviewContracts.map((contract) => (
-                  <Table.Row id={contract.id} key={contract.id}>
-                    <Table.Cell>{contract.company}</Table.Cell>
-                    <Table.Cell>{contract.plan}</Table.Cell>
-                    <Table.Cell>{contract.seats}</Table.Cell>
-                    <Table.Cell><Chip color={contract.color} size="sm" variant="soft">{contract.status}</Chip></Table.Cell>
+              <Table.Body items={componentPreviewCustomers}>
+                {(customer) => (
+                  <Table.Row id={customer.id} columns={accountManagementTableUsage.columns}>
+                    {(column) => (
+                      <Table.Cell
+                        className={column.tabular ? "table-cell-tabular" : undefined}
+                        data-align={column.align}
+                      >
+                        {renderComponentPreviewTableCell(customer, column.id)}
+                      </Table.Cell>
+                    )}
                   </Table.Row>
-                ))}
+                )}
               </Table.Body>
             </Table.Content>
           </Table.ScrollContainer>
         </Table.Root>
       );
+    case "component.toolbar":
+      return (
+        <Toolbar aria-label="顧客一覧の操作" className="preview-toolbar">
+          <SearchField aria-label="企業名で検索" className="preview-search-field">
+            <SearchField.Group>
+              <SearchField.SearchIcon />
+              <SearchField.Input placeholder="企業名で検索" />
+              <SearchField.ClearButton aria-label="検索語をクリア" />
+            </SearchField.Group>
+          </SearchField>
+        </Toolbar>
+      );
+    case "component.search-field":
+      return (
+        <SearchField aria-label="企業名で検索" className="preview-search-field">
+          <SearchField.Group>
+            <SearchField.SearchIcon />
+            <SearchField.Input placeholder="企業名で検索" />
+            <SearchField.ClearButton aria-label="検索語をクリア" />
+          </SearchField.Group>
+        </SearchField>
+      );
     case "component.card":
       return (
         <Card className="preview-card">
           <Card.Header>
-            <Card.Title>契約と利用状況</Card.Title>
-            <Card.Description>現在の契約内容を確認できます。</Card.Description>
+            <Card.Title>顧客情報</Card.Title>
+            <Card.Description>選択中の顧客の基本情報です。</Card.Description>
           </Card.Header>
-          <Card.Content><strong>50席中42席を利用中</strong></Card.Content>
+          <Card.Content><strong>株式会社ノーススター / 佐藤 葵</strong></Card.Content>
         </Card>
+      );
+    case "component.text-field":
+      return (
+        <TextField isRequired name="email" type="email">
+          <Label>メールアドレス</Label>
+          <Input autoComplete="email" placeholder="name@example.com" />
+          <Description>顧客への連絡に使用します。</Description>
+          <FieldError>メールアドレスの形式を確認してください。</FieldError>
+        </TextField>
       );
     case "component.select":
       return (
-        <Select aria-label="契約プラン" selectedKey="business">
-          <Label>契約プラン</Label>
+        <Select aria-label="顧客ステータス" selectedKey="active">
+          <Label>ステータス</Label>
           <Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger>
-          <Description>選択したプランを契約内容に反映します。</Description>
+          <Description>現在の対応状況を選択します。</Description>
           <Select.Popover>
-            <ListBox items={componentPreviewPlans}>
+            <ListBox items={componentPreviewStatuses}>
               {(item) => <ListBox.Item id={item.id}>{item.label}</ListBox.Item>}
             </ListBox>
           </Select.Popover>
         </Select>
       );
-    case "component.number-field":
+    case "component.form":
       return (
-        <NumberField aria-label="契約席数" defaultValue={50} minValue={42}>
-          <Label>契約席数</Label>
-          <NumberField.Group>
-            <NumberField.DecrementButton>-</NumberField.DecrementButton>
-            <NumberField.Input />
-            <NumberField.IncrementButton>+</NumberField.IncrementButton>
-          </NumberField.Group>
-          <Description>利用中の42席以上で設定します。</Description>
-        </NumberField>
+        <Form className="preview-form" onSubmit={(event) => event.preventDefault()}>
+          <TextField isRequired name="companyName">
+            <Label>会社名</Label>
+            <Input placeholder="アトラス株式会社" />
+            <Description>請求書に記載する正式名称を入力します。</Description>
+            <FieldError>会社名を入力してください。</FieldError>
+          </TextField>
+          <Button type="submit" variant="primary">顧客を登録</Button>
+        </Form>
       );
     case "component.chip":
       return (
         <div className="preview-actions">
+          <Chip color="warning" variant="soft">商談中</Chip>
           <Chip color="success" variant="soft">利用中</Chip>
-          <Chip color="warning" variant="soft">確認待ち</Chip>
-          <Chip color="danger" variant="soft">停止中</Chip>
+          <Chip variant="soft">休眠</Chip>
         </div>
       );
     case "component.surface":
-      return <Surface className="preview-surface"><strong>契約情報</strong><span>Businessプラン・50席</span></Surface>;
+      return <Surface className="preview-surface"><strong>顧客情報</strong><span>株式会社ノーススター・利用中</span></Surface>;
     case "component.drawer":
       return <DrawerPreview />;
     case "component.alert-dialog":
       return (
         <AlertDialog.Root>
-          <Button className="dialog-trigger-button" variant="secondary">変更内容を確認</Button>
+          <Button className="dialog-trigger-button" variant="danger">顧客を削除</Button>
           <AlertDialog.Backdrop>
             <AlertDialog.Container size="md">
               <AlertDialog.Dialog>
-                <AlertDialog.Header><AlertDialog.Heading>契約変更を確定しますか</AlertDialog.Heading></AlertDialog.Header>
-                <AlertDialog.Body>Businessプラン、50席へ変更します。</AlertDialog.Body>
+                <AlertDialog.Header><AlertDialog.Heading>顧客を削除しますか</AlertDialog.Heading></AlertDialog.Header>
+                <AlertDialog.Body>株式会社ノーススターの顧客情報が削除されます。</AlertDialog.Body>
                 <AlertDialog.Footer>
                   <Button slot="close" variant="secondary">戻る</Button>
-                  <Button slot="close" variant="danger">契約を変更</Button>
+                  <Button slot="close" variant="danger">顧客を削除</Button>
                 </AlertDialog.Footer>
               </AlertDialog.Dialog>
             </AlertDialog.Container>
           </AlertDialog.Backdrop>
         </AlertDialog.Root>
       );
+    case "component.alert":
+      return (
+        <div className="preview-alert-list">
+          <Alert.Root status="danger">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>顧客情報を保存できませんでした</Alert.Title>
+              <Alert.Description>通信が中断されました。入力内容は残っています。もう一度保存してください。</Alert.Description>
+            </Alert.Content>
+          </Alert.Root>
+          <Alert.Root status="success">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>顧客情報を保存しました</Alert.Title>
+              <Alert.Description>株式会社ノーススターの連絡先とステータスを更新しました。</Alert.Description>
+            </Alert.Content>
+          </Alert.Root>
+        </div>
+      );
     case "component.toast":
       return (
         <Button
           variant="secondary"
-          onPress={showContractUpdateToast}
+          onPress={showCustomerUpdateToast}
         >
           更新結果を表示
         </Button>
@@ -678,14 +922,16 @@ function ComponentExample({ component }: { component: (typeof designData.compone
     <div className="component-example">
       <div className="component-example-import">
         <code>{importStatement}</code>
-        <button
+        <Button
           aria-label={`${component.name}のコード例をコピー`}
           className="component-copy-button"
-          onClick={copyCode}
-          type="button"
+          isIconOnly
+          size="sm"
+          variant="ghost"
+          onPress={copyCode}
         >
           {copied ? <Check size={16} /> : <Copy size={16} />}
-        </button>
+        </Button>
       </div>
       <div className={`component-preview component-preview-${component.implementation.toLowerCase()}`}>
         <ComponentPreview id={component.id} />
@@ -710,6 +956,17 @@ function ComponentExample({ component }: { component: (typeof designData.compone
   );
 }
 
+const surfaceOwnerLabels: Record<string, string> = {
+  component: "コンポーネントが面を持つ",
+  none: "面を持たない",
+};
+
+const outerShadowLabels: Record<string, string> = {
+  required: "必須",
+  allowed: "許可",
+  forbidden: "禁止",
+};
+
 export function ComponentsPage() {
   return (
     <article className="doc-page">
@@ -724,15 +981,62 @@ export function ComponentsPage() {
               </header>
               <ComponentExample component={component} />
               <div className="component-contract-details">
-                <div><p className="meta-label">利用できるバリエーション</p><p>{component.variants.join(", ")}</p></div>
-                <ul>{component.requirements.map((item) => <li key={item}><Check size={16} />{item}</li>)}</ul>
+                <div className="component-meta-list">
+                  <div><p className="meta-label">利用できるバリエーション</p><p>{component.variants.join(", ")}</p></div>
+                  <div><p className="meta-label">利用できるサイズ</p><p>{component.sizes.join(", ")}</p></div>
+                  <div><p className="meta-label">既定のバリエーション</p><p>{component.defaults.variant}</p></div>
+                  <div><p className="meta-label">既定のサイズ</p><p>{component.defaults.size}</p></div>
+                  <div>
+                    <p className="meta-label">面と影の扱い</p>
+                    <p>
+                      {surfaceOwnerLabels[component.visual.surfaceOwner] ?? component.visual.surfaceOwner}
+                      、外側の影は{outerShadowLabels[component.visual.outerShadow] ?? component.visual.outerShadow}
+                      、角丸は{component.visual.radiusToken}
+                    </p>
+                  </div>
+                </div>
+                <div className="component-requirement-list">
+                  <ul>{component.requirements.map((item) => <li key={item}><Check size={16} />{item}</li>)}</ul>
+                  <div>
+                    <p className="meta-label">関連する検証ルール</p>
+                    <div className="chip-list">{component.relatedRules.map((ruleId) => <Chip key={ruleId} size="sm" variant="soft">{ruleId}</Chip>)}</div>
+                  </div>
+                </div>
               </div>
             </article>
           ))}
         </div>
-        <Toast.Provider queue={docsToastQueue} placement="bottom end" />
+        <AtlasToastProvider />
       </section>
     </article>
+  );
+}
+
+// レイアウト契約を持たないvariantがあり、valuesのキーもvariantごとに異なる。
+type ContractLayout = {
+  breakpoint?: string;
+  classes?: string[];
+  values?: Record<string, string | undefined>;
+};
+
+function contractLayout(variant: { layout?: ContractLayout }) {
+  return variant.layout;
+}
+
+function LayoutContractDetails({ label, layout }: { label: string; layout: ContractLayout }) {
+  return (
+    <div className="layout-contract">
+      <p className="meta-label">{label}</p>
+      {layout.breakpoint && <p className="layout-contract-breakpoint">切り替えの基準 {layout.breakpoint}</p>}
+      {layout.classes && <div className="structure-list">{layout.classes.map((item) => <span key={item}>{item}</span>)}</div>}
+      {layout.values && (
+        <dl className="layout-contract-values">
+          {Object.entries(layout.values).map(([name, value]) => (
+            <div key={name}><dt>{name}</dt><dd>{value}</dd></div>
+          ))}
+        </dl>
+      )}
+    </div>
   );
 }
 
@@ -774,36 +1078,48 @@ export function PatternPage() {
       <section className="pattern-section" aria-labelledby="variants-title">
         <div className="section-heading">
           <h2 id="variants-title">業務オブジェクトの関係から選ぶ</h2>
-          <p>画面名ではなく、比較するのか、一つを詳しく見るのか、頻繁に切り替えるのかで判断します。</p>
+          <p>画面名ではなく、複数を比較するのか、一つを詳しく見るのかで判断します。</p>
         </div>
         <div className="variant-grid">
-          {pattern.variants.map((variant) => (
-            <article className="site-card variant-card" key={variant.id}>
-              <div className="layout-preview" data-variant={variant.id} aria-hidden="true">
-                <i className="preview-header" /><i className="preview-heading" /><i className="preview-side" /><i className="preview-main" /><i className="preview-detail" />
-              </div>
-              <div className="variant-copy">
-                <h3>{variant.name}</h3>
-                <p>{variant.useWhen}</p>
-                <dl>
-                  <div><dt><Monitor size={16} />デスクトップ</dt><dd>{variant.desktop}</dd></div>
-                  <div><dt><Smartphone size={16} />狭い画面</dt><dd>{variant.narrow}</dd></div>
-                </dl>
-                <div className="structure-list">{variant.structure.map((item) => <span key={item}>{item}</span>)}</div>
-                <p className="avoid-copy"><strong>避ける場面</strong>{variant.avoidWhen}</p>
-              </div>
-            </article>
-          ))}
+          {pattern.variants.map((variant) => {
+            const layout = contractLayout(variant);
+            return (
+              <article className="site-card variant-card" key={variant.id}>
+                <div className="layout-preview" data-variant={variant.id} aria-hidden="true">
+                  <i className="preview-header" /><i className="preview-heading" /><i className="preview-side" /><i className="preview-main" /><i className="preview-detail" />
+                </div>
+                <div className="variant-copy">
+                  <h3>{variant.name}</h3>
+                  <p>{variant.useWhen}</p>
+                  <dl>
+                    <div><dt><Monitor size={16} />デスクトップ</dt><dd>{variant.desktop}</dd></div>
+                    <div><dt><Smartphone size={16} />狭い画面</dt><dd>{variant.narrow}</dd></div>
+                  </dl>
+                  <div className="structure-list">{variant.structure.map((item) => <span key={item}>{item}</span>)}</div>
+                  {layout && <LayoutContractDetails label="実装で使うレイアウト値" layout={layout} />}
+                  <p className="avoid-copy"><strong>避ける場面</strong>{variant.avoidWhen}</p>
+                </div>
+              </article>
+            );
+          })}
         </div>
+      </section>
+
+      <section className="pattern-section" aria-labelledby="pattern-states-title">
+        <div className="section-heading">
+          <h2 id="pattern-states-title">どのレイアウトでも用意する画面状態</h2>
+          <p>データが揃った状態だけを設計せず、この状態をレイアウトの中で表示できるようにします。</p>
+        </div>
+        <div className="chip-list">{pattern.states.map((state) => <Chip key={state} size="sm" variant="soft">{state}</Chip>)}</div>
       </section>
 
       <section className="pattern-section responsive-section" aria-labelledby="responsive-title">
         <div className="responsive-icon"><Smartphone size={24} /></div>
-        <div><h2 id="responsive-title">モバイルでは1カラムに積み替える</h2><p>主要情報から順に並べ、テーブルはリストへ、2カラムは別画面へ切り替えます。横スクロールをレイアウトの前提にしません。</p></div>
+        <div><h2 id="responsive-title">モバイルでは1カラムに積み替える</h2><p>主要情報から順に並べ、テーブルはリストへ切り替えます。横スクロールをレイアウトの前提にしません。</p></div>
       </section>
 
       <section className="pattern-section example-callout" aria-labelledby="example-title">
-        <div><h2 id="example-title">顧客企業の契約・利用状況管理</h2><p>このパターンの「詳細（1カラム）」を、実際のIssueへ適用した構成を確認できます。</p></div>
+        <div><h2 id="example-title">顧客管理</h2><p>一覧（テーブル）と詳細（1カラム）を別画面として組み合わせた構成を確認できます。</p></div>
         <Button variant="secondary" onPress={() => navigate("/examples/account-management")}>利用例を見る <ArrowRight size={16} /></Button>
       </section>
     </article>
@@ -841,8 +1157,8 @@ export function SpacingPatternPage() {
             </div>
             <div className="spacing-demo-measure"><i />space.8 / 32px</div>
             <div className="spacing-demo-group">
-              <span>契約プラン</span>
-              <strong>Business</strong>
+              <span>担当者</span>
+              <strong>佐藤 葵</strong>
             </div>
             <figcaption>グループ内 <code>space.2</code> / グループ間 <code>space.8</code></figcaption>
           </figure>
@@ -877,17 +1193,21 @@ export function SpacingPatternPage() {
           <p>個別の値を足し引きする前に、配置する場所に近い組み合わせを選びます。</p>
         </div>
         <div className="spacing-recipe-list">
-          {spacingPattern.variants.map((variant) => (
-            <article key={variant.id}>
-              <header><h3>{variant.name}</h3><code>{variant.id}</code></header>
-              <p>{variant.useWhen}</p>
-              <dl>
-                <div><dt>デスクトップ</dt><dd>{variant.desktop}</dd></div>
-                <div><dt>狭い画面</dt><dd>{variant.narrow}</dd></div>
-              </dl>
-              <div className="spacing-token-row">{variant.structure.map((item) => <span key={item}>{item}</span>)}</div>
-            </article>
-          ))}
+          {spacingPattern.variants.map((variant) => {
+            const layout = contractLayout(variant);
+            return (
+              <article key={variant.id}>
+                <header><h3>{variant.name}</h3><code>{variant.id}</code></header>
+                <p>{variant.useWhen}</p>
+                <dl>
+                  <div><dt>デスクトップ</dt><dd>{variant.desktop}</dd></div>
+                  <div><dt>狭い画面</dt><dd>{variant.narrow}</dd></div>
+                </dl>
+                <div className="spacing-token-row">{variant.structure.map((item) => <span key={item}>{item}</span>)}</div>
+                {layout && <LayoutContractDetails label="実装で使う余白トークン" layout={layout} />}
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -904,18 +1224,27 @@ export function SpacingPatternPage() {
   );
 }
 
+function componentContractName(componentId: string) {
+  return designData.components.find((component) => component.id === componentId)?.name ?? componentId;
+}
+
+function ruleContractTitle(ruleId: string) {
+  return designData.rules.find((rule) => rule.id === ruleId)?.title ?? ruleId;
+}
+
 export function ExamplePage() {
   const { example, pattern } = designData;
   const navigate = useNavigate();
   const variant = pattern.variants.find((item) => item.id === example.variant);
+  const detailVariant = pattern.variants.find((item) => item.id === "single-one-column");
 
   return (
     <article className="doc-page">
       <PageHeader title={example.name} description={example.purpose} />
       <section className="reference-strip" aria-label="参照する設計契約">
         <LayoutTemplate size={20} />
-        <div><span>パターン / 種類</span><strong>{pattern.name} / {variant?.name}</strong></div>
-        <code>{example.pattern}#{example.variant}</code>
+        <div><span>パターン / 種類</span><strong>{pattern.name} / {variant?.name} → {detailVariant?.name}</strong></div>
+        <code>{example.pattern}#{example.variant} + #single-one-column</code>
       </section>
 
       <section className="example-grid" aria-labelledby="composition-title">
@@ -925,19 +1254,35 @@ export function ExamplePage() {
         </div>
         <aside className="contract-reference" aria-label="実装時に参照する契約">
           <div><p className="meta-label">必要な画面状態</p><div className="chip-list">{example.states.map((state) => <Chip key={state} size="sm" variant="soft">{state}</Chip>)}</div></div>
+          <div>
+            <p className="meta-label">組み合わせるコンポーネント</p>
+            <div className="chip-list">{example.components.map((componentId) => <Chip key={componentId} size="sm" variant="soft">{componentContractName(componentId)}</Chip>)}</div>
+          </div>
+          <div>
+            <p className="meta-label">満たす検証ルール</p>
+            <ul className="example-rule-list">
+              {example.rules.map((ruleId) => <li key={ruleId}>{ruleContractTitle(ruleId)}<code>{ruleId}</code></li>)}
+            </ul>
+          </div>
           <div><p className="meta-label">参照する設計データ</p><code>design/examples/account-management.json</code><code>design/patterns/page-layout.json</code><code>design/rules.json</code></div>
         </aside>
       </section>
 
       <section className="pattern-section harness-contract" aria-labelledby="harness-contract-title">
         <div><h2 id="harness-contract-title">AIへ参照IDを渡す</h2><p>Issueそのものは変えず、Design Harnessを適用した場合だけパターン、利用例、コンポーネント、検証ルールを追加で読みます。</p></div>
-        <div className="reference-code"><span>パターン</span><code>{example.pattern}#{example.variant}</code><span>利用例</span><code>{example.id}</code></div>
+        <div className="reference-code"><span>一覧</span><code>{example.pattern}#{example.variant}</code><span>詳細</span><code>{example.pattern}#single-one-column</code><span>利用例</span><code>{example.id}</code></div>
       </section>
 
       <Button variant="primary" onPress={() => navigate("/play/account-management?mode=atlas")}>生成された画面を操作する <ArrowRight size={16} /></Button>
     </article>
   );
 }
+
+const ruleMethodLabels: Record<string, string> = {
+  automatic: "自動検証",
+  "ai-review": "AIレビュー",
+  human: "人の判断",
+};
 
 export function RulesPage() {
   return (
@@ -947,8 +1292,12 @@ export function RulesPage() {
         <div className="rules-row rules-head" role="row"><span>ルール</span><span>確認方法</span><span>重要度</span></div>
         {designData.rules.map((rule) => (
           <div className="rules-row" role="row" key={rule.id}>
-            <div><strong>{rule.title}</strong><code>{rule.id}</code><p>{rule.description}</p></div>
-            <span>{rule.method}</span>
+            <div>
+              <strong>{rule.title}</strong>
+              <div className="rules-identity"><code>{rule.id}</code><span className="rules-category">{rule.category}</span></div>
+              <p>{rule.description}</p>
+            </div>
+            <span>{ruleMethodLabels[rule.method] ?? rule.method}</span>
             <Chip size="sm" variant="soft">{rule.severity}</Chip>
           </div>
         ))}

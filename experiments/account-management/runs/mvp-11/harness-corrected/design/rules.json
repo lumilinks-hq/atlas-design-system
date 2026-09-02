@@ -12,6 +12,15 @@
       "fix": "独自HTML部品はHeroUIへ置き換え、IssueやExampleで対象外とした製品ヘッダー、操作、説明は削除する"
     },
     {
+      "id": "component.usage",
+      "title": "Exampleが求めるコンポーネントを実装で使う",
+      "category": "component",
+      "severity": "error",
+      "method": "automatic",
+      "description": "ExampleのcomponentUsageが指定した部品を、importだけで終わらせず画面に実装する",
+      "fix": "design/examples/account-management.jsonのcomponentUsageを確認し、未使用の部品を該当箇所へ実装する"
+    },
+    {
       "id": "component.variants",
       "title": "Atlasで承認したHeroUI variantを使う",
       "category": "component",
@@ -70,7 +79,7 @@
       "title": "操作要素に名前を付ける",
       "category": "accessibility",
       "severity": "error",
-      "method": "automatic",
+      "method": "ai-review",
       "description": "アイコンだけの操作にも支援技術が読める名前を付ける",
       "fix": "視覚ラベルまたはaria-labelを追加する"
     },
@@ -97,7 +106,7 @@
       "title": "エラーに回復方法を示す",
       "category": "accessibility",
       "severity": "error",
-      "method": "human",
+      "method": "ai-review",
       "description": "何が起きたかと次に行う操作を表示する",
       "fix": "対象入力の近くに原因と有効な値を表示する"
     },
@@ -106,7 +115,7 @@
       "title": "色だけで状態を伝えない",
       "category": "accessibility",
       "severity": "error",
-      "method": "human",
+      "method": "ai-review",
       "description": "状態名を文字またはアイコンと併記する",
       "fix": "Chipへ状態名を表示する"
     },
@@ -169,7 +178,7 @@
       "title": "ページの関係を余白と見出しで示す",
       "category": "layout",
       "severity": "warning",
-      "method": "ai-review",
+      "method": "automatic",
       "description": "見出し領域とコンテンツ領域を分け、セクション間をグループ内の2倍以上空ける",
       "fix": "ページ見出し、セクション見出し、余白の順で情報の関係を表す"
     },
@@ -214,7 +223,7 @@
       "title": "失敗後も再試行できる",
       "category": "state",
       "severity": "error",
-      "method": "human",
+      "method": "ai-review",
       "description": "Toastだけで失敗情報を消さない",
       "fix": "Drawer内にエラーと再試行操作を残す"
     },

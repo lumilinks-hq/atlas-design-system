@@ -1,5 +1,6 @@
 {
   "$schema": "../schemas/example.schema.json",
+  "version": "1.0.0",
   "id": "example.account-management",
   "name": "顧客管理",
   "purpose": "営業・CS担当者が一覧から顧客を探し、独立した詳細画面で情報を確認・更新する",
@@ -101,12 +102,14 @@
     "component.toolbar",
     "component.search-field",
     "component.card",
+    "component.form",
     "component.text-field",
     "component.select",
     "component.chip",
     "component.surface",
     "component.drawer",
     "component.alert-dialog",
+    "component.alert",
     "component.toast"
   ],
   "rules": [

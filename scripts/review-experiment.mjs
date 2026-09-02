@@ -4,7 +4,10 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs, rootDir, runCommand } from "./lib.mjs";
 
-const reviewRuleIds = ["layout.grouping", "color.semantic"];
+export function selectReviewRuleIds(rulesDocument) {
+  // レビュー対象はrules.jsonのmethod宣言を唯一の情報源とし、ここでは列挙しない
+  return rulesDocument.rules.filter((rule) => rule.method === "ai-review").map((rule) => rule.id);
+}
 
 export function parseReviewFindings(text) {
   const start = text.indexOf("{");
@@ -47,6 +50,7 @@ async function reviewRun({ pairId, mode }) {
 
   const run = JSON.parse(await readFile(resolve(outputDir, "run.json"), "utf8"));
   const rulesDocument = JSON.parse(await readFile(resolve(rootDir, "design", "rules.json"), "utf8"));
+  const reviewRuleIds = selectReviewRuleIds(rulesDocument);
   const rules = rulesDocument.rules.filter((rule) => reviewRuleIds.includes(rule.id));
   const ruleText = rules
     .map((rule) => `- ${rule.id}: ${rule.title}\n  ${rule.description}`)

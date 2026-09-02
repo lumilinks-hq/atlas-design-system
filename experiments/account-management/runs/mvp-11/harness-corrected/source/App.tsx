@@ -17,6 +17,7 @@ import {
   Table,
   TextField,
   Toast,
+  Toolbar,
   toast,
 } from "@heroui/react";
 import { useEffect, useId, useState } from "react";
@@ -395,7 +396,7 @@ function CustomerListPage({
       </div>
 
       <section className="collection-region" aria-label="顧客一覧セクション">
-        <div className="collection-toolbar">
+        <Toolbar.Root aria-label="顧客一覧の検索" className="collection-toolbar">
           <SearchField.Root
             aria-label="企業名で検索"
             className="search-field"
@@ -408,7 +409,7 @@ function CustomerListPage({
               <SearchField.ClearButton aria-label="検索条件をクリア" />
             </SearchField.Group>
           </SearchField.Root>
-        </div>
+        </Toolbar.Root>
 
         {isLoading ? (
           <EmptyState title="顧客情報を読み込んでいます" description="一覧の要約情報を取得しています。" />

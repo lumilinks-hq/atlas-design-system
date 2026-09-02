@@ -38,13 +38,14 @@ describe("Atlas design contract references", () => {
 
   it("defines defaults and visual rules for every approved component", async () => {
     const componentNames = [
+      "alert",
       "alert-dialog",
       "button",
       "card",
       "chip",
       "drawer",
+      "form",
       "link",
-      "number-field",
       "search-field",
       "select",
       "surface",

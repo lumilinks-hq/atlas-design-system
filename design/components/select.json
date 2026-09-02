@@ -1,11 +1,15 @@
 {
   "$schema": "../schemas/component.schema.json",
+  "version": "1.0.0",
   "id": "component.select",
   "name": "Select",
   "implementation": "Select",
   "import": "@heroui/react",
-  "variants": ["default"],
+  "variants": ["primary", "secondary"],
   "sizes": ["md"],
+  "defaults": { "variant": "primary", "size": "md" },
+  "visual": { "surfaceOwner": "component", "outerShadow": "allowed", "radiusToken": "radius.base" },
+  "anatomy": ["ListBox"],
   "requirements": [
     "視覚的なLabelを付ける",
     "未選択と選択済みを区別する",

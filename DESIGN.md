@@ -193,9 +193,6 @@ Patternの正本は`design/patterns/page-layout.json`。Issue固有の画面名�
 | `collection-table` | 複数オブジェクトを属性で比較する | `collection-list`へ切り替える | 横方向の比較は広い画面で価値がある |
 | `collection-list` | 狭い領域で識別情報と状態を順に見る | 主要属性だけを1行へ置く | 水平スクロールを避ける |
 | `single-one-column` | 一つのオブジェクトを並列なセクションで見る | 重要度順の1カラムを維持する | 最も予測しやすい詳細構造 |
-| `single-two-column` | 主情報を扱いながら副情報を参照する | 主情報と副情報を1カラムへ積む | 重要度の差を幅で表現する |
-| `side-navigation` | 多数・階層的な項目を頻繁に切り替える | ナビゲーションを別画面へ移す | コンテンツ幅を守る |
-| `collection-detail` | 一覧の対象を頻繁に切り替えて詳細を見る | 一覧と詳細を二つのページに分ける | 選択文脈を保つ |
 
 ### Page Anatomy
 
@@ -211,7 +208,7 @@ Patternの正本は`design/patterns/page-layout.json`。Issue固有の画面名�
 
 #### 一件一列 Rule
 
-単一オブジェクトの詳細は`single-one-column`から始める。主情報と副情報の役割が明確で、同時参照が業務効率を上げる場合だけ`single-two-column`へ変更する。
+単一オブジェクトの詳細は`single-one-column`で構成する。主情報と副情報はセクションとして重要度順に縦へ並べ、幅の差ではなく順序で重要度を表現する。
 
 #### 狭幅積み替え Rule
 
@@ -250,7 +247,7 @@ Patternの正本は`design/patterns/page-layout.json`。Issue固有の画面名�
 | 軽い編集 | `component.drawer` | 元の閲覧文脈を保つ |
 | 文字情報の入力 | `component.text-field` | Label、説明、エラーを一つの入力単位として扱う |
 | 削除など取り消せない操作の確定 | `component.alert-dialog` | 結果と変更対象を確認する |
-| 入力固有の失敗 | TextField / NumberField / Selectのinline error | 対象と回復方法を近接させる |
+| 入力固有の失敗 | TextField / Selectのinline error | 対象と回復方法を近接させる |
 | 保存結果 | `component.toast` + 文脈内状態 | 一時通知だけに結果を依存しない |
 
 ### Composition Rules

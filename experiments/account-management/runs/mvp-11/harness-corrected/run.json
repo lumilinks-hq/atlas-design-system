@@ -9,7 +9,7 @@
     "briefSha256": "5cb085ea0f29284b5cfa3b26826e1ad0c53840db8a24bc61f1d272ffa10f08ee",
     "starterSha256": "e3ac89bf3f4e3e794495e3de3a1988303a490322752a3911e208ef41f8df2e30",
     "promptSha256": "88cc0a2e27fcc2e46e90109a9d0bcbc1c2ef66c000a9185831c93597c718fa7f",
-    "designContractSha256": "b856a075f47bc8d7e137c410fed7d93d055dbdb15751a924e4f7ecb6b4918eed"
+    "designContractSha256": "3b155abe500c4a8f20056d18ba6c1f1ea304080c44c4aa83c43aa702be84c840"
   },
   "environment": {
     "runner": "codex",
