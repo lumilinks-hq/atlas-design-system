@@ -28,4 +28,6 @@ pnpm public:audit
 pnpm demo:check
 ```
 
+`runs:sanitize`は実行端末のOSユーザー名を`<user>`へ置き換え、`public:audit`は同じ名前が残っていないかを検査する。別端末で作った成果物を検査する場合は`ATLAS_AUDIT_USERNAMES`へカンマ区切りで名前を追加する。CIでは実行ユーザー名が`runner`のような一般語になるため、置き換えと検査のどちらも行わない。
+
 `public:audit`は文字列検査であり、公開承認ではない。差分、画像、イベントログは人が開き、生成過程の説明に必要か、権利と機密性に問題がないかを確認する。

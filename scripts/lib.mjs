@@ -6,20 +6,46 @@ import { spawn } from "node:child_process";
 
 export const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-export async function walk(directory) {
+/**
+ * 文字列をそのままの並びで照合する正規表現へ埋め込めるようエスケープする。
+ * @param {string} value
+ * @returns {string}
+ */
+export function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** ハッシュ計算で無視するディレクトリ名。run-experiment.mjsのcp filterと同じ基準。 */
+export const unhashedDirectories = new Set(["node_modules", ".git"]);
+
+/**
+ * ディレクトリ配下のファイルを絶対パスで列挙する。
+ * @param {string} directory
+ * @param {{ exclude?: Set<string> }} [options] excludeに一致する名前のディレクトリへは降りない。
+ * @returns {Promise<string[]>}
+ */
+export async function walk(directory, options = {}) {
   const entries = await readdir(directory, { withFileTypes: true });
   const paths = [];
 
   for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
     const path = resolve(directory, entry.name);
-    if (entry.isDirectory()) paths.push(...(await walk(path)));
-    else if (entry.isFile()) paths.push(path);
+    if (entry.isDirectory()) {
+      if (options.exclude?.has(entry.name)) continue;
+      paths.push(...(await walk(path, options)));
+    } else if (entry.isFile()) paths.push(path);
   }
 
   return paths;
 }
 
-export async function hashPath(path) {
+/**
+ * ファイルまたはディレクトリのsha256を返す。ディレクトリではnode_modulesと.gitを除く。
+ * @param {string} target
+ * @returns {Promise<string>}
+ */
+export async function hashPath(target) {
+  const path = resolve(target);
   const info = await stat(path);
   const hash = createHash("sha256");
 
@@ -28,7 +54,7 @@ export async function hashPath(path) {
     return hash.digest("hex");
   }
 
-  for (const file of await walk(path)) {
+  for (const file of await walk(path, { exclude: unhashedDirectories })) {
     hash.update(file.slice(path.length));
     hash.update(await readFile(file));
   }

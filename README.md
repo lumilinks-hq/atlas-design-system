@@ -137,4 +137,4 @@ pnpm demo:check
 
 ## 公開時の注意
 
-保存Runにはプロンプト、イベントログ、差分、生成ソース、検証ログが含まれます。Run保存時にローカルパス、秘密情報らしい文字列、端末内のエージェント指示をマスクし、`pnpm public:audit`で公開対象を再検査します。既存Runには`pnpm runs:sanitize --pair <PAIR_ID>`を適用できます。公開する成果物の基準は[`docs/PUBLICATION_POLICY.md`](./docs/PUBLICATION_POLICY.md)、登壇前の確認は[`docs/PRESENTATION_CHECKLIST.md`](./docs/PRESENTATION_CHECKLIST.md)、Run更新とリリース手順は[`docs/RELEASING.md`](./docs/RELEASING.md)にまとめています。第三者ライセンスは[`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md)を参照してください。プロジェクト本体のライセンスは公開前に明示的に選択します。
+保存Runにはプロンプト、イベントログ、差分、生成ソース、検証ログが含まれます。Run保存時にローカルパス、OSユーザー名、秘密情報らしい文字列、端末内のエージェント指示をマスクし、`pnpm public:audit`で公開対象を再検査します。既存Runには`pnpm runs:sanitize --pair <PAIR_ID>`を適用できます。公開する成果物の基準は[`docs/PUBLICATION_POLICY.md`](./docs/PUBLICATION_POLICY.md)、登壇前の確認は[`docs/PRESENTATION_CHECKLIST.md`](./docs/PRESENTATION_CHECKLIST.md)、Run更新とリリース手順は[`docs/RELEASING.md`](./docs/RELEASING.md)にまとめています。第三者ライセンスは[`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md)を参照してください。プロジェクト本体のライセンスは公開前に明示的に選択します。

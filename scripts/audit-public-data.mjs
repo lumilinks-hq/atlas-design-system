@@ -1,6 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
+import { userInfo } from "node:os";
 import { relative, resolve } from "node:path";
-import { rootDir, walk } from "./lib.mjs";
+import { escapeRegExp, rootDir, walk } from "./lib.mjs";
 
 const excludedSegments = new Set([
   ".git",
@@ -26,8 +27,31 @@ const requiredArtifacts = [
   "public/experiments/account-management/runs/mvp-11/harness-corrected-invalid-email.png",
 ];
 
-export function auditText(value, path = "") {
+/**
+ * 検査対象のユーザー名を決める。ATLAS_AUDIT_USERNAMESの指定は常に含める。
+ * CIの実行ユーザー名はrunnerなど一般語になり、run.jsonの"runner"を誤検出するため含めない。
+ * @param {{ env?: Record<string, string | undefined>, username?: string }} [options]
+ * @returns {string[]}
+ */
+export function resolveAuditUsernames(options = {}) {
+  const { env = process.env, username = userInfo().username } = options;
+  const names = [];
+  if (!env.CI && typeof username === "string") names.push(username);
+  for (const name of (env.ATLAS_AUDIT_USERNAMES ?? "").split(",")) names.push(name.trim());
+  return [...new Set(names)].filter((name) => name.length >= 3);
+}
+
+const defaultUsernames = resolveAuditUsernames();
+
+/**
+ * 公開してはいけない文字列を検出する。
+ * @param {string} value
+ * @param {string} [path]
+ * @param {{ usernames?: string[] }} [options]
+ */
+export function auditText(value, path = "", options = {}) {
   const findings = [];
+  const usernames = options.usernames ?? defaultUsernames;
   const rules = [
     ["local-user-path", /\/Users\/(?!example(?:\/|\b))[A-Za-z0-9._-]+/g],
     ["local-temp-path", /\/(?:private\/)?var\/folders\/[A-Za-z0-9/_-]+/g],
@@ -38,6 +62,9 @@ export function auditText(value, path = "") {
   ];
   if (!intentionalFixtures.has(path)) {
     rules.push(["openai-key", /\bsk-[A-Za-z0-9_-]{20,}\b/g]);
+    for (const name of usernames) {
+      rules.push(["local-user-name", new RegExp(`\\b${escapeRegExp(name)}\\b`, "g")]);
+    }
   }
 
   for (const [id, pattern] of intentionalFixtures.has(path) ? [] : rules) {
