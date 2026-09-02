@@ -1,5 +1,6 @@
 {
   "$schema": "../schemas/component.schema.json",
+  "version": "1.0.0",
   "id": "component.link",
   "name": "Link",
   "implementation": "Link",

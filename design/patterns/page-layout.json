@@ -1,5 +1,6 @@
 {
   "$schema": "../schemas/pattern.schema.json",
+  "version": "1.0.0",
   "id": "pattern.page-layout",
   "name": "Page layout",
   "purpose": "業務オブジェクトの関係、重要度、主要操作を、画面をまたいで予測できる順序で配置する",

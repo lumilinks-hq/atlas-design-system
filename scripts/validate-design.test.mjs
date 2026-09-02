@@ -10,6 +10,8 @@ const designDir = resolve(rootDir, "design");
 // validate-design.mjs と同じ設定でスキーマを検証する
 const ajv = new Ajv2020({ allErrors: true, strict: true });
 let validateComponent;
+let validatePattern;
+let validateExample;
 
 async function readJson(path) {
   return JSON.parse(await readFile(resolve(rootDir, path), "utf8"));
@@ -18,6 +20,7 @@ async function readJson(path) {
 // anatomyを持たない最小構成の契約。既存契約と同じ形。
 function componentFixture(overrides = {}) {
   return {
+    version: "1.0.0",
     id: "component.fixture",
     name: "Fixture",
     implementation: "Fixture",
@@ -32,13 +35,68 @@ function componentFixture(overrides = {}) {
   };
 }
 
+function rejectionErrorText(validate, contract) {
+  expect(validate(contract)).toBe(false);
+  return ajv.errorsText(validate.errors, { separator: "\n" });
+}
+
 function validationErrorText(component) {
-  expect(validateComponent(component)).toBe(false);
-  return ajv.errorsText(validateComponent.errors, { separator: "\n" });
+  return rejectionErrorText(validateComponent, component);
+}
+
+// 契約からversionだけを外し、必須指定が効いているかを確かめる
+function withoutVersion(contract) {
+  const rest = { ...contract };
+  delete rest.version;
+  return rest;
 }
 
 beforeAll(async () => {
   validateComponent = ajv.compile(await readJson("design/schemas/component.schema.json"));
+  validatePattern = ajv.compile(await readJson("design/schemas/pattern.schema.json"));
+  validateExample = ajv.compile(await readJson("design/schemas/example.schema.json"));
+});
+
+// スキーマは書式を制約しないので、契約側の表記をここで揃える
+const semver = /^\d+\.\d+\.\d+$/;
+
+describe("契約のversion", () => {
+  it("versionを持たないcomponent契約を拒否する", () => {
+    expect(validationErrorText(withoutVersion(componentFixture()))).toMatch(/must have required property 'version'/);
+  });
+
+  it("versionを持たないpattern契約を拒否する", async () => {
+    const pattern = await readJson("design/patterns/page-layout.json");
+    expect(rejectionErrorText(validatePattern, withoutVersion(pattern))).toMatch(/must have required property 'version'/);
+  });
+
+  it("versionを持たないexample契約を拒否する", async () => {
+    const example = await readJson("design/examples/account-management.json");
+    expect(rejectionErrorText(validateExample, withoutVersion(example))).toMatch(/must have required property 'version'/);
+  });
+
+  it("文字列以外のversionを拒否する", () => {
+    expect(validationErrorText(componentFixture({ version: 1 }))).toMatch(/version must be string/);
+  });
+
+  it("既存のpatternとexampleの契約がversionを持つ", async () => {
+    const files = [
+      "design/patterns/page-layout.json",
+      "design/patterns/spacing-layout.json",
+      "design/examples/account-management.json",
+    ];
+    for (const file of files) {
+      expect((await readJson(file)).version, file).toMatch(semver);
+    }
+  });
+
+  it("既存のすべてのcomponent契約がversionを持つ", async () => {
+    const files = (await readdir(resolve(designDir, "components"))).filter((file) => file.endsWith(".json"));
+    expect(files.length).toBeGreaterThan(0);
+    for (const file of files) {
+      expect((await readJson(`design/components/${file}`)).version, file).toMatch(semver);
+    }
+  });
 });
 
 describe("component契約のanatomy", () => {

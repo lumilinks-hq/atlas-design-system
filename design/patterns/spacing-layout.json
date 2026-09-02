@@ -1,5 +1,6 @@
 {
   "$schema": "../schemas/pattern.schema.json",
+  "version": "1.0.0",
   "id": "pattern.spacing-layout",
   "name": "余白の取り方",
   "purpose": "要素同士の関係と情報の階層を、Atlasの余白トークンで一貫して表現する",

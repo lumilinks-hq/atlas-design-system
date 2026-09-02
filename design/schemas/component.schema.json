@@ -2,9 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "component.schema.json",
   "type": "object",
-  "required": ["id", "name", "implementation", "import", "variants", "sizes", "defaults", "visual", "requirements", "relatedRules"],
+  "required": ["version", "id", "name", "implementation", "import", "variants", "sizes", "defaults", "visual", "requirements", "relatedRules"],
   "properties": {
     "$schema": { "type": "string" },
+    "version": { "type": "string" },
     "id": { "type": "string", "pattern": "^component\\." },
     "name": { "type": "string", "minLength": 1 },
     "implementation": { "type": "string", "minLength": 1 },
