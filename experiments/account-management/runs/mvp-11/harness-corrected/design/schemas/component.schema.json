@@ -30,6 +30,13 @@
       },
       "additionalProperties": false
     },
+    "anatomy": {
+      "description": "この部品の構成要素として使用を許可する@heroui/reactのimport識別子",
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
     "requirements": { "type": "array", "minItems": 1, "items": { "type": "string" } },
     "relatedRules": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
     "layout": {

@@ -8,6 +8,7 @@
   "sizes": ["md"],
   "defaults": { "variant": "default", "size": "md" },
   "visual": { "surfaceOwner": "component", "outerShadow": "required", "radiusToken": "radius.base" },
+  "anatomy": ["toast"],
   "requirements": [
     "成功または失敗した対象を明記する",
     "説明文は敬体で、結果を動詞まで書く",
