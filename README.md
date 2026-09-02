@@ -8,7 +8,7 @@ Atlasは、Design Harnessを用いて設計・検証するデモ用デザイン�
 
 「顧客管理」を実装します。`/customers`の一覧から会社を選び、`/customers/:customerId`の詳細で基本情報と対応状況を確認・更新し、取引が終了した顧客を確認画面付きで削除できる業務機能です。一覧は`CustomerSummary`、詳細は`CustomerDetail`を使用します。Brief、スターター、モデル、HeroUIのバージョンを揃え、プロジェクト固有の設計契約を渡すかどうかだけを変えています。
 
-保存済みの`mvp-11`では、Baselineが`10 pass / 15 fail / 2 review`、Harness初回が`22 pass / 3 fail / 2 review`でした。Harness側へ検査結果を返して修正すると、`25 pass / 0 fail / 2 review`になりました。検査には320px幅の横スクロールや余白の実測など、実ブラウザでの幾何計測を含みます。このデモが見せるのは初回生成の勝敗ではなく、設計情報を機械判定と修正へ接続できるかどうかです。
+保存済みの`mvp-11`では、28ルールの検査でBaselineが`7 pass / 16 fail / 5 review`、Harness初回が`19 pass / 4 fail / 5 review`でした。Harness側へ検査結果を返して修正すると、`23 pass / 0 fail / 5 review`になりました。検査には320px幅の横スクロールや余白の実測など、実ブラウザでの幾何計測を含みます。このデモが見せるのは初回生成の勝敗ではなく、設計情報を機械判定と修正へ接続できるかどうかです。
 
 ## ローカルで見る
 
