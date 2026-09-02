@@ -41,7 +41,6 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .nav-label { margin: 0 0 var(--dh-space-2); padding: 0 var(--dh-space-3); color: var(--dh-text); font-size: .875rem; font-weight: 600; }
 .nav-item { border-radius: var(--dh-radius-base); color: var(--dh-text-muted); font-size: 1rem; line-height: 1.5; padding: 8px 12px; }
 .nav-item-active { background: var(--dh-accent-soft); color: var(--dh-accent); font-weight: 600; }
-.sidebar-footer { display: grid; gap: var(--dh-space-4); }
 .docs-main { min-height: 100vh; margin-inline-start: 280px; }
 .mobile-header, .sidebar-scrim { display: none; }
 
@@ -326,7 +325,7 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .rules-head { color: var(--dh-text-muted); font-size: .875rem; font-weight: 600; }
 
 .play-shell { display: grid; height: 100svh; overflow: hidden; background: var(--dh-surface-muted); grid-template-rows: 64px auto minmax(0, 1fr); }
-.play-header { display: grid; z-index: 2; align-items: center; gap: var(--dh-space-4); border-bottom: 1px solid var(--dh-border); background: var(--dh-surface); padding-inline: var(--dh-space-4); grid-template-columns: auto 1fr auto; }
+.play-header { display: grid; z-index: 2; align-items: center; gap: var(--dh-space-4); border-bottom: 1px solid var(--dh-border); background: var(--dh-surface); padding-inline: var(--dh-space-4); grid-template-columns: auto 1fr; }
 .play-title span { display: block; color: var(--dh-text-muted); font-size: .875rem; font-weight: 600; }
 .play-title h1 { margin: 1px 0 0; font-size: 16px; letter-spacing: -.02em; }
 .play-toolbar { display: grid; align-items: center; gap: var(--dh-space-4); border-bottom: 1px solid var(--dh-border); background: var(--dh-background); padding: var(--dh-space-3) var(--dh-space-4); grid-template-columns: auto minmax(0, 1fr) 180px auto; }
@@ -548,7 +547,6 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
   .scene-nav-item strong { display: none; }
   .play-shell { height: 100svh; grid-template-rows: auto auto minmax(0, 1fr); }
   .play-header { padding-block: var(--dh-space-3); }
-  .play-header > :last-child { display: none; }
   .play-toolbar { grid-template-columns: 1fr minmax(140px, 180px) auto; }
   .play-description { grid-column: 1 / -1; grid-row: 2; justify-content: start; }
 }

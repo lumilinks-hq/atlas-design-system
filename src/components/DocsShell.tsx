@@ -1,7 +1,7 @@
-import { Button, Separator } from "@heroui/react";
-import { Menu, Play, X } from "lucide-react";
+import { Button } from "@heroui/react";
+import { Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 
 const navigation = [
   {
@@ -38,7 +38,6 @@ export function DocsShell() {
   const location = useLocation();
   const mainRef = useRef<HTMLElement>(null);
   const previousPathRef = useRef(location.pathname);
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -110,12 +109,6 @@ export function DocsShell() {
             </div>
           ))}
         </nav>
-        <div className="sidebar-footer">
-          <Separator />
-          <Button fullWidth size="sm" variant="secondary" onPress={() => navigate("/demo/runs/account-management")}>
-            <Play size={15} /> 登壇デモを見る
-          </Button>
-        </div>
       </aside>
 
       {menuOpen && (

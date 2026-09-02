@@ -15,7 +15,7 @@ describe("Atlas Design System demo", () => {
     expect(screen.getByText("Design Harnessを用いて設計・検証する、デモ用のデザインシステムです。")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "導入方法を見る" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "導入方法を見る" })).toHaveClass("button--lg");
-    expect(screen.getByRole("button", { name: "実装比較デモを見る" })).toHaveClass("button--lg");
+    expect(screen.queryByRole("button", { name: "実装比較デモを見る" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "今すぐ使ってみる" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /色、文字、余白/ })).toHaveAttribute("href", "/foundations");
     expect(screen.getByRole("link", { name: /色、文字、余白/ })).toHaveClass("site-card");
