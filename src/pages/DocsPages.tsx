@@ -1,4 +1,5 @@
 import {
+  Alert,
   AlertDialog,
   Button,
   Card,
@@ -6,6 +7,7 @@ import {
   Description,
   Drawer,
   FieldError,
+  Form,
   Input,
   Label,
   Link as HeroLink,
@@ -320,6 +322,15 @@ export function TechnicalSpecsPage() {
   );
 }
 
+const contentTokenLabels: Record<string, string> = {
+  maxWidth: "ページ全体の最大幅",
+  readingWidth: "本文を読みやすい幅",
+};
+
+const breakpointTokenLabels: Record<string, string> = {
+  narrow: "狭い画面へ積み替える幅",
+};
+
 export function FoundationsPage() {
   return (
     <article className="doc-page">
@@ -345,6 +356,24 @@ export function FoundationsPage() {
             </li>
           ))}
         </ul>
+      </section>
+      <section className="token-section">
+        <h2>幅</h2>
+        <p className="token-section-description">ページの最大幅と、狭い画面へ積み替える基準はここで一度だけ決めます。画面ごとに別の値を持ち込みません。</p>
+        <dl className="measure-token-list">
+          {Object.entries(designData.tokens.content).map(([name, value]) => (
+            <div key={name}>
+              <dt>{contentTokenLabels[name] ?? name}<code>content.{name}</code></dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+          {Object.entries(designData.tokens.breakpoint).map(([name, value]) => (
+            <div key={name}>
+              <dt>{breakpointTokenLabels[name] ?? name}<code>breakpoint.{name}</code></dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
       </section>
       <section className="token-section">
         <h2>角丸</h2>
@@ -548,6 +577,21 @@ export function EmployeeCountField() {
     </NumberField>
   );
 }`,
+  "component.form": `import { Button, Description, FieldError, Form, Input, Label, TextField } from "@heroui/react";
+
+export function CustomerRegistrationForm() {
+  return (
+    <Form className="grid gap-6" onSubmit={(event) => event.preventDefault()}>
+      <TextField isRequired name="companyName">
+        <Label>会社名</Label>
+        <Input placeholder="アトラス株式会社" />
+        <Description>請求書に記載する正式名称を入力します。</Description>
+        <FieldError>会社名を入力してください。</FieldError>
+      </TextField>
+      <Button type="submit" variant="primary">顧客を登録</Button>
+    </Form>
+  );
+}`,
   "component.chip": `import { Chip } from "@heroui/react";
 
 export function CustomerStatuses() {
@@ -612,6 +656,28 @@ export function CustomerDeletion() {
         </AlertDialog.Container>
       </AlertDialog.Backdrop>
     </AlertDialog.Root>
+  );
+}`,
+  "component.alert": `import { Alert } from "@heroui/react";
+
+export function CustomerSaveResult() {
+  return (
+    <div className="grid gap-4">
+      <Alert.Root status="danger">
+        <Alert.Indicator />
+        <Alert.Content>
+          <Alert.Title>顧客情報を保存できませんでした</Alert.Title>
+          <Alert.Description>通信が中断されました。入力内容は残っています。もう一度保存してください。</Alert.Description>
+        </Alert.Content>
+      </Alert.Root>
+      <Alert.Root status="success">
+        <Alert.Indicator />
+        <Alert.Content>
+          <Alert.Title>顧客情報を保存しました</Alert.Title>
+          <Alert.Description>株式会社ノーススターの連絡先とステータスを更新しました。</Alert.Description>
+        </Alert.Content>
+      </Alert.Root>
+    </div>
   );
 }`,
   "component.toast": `import { Button, Toast } from "@heroui/react";
@@ -789,6 +855,18 @@ function ComponentPreview({ id }: { id: string }) {
           <Description>顧客企業の現在の従業員数を入力します。</Description>
         </NumberField>
       );
+    case "component.form":
+      return (
+        <Form className="preview-form" onSubmit={(event) => event.preventDefault()}>
+          <TextField isRequired name="companyName">
+            <Label>会社名</Label>
+            <Input placeholder="アトラス株式会社" />
+            <Description>請求書に記載する正式名称を入力します。</Description>
+            <FieldError>会社名を入力してください。</FieldError>
+          </TextField>
+          <Button type="submit" variant="primary">顧客を登録</Button>
+        </Form>
+      );
     case "component.chip":
       return (
         <div className="preview-actions">
@@ -818,6 +896,25 @@ function ComponentPreview({ id }: { id: string }) {
             </AlertDialog.Container>
           </AlertDialog.Backdrop>
         </AlertDialog.Root>
+      );
+    case "component.alert":
+      return (
+        <div className="preview-alert-list">
+          <Alert.Root status="danger">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>顧客情報を保存できませんでした</Alert.Title>
+              <Alert.Description>通信が中断されました。入力内容は残っています。もう一度保存してください。</Alert.Description>
+            </Alert.Content>
+          </Alert.Root>
+          <Alert.Root status="success">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>顧客情報を保存しました</Alert.Title>
+              <Alert.Description>株式会社ノーススターの連絡先とステータスを更新しました。</Alert.Description>
+            </Alert.Content>
+          </Alert.Root>
+        </div>
       );
     case "component.toast":
       return (
@@ -887,6 +984,17 @@ function ComponentExample({ component }: { component: (typeof designData.compone
   );
 }
 
+const surfaceOwnerLabels: Record<string, string> = {
+  component: "コンポーネントが面を持つ",
+  none: "面を持たない",
+};
+
+const outerShadowLabels: Record<string, string> = {
+  required: "必須",
+  allowed: "許可",
+  forbidden: "禁止",
+};
+
 export function ComponentsPage() {
   return (
     <article className="doc-page">
@@ -901,9 +1009,27 @@ export function ComponentsPage() {
               </header>
               <ComponentExample component={component} />
               <div className="component-contract-details">
-                <div><p className="meta-label">利用できるバリエーション</p><p>{component.variants.join(", ")}</p></div>
-                <div><p className="meta-label">利用できるサイズ</p><p>{component.sizes.join(", ")}</p></div>
-                <ul>{component.requirements.map((item) => <li key={item}><Check size={16} />{item}</li>)}</ul>
+                <div className="component-meta-list">
+                  <div><p className="meta-label">利用できるバリエーション</p><p>{component.variants.join(", ")}</p></div>
+                  <div><p className="meta-label">利用できるサイズ</p><p>{component.sizes.join(", ")}</p></div>
+                  <div><p className="meta-label">既定のバリエーション</p><p>{component.defaults.variant}</p></div>
+                  <div><p className="meta-label">既定のサイズ</p><p>{component.defaults.size}</p></div>
+                  <div>
+                    <p className="meta-label">面と影の扱い</p>
+                    <p>
+                      {surfaceOwnerLabels[component.visual.surfaceOwner] ?? component.visual.surfaceOwner}
+                      、外側の影は{outerShadowLabels[component.visual.outerShadow] ?? component.visual.outerShadow}
+                      、角丸は{component.visual.radiusToken}
+                    </p>
+                  </div>
+                </div>
+                <div className="component-requirement-list">
+                  <ul>{component.requirements.map((item) => <li key={item}><Check size={16} />{item}</li>)}</ul>
+                  <div>
+                    <p className="meta-label">関連する検証ルール</p>
+                    <div className="chip-list">{component.relatedRules.map((ruleId) => <Chip key={ruleId} size="sm" variant="soft">{ruleId}</Chip>)}</div>
+                  </div>
+                </div>
               </div>
             </article>
           ))}
@@ -911,6 +1037,34 @@ export function ComponentsPage() {
         <AtlasToastProvider />
       </section>
     </article>
+  );
+}
+
+// レイアウト契約を持たないvariantがあり、valuesのキーもvariantごとに異なる。
+type ContractLayout = {
+  breakpoint?: string;
+  classes?: string[];
+  values?: Record<string, string | undefined>;
+};
+
+function contractLayout(variant: { layout?: ContractLayout }) {
+  return variant.layout;
+}
+
+function LayoutContractDetails({ label, layout }: { label: string; layout: ContractLayout }) {
+  return (
+    <div className="layout-contract">
+      <p className="meta-label">{label}</p>
+      {layout.breakpoint && <p className="layout-contract-breakpoint">切り替えの基準 {layout.breakpoint}</p>}
+      {layout.classes && <div className="structure-list">{layout.classes.map((item) => <span key={item}>{item}</span>)}</div>}
+      {layout.values && (
+        <dl className="layout-contract-values">
+          {Object.entries(layout.values).map(([name, value]) => (
+            <div key={name}><dt>{name}</dt><dd>{value}</dd></div>
+          ))}
+        </dl>
+      )}
+    </div>
   );
 }
 
@@ -955,24 +1109,36 @@ export function PatternPage() {
           <p>画面名ではなく、比較するのか、一つを詳しく見るのか、頻繁に切り替えるのかで判断します。</p>
         </div>
         <div className="variant-grid">
-          {pattern.variants.map((variant) => (
-            <article className="site-card variant-card" key={variant.id}>
-              <div className="layout-preview" data-variant={variant.id} aria-hidden="true">
-                <i className="preview-header" /><i className="preview-heading" /><i className="preview-side" /><i className="preview-main" /><i className="preview-detail" />
-              </div>
-              <div className="variant-copy">
-                <h3>{variant.name}</h3>
-                <p>{variant.useWhen}</p>
-                <dl>
-                  <div><dt><Monitor size={16} />デスクトップ</dt><dd>{variant.desktop}</dd></div>
-                  <div><dt><Smartphone size={16} />狭い画面</dt><dd>{variant.narrow}</dd></div>
-                </dl>
-                <div className="structure-list">{variant.structure.map((item) => <span key={item}>{item}</span>)}</div>
-                <p className="avoid-copy"><strong>避ける場面</strong>{variant.avoidWhen}</p>
-              </div>
-            </article>
-          ))}
+          {pattern.variants.map((variant) => {
+            const layout = contractLayout(variant);
+            return (
+              <article className="site-card variant-card" key={variant.id}>
+                <div className="layout-preview" data-variant={variant.id} aria-hidden="true">
+                  <i className="preview-header" /><i className="preview-heading" /><i className="preview-side" /><i className="preview-main" /><i className="preview-detail" />
+                </div>
+                <div className="variant-copy">
+                  <h3>{variant.name}</h3>
+                  <p>{variant.useWhen}</p>
+                  <dl>
+                    <div><dt><Monitor size={16} />デスクトップ</dt><dd>{variant.desktop}</dd></div>
+                    <div><dt><Smartphone size={16} />狭い画面</dt><dd>{variant.narrow}</dd></div>
+                  </dl>
+                  <div className="structure-list">{variant.structure.map((item) => <span key={item}>{item}</span>)}</div>
+                  {layout && <LayoutContractDetails label="実装で使うレイアウト値" layout={layout} />}
+                  <p className="avoid-copy"><strong>避ける場面</strong>{variant.avoidWhen}</p>
+                </div>
+              </article>
+            );
+          })}
         </div>
+      </section>
+
+      <section className="pattern-section" aria-labelledby="pattern-states-title">
+        <div className="section-heading">
+          <h2 id="pattern-states-title">どのレイアウトでも用意する画面状態</h2>
+          <p>データが揃った状態だけを設計せず、この状態をレイアウトの中で表示できるようにします。</p>
+        </div>
+        <div className="chip-list">{pattern.states.map((state) => <Chip key={state} size="sm" variant="soft">{state}</Chip>)}</div>
       </section>
 
       <section className="pattern-section responsive-section" aria-labelledby="responsive-title">
@@ -1055,17 +1221,21 @@ export function SpacingPatternPage() {
           <p>個別の値を足し引きする前に、配置する場所に近い組み合わせを選びます。</p>
         </div>
         <div className="spacing-recipe-list">
-          {spacingPattern.variants.map((variant) => (
-            <article key={variant.id}>
-              <header><h3>{variant.name}</h3><code>{variant.id}</code></header>
-              <p>{variant.useWhen}</p>
-              <dl>
-                <div><dt>デスクトップ</dt><dd>{variant.desktop}</dd></div>
-                <div><dt>狭い画面</dt><dd>{variant.narrow}</dd></div>
-              </dl>
-              <div className="spacing-token-row">{variant.structure.map((item) => <span key={item}>{item}</span>)}</div>
-            </article>
-          ))}
+          {spacingPattern.variants.map((variant) => {
+            const layout = contractLayout(variant);
+            return (
+              <article key={variant.id}>
+                <header><h3>{variant.name}</h3><code>{variant.id}</code></header>
+                <p>{variant.useWhen}</p>
+                <dl>
+                  <div><dt>デスクトップ</dt><dd>{variant.desktop}</dd></div>
+                  <div><dt>狭い画面</dt><dd>{variant.narrow}</dd></div>
+                </dl>
+                <div className="spacing-token-row">{variant.structure.map((item) => <span key={item}>{item}</span>)}</div>
+                {layout && <LayoutContractDetails label="実装で使う余白トークン" layout={layout} />}
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -1080,6 +1250,14 @@ export function SpacingPatternPage() {
       </section>
     </article>
   );
+}
+
+function componentContractName(componentId: string) {
+  return designData.components.find((component) => component.id === componentId)?.name ?? componentId;
+}
+
+function ruleContractTitle(ruleId: string) {
+  return designData.rules.find((rule) => rule.id === ruleId)?.title ?? ruleId;
 }
 
 export function ExamplePage() {
@@ -1104,6 +1282,16 @@ export function ExamplePage() {
         </div>
         <aside className="contract-reference" aria-label="実装時に参照する契約">
           <div><p className="meta-label">必要な画面状態</p><div className="chip-list">{example.states.map((state) => <Chip key={state} size="sm" variant="soft">{state}</Chip>)}</div></div>
+          <div>
+            <p className="meta-label">組み合わせるコンポーネント</p>
+            <div className="chip-list">{example.components.map((componentId) => <Chip key={componentId} size="sm" variant="soft">{componentContractName(componentId)}</Chip>)}</div>
+          </div>
+          <div>
+            <p className="meta-label">満たす検証ルール</p>
+            <ul className="example-rule-list">
+              {example.rules.map((ruleId) => <li key={ruleId}>{ruleContractTitle(ruleId)}<code>{ruleId}</code></li>)}
+            </ul>
+          </div>
           <div><p className="meta-label">参照する設計データ</p><code>design/examples/account-management.json</code><code>design/patterns/page-layout.json</code><code>design/rules.json</code></div>
         </aside>
       </section>
@@ -1118,6 +1306,12 @@ export function ExamplePage() {
   );
 }
 
+const ruleMethodLabels: Record<string, string> = {
+  automatic: "自動検証",
+  "ai-review": "AIレビュー",
+  human: "人の判断",
+};
+
 export function RulesPage() {
   return (
     <article className="doc-page">
@@ -1126,8 +1320,12 @@ export function RulesPage() {
         <div className="rules-row rules-head" role="row"><span>ルール</span><span>確認方法</span><span>重要度</span></div>
         {designData.rules.map((rule) => (
           <div className="rules-row" role="row" key={rule.id}>
-            <div><strong>{rule.title}</strong><code>{rule.id}</code><p>{rule.description}</p></div>
-            <span>{rule.method}</span>
+            <div>
+              <strong>{rule.title}</strong>
+              <div className="rules-identity"><code>{rule.id}</code><span className="rules-category">{rule.category}</span></div>
+              <p>{rule.description}</p>
+            </div>
+            <span>{ruleMethodLabels[rule.method] ?? rule.method}</span>
             <Chip size="sm" variant="soft">{rule.severity}</Chip>
           </div>
         ))}

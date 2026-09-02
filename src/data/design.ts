@@ -12,10 +12,12 @@ import searchField from "../../design/components/search-field.json";
 import toolbar from "../../design/components/toolbar.json";
 import select from "../../design/components/select.json";
 import numberField from "../../design/components/number-field.json";
+import form from "../../design/components/form.json";
 import chip from "../../design/components/chip.json";
 import surface from "../../design/components/surface.json";
 import drawer from "../../design/components/drawer.json";
 import alertDialog from "../../design/components/alert-dialog.json";
+import alert from "../../design/components/alert.json";
 import toast from "../../design/components/toast.json";
 export {
   accountManagementTableUsage,
@@ -33,5 +35,5 @@ export const designData = {
   pattern,
   spacingPattern,
   example,
-  components: [button, link, table, toolbar, searchField, card, textField, select, numberField, chip, surface, drawer, alertDialog, toast],
+  components: [button, link, table, toolbar, searchField, card, textField, select, numberField, form, chip, surface, drawer, alertDialog, alert, toast],
 };
