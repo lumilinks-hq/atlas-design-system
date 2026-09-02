@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import * as z from "zod/v4";
 import { atlasResources, readAtlasResource, resolveDesignContract } from "../design-catalog.mjs";
+import "../validate-design.mjs";
 
 export function createAtlasMcpServer() {
   const server = new McpServer({ name: "atlas-design-system", version: "1.0.0" });
@@ -50,7 +51,7 @@ async function main() {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
-    console.error(error);
+    console.error(error instanceof Error ? error.message : "Atlas MCP server failed");
     process.exitCode = 1;
   });
 }
