@@ -1,0 +1,20 @@
+{
+  "$schema": "../schemas/component.schema.json",
+  "id": "component.link",
+  "name": "Link",
+  "implementation": "Link",
+  "import": "@heroui/react",
+  "variants": ["default"],
+  "sizes": ["md"],
+  "defaults": { "variant": "default", "size": "md" },
+  "visual": { "surfaceOwner": "none", "outerShadow": "forbidden", "radiusToken": "radius.base" },
+  "requirements": [
+    "画面やビューへの移動にはhrefまたはtoを持つリンクを使う",
+    "詳細画面へ移動するTableのオブジェクト名はリンクにし、ButtonとonPressで代用しない",
+    "親の一覧へ戻るLinkはPageHeadingより前のBackNavigation領域に置く",
+    "React Routerを使う場合はRouterLinkへHeroUIのlinkクラスを適用する",
+    "編集、削除、保存など現在の対象を変更する操作にはButtonを使う",
+    "リンクはCmd、Ctrl、ミドルクリックで新しいタブへ開ける状態を保つ"
+  ],
+  "relatedRules": ["component.approved", "a11y.control-name", "navigation.link-semantics", "layout.back-navigation"]
+}

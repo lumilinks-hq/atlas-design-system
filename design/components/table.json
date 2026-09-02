@@ -4,12 +4,34 @@
   "name": "Table",
   "implementation": "Table",
   "import": "@heroui/react",
-  "variants": ["default"],
+  "variants": ["primary"],
   "sizes": ["md"],
+  "defaults": {
+    "variant": "primary",
+    "size": "md"
+  },
+  "visual": {
+    "surfaceOwner": "component",
+    "outerShadow": "forbidden",
+    "radiusToken": "radius.base"
+  },
   "requirements": [
-    "列見出しを省略しない",
+    "Table.Root、Table.ScrollContainer、Table.Contentの順に組み立てる",
+    "標準variantはprimaryとし、Table自身の角丸へradius.baseを適用し、外側へ独自の背景、角丸、影を重ねない",
+    "列はid、見出し、幅、最小幅、揃えを持つ定義配列として管理し、HeaderとRowで同じ定義を参照する",
+    "一覧の識別子になる列へisRowHeaderを指定する",
+    "詳細ビューへ移動する識別子はLinkにし、Buttonで画面遷移させない",
+    "日付と数値は末尾揃えにし、font-variant-numeric: tabular-numsを適用する",
     "状態を色だけで示さない",
-    "狭い画面では情報の優先順位を保ってスクロール可能にする"
+    "狭い画面では横スクロールへ押し込まず、情報の優先順位を保ったリストへ切り替える"
   ],
-  "relatedRules": ["component.approved", "a11y.color-only", "layout.narrow"]
+  "relatedRules": [
+    "component.approved",
+    "component.table.variant",
+    "component.table.columns",
+    "component.table.surface",
+    "navigation.link-semantics",
+    "a11y.color-only",
+    "layout.narrow"
+  ]
 }

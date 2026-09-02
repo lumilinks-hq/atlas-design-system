@@ -101,12 +101,14 @@
     "component.toolbar",
     "component.search-field",
     "component.card",
+    "component.form",
     "component.text-field",
     "component.select",
     "component.chip",
     "component.surface",
     "component.drawer",
     "component.alert-dialog",
+    "component.alert",
     "component.toast"
   ],
   "rules": [

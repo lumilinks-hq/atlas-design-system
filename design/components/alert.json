@@ -1,0 +1,18 @@
+{
+  "$schema": "../schemas/component.schema.json",
+  "id": "component.alert",
+  "name": "Alert",
+  "implementation": "Alert",
+  "import": "@heroui/react",
+  "variants": ["default", "accent", "success", "warning", "danger"],
+  "sizes": ["md"],
+  "defaults": { "variant": "default", "size": "md" },
+  "visual": { "surfaceOwner": "component", "outerShadow": "forbidden", "radiusToken": "radius.base" },
+  "requirements": [
+    "画面内に残す必要がある状態や結果をAlertで示し、時間で消えるToastだけに任せない",
+    "Alert.Rootのstatusへ契約のvariant名を指定し、伝えたい意味と一致させる",
+    "状態を色だけで示さず、Alert.TitleとAlert.Descriptionに状態と内容を文章で書く",
+    "失敗を伝える場合は原因と次に行う操作を書き、対象の操作の近くに置く"
+  ],
+  "relatedRules": ["component.approved", "a11y.color-only", "a11y.error-recovery", "state.failure"]
+}

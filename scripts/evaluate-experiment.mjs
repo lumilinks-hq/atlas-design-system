@@ -104,6 +104,26 @@ const approvedComponents = new Map(
   ]),
 );
 
+// exampleが参照する契約の集合。importの許可リストとcomponentUsageの判定はここから導く
+const exampleComponentContracts = accountManagementExample.components.map((componentId) =>
+  JSON.parse(
+    readFileSync(resolve(rootDir, "design", "components", `${componentId.slice("component.".length)}.json`), "utf8"),
+  ),
+);
+
+// @heroui/reactからimportしてよい識別子。契約単位の親子関係は見ず、全契約の和集合で判定する。
+// text-fieldのLabelをSelect.Rootの中で使うような正しい組み合わせを誤検知しないため
+export const approvedHeroUiImportNames = new Set(
+  exampleComponentContracts.flatMap((contract) => [contract.implementation, ...(contract.anatomy ?? [])]),
+);
+
+// exampleのcomponentUsageが「この画面で使う」と宣言している部品
+const requiredComponentUsage = Object.keys(accountManagementExample.componentUsage).map((componentId) => {
+  const contract = exampleComponentContracts.find((item) => item.id === componentId);
+  if (!contract) throw new Error(`${componentId}: componentUsageの契約がexampleのcomponentsにありません`);
+  return { name: contract.name, implementation: contract.implementation };
+});
+
 function result(id, status, evidence) {
   return { id, status, evidence };
 }
@@ -128,6 +148,45 @@ function findJsxOpenings(sourceFile, tagName) {
   };
   visit(sourceFile);
   return matches;
+}
+
+// @heroui/reactからのnamed importを契約名で集める。asで別名を付けていても元の名前で判定し、
+// 型だけのimportは実行時に部品を増やさないため対象外にする
+function findHeroUiImportNames(sourceFile) {
+  const names = [];
+  for (const statement of sourceFile.statements) {
+    if (!ts.isImportDeclaration(statement)) continue;
+    if (!ts.isStringLiteral(statement.moduleSpecifier)) continue;
+    if (statement.moduleSpecifier.text !== "@heroui/react") continue;
+    const clause = statement.importClause;
+    if (!clause || clause.isTypeOnly) continue;
+    if (!clause.namedBindings || !ts.isNamedImports(clause.namedBindings)) continue;
+    for (const element of clause.namedBindings.elements) {
+      if (element.isTypeOnly) continue;
+      names.push((element.propertyName ?? element.name).text);
+    }
+  }
+  return names;
+}
+
+// <Toolbar.Root>をToolbarとして数えるため、ドット記法の先頭の識別子まで辿る
+function getJsxBaseName(name) {
+  if (ts.isPropertyAccessExpression(name)) return getJsxBaseName(name.expression);
+  if (ts.isIdentifier(name)) return name.text;
+  return undefined;
+}
+
+function collectJsxBaseNames(sourceFile) {
+  const names = new Set();
+  const visit = (node) => {
+    if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
+      const base = getJsxBaseName(node.tagName);
+      if (base) names.add(base);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+  return names;
 }
 
 function findJsxElements(sourceFile, tagName) {
@@ -431,18 +490,39 @@ function evaluateTableContract(app, styles) {
 
 function evaluateComponentVariants(sourceFile) {
   const invalid = [];
+  const dynamic = [];
   for (const [tagName, component] of approvedComponents) {
     for (const opening of findJsxOpenings(sourceFile, tagName)) {
-      const value = getJsxAttributeValue(getJsxAttribute(opening, "variant"));
-      if (typeof value === "string" && !component.variants.includes(value)) {
-        invalid.push(`${component.name}: ${value}`);
+      const attribute = getJsxAttribute(opening, "variant");
+      if (!attribute) continue;
+      const value = getJsxAttributeValue(attribute);
+      if (typeof value === "string") {
+        if (!component.variants.includes(value)) invalid.push(`${component.name}: ${value}`);
+        continue;
       }
+      // 式で渡されたvariantは静的に契約と突き合わせられない。素通りさせず人の確認へ回す
+      dynamic.push(`動的なvariantのため機械判定不能: ${component.name} ${attribute.getText()}`);
     }
   }
+  // リテラルの契約違反は確定した違反なので、判定不能より優先してfailedにする
+  const status = invalid.length > 0 ? "failed" : dynamic.length > 0 ? "review" : "passed";
   return result(
     "component.variants",
-    invalid.length === 0 ? "passed" : "failed",
-    invalid.length === 0 ? ["静的に指定されたvariantはAtlas契約内"] : [...new Set(invalid)],
+    status,
+    status === "passed" ? ["静的に指定されたvariantはAtlas契約内"] : [...new Set([...invalid, ...dynamic])],
+  );
+}
+
+function evaluateComponentUsage(sourceFile) {
+  const rendered = collectJsxBaseNames(sourceFile);
+  // importしただけで描画していない部品は「使っている」とみなさない
+  const missing = requiredComponentUsage.filter((entry) => !rendered.has(entry.implementation));
+  return result(
+    "component.usage",
+    missing.length === 0 ? "passed" : "failed",
+    missing.length === 0
+      ? ["exampleのcomponentUsageが求める部品はすべて実装に現れています"]
+      : missing.map((entry) => `${entry.name}: componentUsageで求められていますが実装に現れません`),
   );
 }
 
@@ -694,6 +774,14 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
       issueScopeMatches.length,
     ]);
   }
+  const unapprovedImports = [...new Set(findHeroUiImportNames(sourceFile))].filter(
+    (name) => !approvedHeroUiImportNames.has(name),
+  );
+  // 独自HTML部品とimportの契約外部品は、どちらもcomponent.approvedの違反として同じruleで報告する
+  const approvedViolations = [
+    ...nativePrimitives.map(([name, count]) => `${name}: ${count}件`),
+    ...unapprovedImports.map((name) => `契約にないHeroUI import: ${name}`),
+  ];
   const rawColorCount = countMatches(styles, /#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(/g);
   const missingStates = requiredStates.filter((state) => !source.includes(state));
   const hasFormLabel = /<label\b|<Label\b|aria-label=/.test(app);
@@ -909,11 +997,10 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
   return [
     result(
       "component.approved",
-      nativePrimitives.length === 0 ? "passed" : "failed",
-      nativePrimitives.length === 0
-        ? ["契約対象の独自HTML部品は検出されませんでした"]
-        : nativePrimitives.map(([name, count]) => `${name}: ${count}件`),
+      approvedViolations.length === 0 ? "passed" : "failed",
+      approvedViolations.length === 0 ? ["契約対象の独自HTML部品は検出されませんでした"] : approvedViolations,
     ),
+    evaluateComponentUsage(sourceFile),
     evaluateComponentVariants(sourceFile),
     tableContract.variant,
     tableContract.columns,
@@ -935,8 +1022,15 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
     result("a11y.control-name", "review", ["実ブラウザのaccessibility treeで確認する"]),
     evaluateCollectionItemNames(sourceFile),
     result("a11y.form-label", hasFormLabel ? "passed" : "failed", [hasFormLabel ? "視覚ラベルまたはaria-labelあり" : "入力ラベルを確認できません"]),
-    result("a11y.error-recovery", hasRecoveryCopy ? "passed" : "failed", [hasRecoveryCopy ? "原因または回復方法の文言あり" : "回復方法の文言が不足しています"]),
-    result("a11y.color-only", hasStatusCopy ? "passed" : "failed", [hasStatusCopy ? "状態名を文字で表示" : "状態を示す文字が不足しています"]),
+    // 文言の有無しか見ていないため合否は決めず、所見だけを残してレビューへ回す
+    result("a11y.error-recovery", "review", [
+      hasRecoveryCopy ? "参考: 原因または回復方法の文言を検出" : "参考: 回復方法の文言を検出できず",
+      "文言の実際の伝わり方はAIレビューと人の確認で判定する",
+    ]),
+    result("a11y.color-only", "review", [
+      hasStatusCopy ? "参考: 状態名の文字表示を検出" : "参考: 状態を示す文字を検出できず",
+      "色以外の手掛かりが実画面で読めるかはAIレビューと人の確認で判定する",
+    ]),
     result("business.customer-name", hasCustomerNameGuard ? "passed" : "failed", [hasCustomerNameGuard ? "顧客名の必須制御あり" : "顧客名の必須制御を確認できません"]),
     result("business.contact-email", hasEmailGuard ? "passed" : "failed", [hasEmailGuard ? "メール形式の入力制御あり" : "メール形式の入力制御を確認できません"]),
     result(
@@ -1010,7 +1104,11 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
         ],
       ),
     result("state.loading", hasLoadingGuard ? "passed" : "failed", [hasLoadingGuard ? "保存中のdisabled制御あり" : "二重送信防止を確認できません"]),
-    result("state.failure", hasRetry ? "passed" : "failed", [hasRetry ? "失敗後の再試行経路あり" : "再試行経路を確認できません"]),
+    // 再試行の文言を検出しても実際に再試行できるかまでは分からないため、合否は決めない
+    result("state.failure", "review", [
+      hasRetry ? "参考: 失敗と再試行の文言を検出" : "参考: 再試行の文言を検出できず",
+      "失敗後に再試行できるかはAIレビューと人の確認で判定する",
+    ]),
     result("color.semantic", "review", ["semantic colorの意味はblind reviewする"]),
     result("action.confirmation", !hasDestructiveAction || hasConfirmation ? "passed" : "failed", [confirmationEvidence]),
     result(
