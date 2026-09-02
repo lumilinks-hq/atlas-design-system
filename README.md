@@ -1,6 +1,6 @@
-# Atlas Design System Demo
+# Atlas Design System
 
-Atlasは、Design Harnessを用いて設計・検証するデモ用デザインシステムです。同じB2B画面を、設計契約なしのBaselineと、Atlasを参照する条件でAIに実装させ、その差と修正過程を確認できます。UI基盤には[HeroUI](https://www.heroui.com/)、公開サイトの書体には[Gen Interface JP](https://gen.typesetting.jp/)を使っています。
+Atlasは、[デザインハーネス](https://design-harness.com/)を用いて設計・検証するデモ用デザインシステムです。同じB2B画面を、設計契約なしのBaselineと、Atlasを参照する条件でAIに実装させ、その差と修正過程を確認できます。UI基盤には[HeroUI](https://www.heroui.com/)を使っています。
 
 公開サイトはデザインシステムの参照資料、Presenter modeはカンファレンスやウェビナーで使う保存済みRunの再生画面です。閲覧時にAIやAPIキーは使いません。
 
