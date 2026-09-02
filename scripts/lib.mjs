@@ -62,6 +62,13 @@ export function runCommand(command, args, options = {}) {
     child.stdin.end();
     let stdout = "";
     let stderr = "";
+    let timedOut = false;
+    const timeout = options.timeoutMs
+      ? setTimeout(() => {
+          timedOut = true;
+          child.kill("SIGTERM");
+        }, options.timeoutMs)
+      : undefined;
     child.stdout.on("data", (chunk) => {
       stdout += chunk;
       options.onStdout?.(chunk);
@@ -70,8 +77,18 @@ export function runCommand(command, args, options = {}) {
       stderr += chunk;
       options.onStderr?.(chunk);
     });
-    child.on("error", (error) => resolveRun({ code: -1, stdout, stderr: `${stderr}${error.message}` }));
-    child.on("close", (code) => resolveRun({ code: code ?? -1, stdout, stderr }));
+    child.on("error", (error) => {
+      if (timeout) clearTimeout(timeout);
+      resolveRun({ code: -1, stdout, stderr: `${stderr}${error.message}` });
+    });
+    child.on("close", (code) => {
+      if (timeout) clearTimeout(timeout);
+      resolveRun({
+        code: timedOut ? 124 : code ?? -1,
+        stdout,
+        stderr: timedOut ? `${stderr}\nTimed out after ${options.timeoutMs}ms\n` : stderr,
+      });
+    });
   });
 }
 
