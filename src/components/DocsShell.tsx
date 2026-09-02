@@ -29,7 +29,7 @@ const navigation = [
   },
   {
     label: "利用例",
-    items: [{ label: "顧客企業管理", to: "/examples/account-management" }],
+    items: [{ label: "顧客管理", to: "/examples/account-management" }],
   },
 ];
 
@@ -58,7 +58,7 @@ export function DocsShell() {
       "/components": "コンポーネント — Atlas Design System",
       "/patterns/page-layout": "ページレイアウト — Atlas Design System",
       "/patterns/spacing-layout": "余白の取り方 — Atlas Design System",
-      "/examples/account-management": "顧客企業の契約・利用状況管理 — Atlas Design System",
+      "/examples/account-management": "顧客管理 — Atlas Design System",
       "/rules": "検証ルール — Atlas Design System",
     };
     document.title = titles[location.pathname] ?? "Atlas Design System";
@@ -118,7 +118,15 @@ export function DocsShell() {
         </div>
       </aside>
 
-      {menuOpen && <button className="sidebar-scrim" aria-label="メニューを閉じる" onClick={() => setMenuOpen(false)} />}
+      {menuOpen && (
+        <Button
+          aria-label="メニューを閉じる"
+          className="sidebar-scrim"
+          isIconOnly
+          variant="ghost"
+          onPress={() => setMenuOpen(false)}
+        />
+      )}
 
       <main className="docs-main" id="main-content" ref={mainRef} tabIndex={-1}>
         <Outlet />
