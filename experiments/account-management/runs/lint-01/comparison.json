@@ -1,0 +1,133 @@
+{
+  "pairId": "lint-01",
+  "experimentId": "experiment.account-management",
+  "conditionsMatch": true,
+  "blindOrder": {
+    "A": "harness",
+    "B": "baseline"
+  },
+  "reveal": {
+    "baseline": "lint-01-baseline",
+    "harness": "lint-01-harness"
+  },
+  "checks": {
+    "baseline": [
+      {
+        "name": "typecheck",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "lint",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "test",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "build",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "design-rules",
+        "status": "failed",
+        "exitCode": 1
+      }
+    ],
+    "harness": [
+      {
+        "name": "typecheck",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "lint",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "test",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "build",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "design-rules",
+        "status": "passed",
+        "exitCode": 0
+      }
+    ]
+  },
+  "review": {
+    "baseline": {
+      "reviewedAt": "2026-09-03T08:46:50.396Z",
+      "model": "claude-opus-5",
+      "findings": [
+        {
+          "ruleId": "a11y.control-name",
+          "verdict": "pass",
+          "note": "詳細画面の操作要素は「編集」「削除」「顧客一覧へ戻る」でいずれも文字ラベルを持ち、デスクトップ・モバイルともアイコンだけの操作要素は見当たらない。"
+        },
+        {
+          "ruleId": "a11y.error-recovery",
+          "verdict": "concern",
+          "note": "詳細画面には「削除」という取り消しの効かない操作があるが、4枚のいずれにも失敗時のメッセージ領域や再操作の案内が確保されておらず、何が起きたか・次に何をするかを示す場所が画面上に見当たらない。"
+        },
+        {
+          "ruleId": "a11y.color-only",
+          "verdict": "pass",
+          "note": "一覧・詳細のステータスバッジは緑／青／グレーの地色に加えて「利用中」「商談中」「休眠」と状態名が文字で入っており、モバイルでも折り返した状態名が読める。"
+        },
+        {
+          "ruleId": "state.failure",
+          "verdict": "concern",
+          "note": "削除・編集の実行結果を残す領域が画面内になく、失敗しても一覧・詳細の見た目は成功時と同じままで、再試行の入口となるボタンやエラー行が確認できない。"
+        },
+        {
+          "ruleId": "color.semantic",
+          "verdict": "pass",
+          "note": "詳細画面で赤系の面と文字色は「削除」だけに使われ、「編集」や「顧客一覧へ戻る」は中立色になっているため、危険色が通常操作に回っていない。"
+        }
+      ]
+    },
+    "harness": {
+      "reviewedAt": "2026-09-03T08:47:08.865Z",
+      "model": "claude-opus-5",
+      "findings": [
+        {
+          "ruleId": "a11y.control-name",
+          "verdict": "pass",
+          "note": "操作要素は検索フィールド、「顧客を編集」「顧客を削除」、「顧客一覧へ戻る」のみで、いずれもテキストラベルを持つ。検索欄の虫眼鏡アイコンは装飾で、プレースホルダー「企業名で検索」が付いているためアイコンのみの操作は見当たらない。"
+        },
+        {
+          "ruleId": "a11y.error-recovery",
+          "verdict": "concern",
+          "note": "一覧・詳細ともエラー表示が画面上に一切なく、検索結果ゼロ件や取得失敗時に何が起きたか・次に何をすればよいかを示す領域が確認できない。"
+        },
+        {
+          "ruleId": "a11y.color-only",
+          "verdict": "pass",
+          "note": "ステータスは「利用中」「商談中」「休眠」と状態名がテキストで書かれており、バッジの色だけに依存していない。"
+        },
+        {
+          "ruleId": "state.failure",
+          "verdict": "concern",
+          "note": "編集・削除の後に失敗が起きた場合の残存表示が画面上に確認できず、再試行導線（エラー領域や再実行ボタン）がどこにも見当たらない。"
+        },
+        {
+          "ruleId": "color.semantic",
+          "verdict": "pass",
+          "note": "赤系（淡いピンク背景＋赤文字）は「顧客を削除」にのみ使われ、通常操作の「顧客を編集」は青のプライマリで区別されている。"
+        }
+      ]
+    }
+  }
+}

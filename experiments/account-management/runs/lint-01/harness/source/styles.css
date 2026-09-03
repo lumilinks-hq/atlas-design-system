@@ -1,0 +1,154 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+@import "../design/component-theme.css";
+@import "../design/layout.css";
+
+:root {
+  color: var(--dh-text);
+  background: var(--dh-background);
+}
+
+html {
+  font-family:
+    "Hiragino Sans",
+    "Hiragino Kaku Gothic ProN",
+    "Yu Gothic UI",
+    "Yu Gothic",
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--dh-background);
+  color: var(--dh-text);
+  font-size: var(--dh-type-body);
+  line-height: var(--dh-type-line-height-body);
+}
+
+a {
+  color: inherit;
+}
+
+/* アプリケーションヘッダー: pattern.page-layout の anatomy#app-header */
+.app-header {
+  border-bottom: 1px solid var(--dh-border);
+  background: color-mix(in oklch, var(--dh-surface) 92%, var(--dh-accent-soft));
+}
+
+.app-header__inner {
+  padding-block: var(--dh-space-4);
+}
+
+.app-header__eyebrow {
+  margin: 0 0 var(--dh-space-1);
+  color: var(--dh-text-muted);
+  font-size: var(--dh-type-small);
+}
+
+.app-header__name {
+  font-size: var(--dh-type-heading);
+  line-height: var(--dh-type-line-height-heading);
+}
+
+/* 戻るナビゲーション: layout.back-navigation（間隔は .detail-page__heading が持つ） */
+.back-link {
+  width: fit-content;
+}
+
+/* ページ見出しの操作群: inline-actions（space.2） */
+.detail-actions {
+  display: flex;
+  gap: var(--dh-space-2);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* Drawer / AlertDialog の内側: pattern.spacing-layout#dialog-content */
+.drawer-body {
+  display: grid;
+  gap: var(--dh-space-8);
+}
+
+.drawer-description {
+  margin: 0;
+  color: var(--dh-text-muted);
+}
+
+.alert-dialog__body {
+  display: grid;
+  gap: var(--dh-space-4);
+}
+
+.alert-dialog__body p {
+  margin: 0;
+}
+
+/* 詳細セクションの内側: surface-content（要素間 space.4 / space.1） */
+.detail-section__content {
+  display: grid;
+  gap: var(--dh-space-4);
+}
+
+.detail-list {
+  margin: 0;
+  display: grid;
+  gap: var(--dh-space-4);
+}
+
+.detail-row {
+  display: grid;
+  gap: var(--dh-space-1);
+}
+
+.detail-row dt {
+  color: var(--dh-text-muted);
+  font-size: var(--dh-type-small);
+}
+
+.detail-row dd {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.empty-state {
+  background: var(--dh-surface);
+}
+
+/* SearchField: desktop 16rem / narrow 100%（.search-field の正本を上書きしない） */
+.collection-toolbar .search-field {
+  width: 100%;
+  max-width: 16rem;
+}
+
+@media (max-width: 767px) {
+  .detail-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .detail-actions > * {
+    width: 100%;
+  }
+
+  .detail-actions .button {
+    width: 100%;
+  }
+
+  .collection-toolbar .search-field {
+    max-width: none;
+  }
+}

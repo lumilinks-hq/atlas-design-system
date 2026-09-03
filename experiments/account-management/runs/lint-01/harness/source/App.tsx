@@ -1,0 +1,777 @@
+import {
+  Alert,
+  AlertDialog,
+  Button,
+  Card,
+  Chip,
+  Description,
+  Drawer,
+  FieldError,
+  Form,
+  Input,
+  Label,
+  Link,
+  ListBox,
+  SearchField,
+  Select,
+  Table,
+  TextField,
+  Toast,
+  Toolbar,
+  toast,
+} from "@heroui/react";
+import { useEffect, useId, useState, type ReactNode } from "react";
+import { HashRouter, Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
+import {
+  type CustomerDetail,
+  type CustomerStatus,
+  type CustomerSummary,
+  deleteCustomer,
+  getCustomerDetail,
+  listCustomerSummaries,
+  updateCustomer,
+} from "./fixtures";
+
+/** 保存・削除の非同期処理を再現する待ち時間 */
+const SUBMIT_DELAY_MS = 120;
+
+const STATUS_OPTIONS: Array<{ id: CustomerStatus; label: CustomerStatus }> = [
+  { id: "商談中", label: "商談中" },
+  { id: "利用中", label: "利用中" },
+  { id: "休眠", label: "休眠" },
+];
+
+/**
+ * 一覧列定義 Rule / component.table.columns
+ * design/examples/account-management.json の component.table.columns を正本とし、
+ * Header と Row が同じ定義を参照する。
+ */
+type CustomerTableColumn = {
+  id: "companyName" | "contactName" | "lastContactedAt" | "status";
+  label: string;
+  width: string;
+  minWidth: number;
+  align: "start" | "end";
+  isRowHeader?: boolean;
+  tabular?: boolean;
+};
+
+const CUSTOMER_TABLE_COLUMNS: CustomerTableColumn[] = [
+  { id: "companyName", label: "企業名", width: "38%", minWidth: 240, align: "start", isRowHeader: true },
+  { id: "contactName", label: "担当者", width: "22%", minWidth: 160, align: "start" },
+  { id: "lastContactedAt", label: "最終対応日", width: "22%", minWidth: 160, align: "end", tabular: true },
+  { id: "status", label: "ステータス", width: "18%", minWidth: 128, align: "start" },
+];
+
+type DetailScreenState =
+  | "default"
+  | "drawer-open"
+  | "invalid-email"
+  | "loading"
+  | "success"
+  | "failure"
+  | "delete-confirm";
+
+const DETAIL_SCREEN_STATES: readonly DetailScreenState[] = [
+  "default",
+  "drawer-open",
+  "invalid-email",
+  "loading",
+  "success",
+  "failure",
+  "delete-confirm",
+];
+
+type EditableCustomerFields = Pick<CustomerDetail, "companyName" | "contactName" | "email" | "status">;
+type FormErrors = Partial<Record<keyof EditableCustomerFields, string>>;
+type FeedbackTone = "success" | "danger";
+type SaveMessage = { tone: FeedbackTone; title: string; description: string };
+
+type DetailViewModel = {
+  customer: CustomerDetail | null;
+  draft: EditableCustomerFields | null;
+  isEditOpen: boolean;
+  isDeleteOpen: boolean;
+  errors: FormErrors;
+  saveMessage: SaveMessage | null;
+};
+
+function isDetailScreenState(value: string | null): value is DetailScreenState {
+  return value !== null && DETAIL_SCREEN_STATES.includes(value as DetailScreenState);
+}
+
+function getDetailScreenState(rawState: string | null): DetailScreenState {
+  return isDetailScreenState(rawState) ? rawState : "default";
+}
+
+function buildDetailHref(customerId: string, screenState?: string) {
+  return screenState ? `#/customers/${customerId}?state=${screenState}` : `#/customers/${customerId}`;
+}
+
+function buildListHref() {
+  return "#/customers";
+}
+
+/** 色だけで状態を伝えないため、Chip には必ず状態名を併記する（a11y.color-only） */
+function getStatusVariant(status: CustomerStatus) {
+  if (status === "利用中") return "secondary";
+  if (status === "商談中") return "primary";
+  return "tertiary";
+}
+
+function isEmailValid(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function toDraft(customer: CustomerDetail): EditableCustomerFields {
+  return {
+    companyName: customer.companyName,
+    contactName: customer.contactName,
+    email: customer.email,
+    status: customer.status,
+  };
+}
+
+/** state query から画面状態を再現するための、編集途中の下書き */
+function toEditedDraft(customer: CustomerDetail): EditableCustomerFields {
+  return {
+    companyName: `${customer.companyName} CS支援`,
+    contactName: `${customer.contactName} 担当`,
+    email: "team-success@example.com",
+    status: "商談中",
+  };
+}
+
+function buildDetailViewModel(customerId: string, screenState: DetailScreenState): DetailViewModel {
+  const loadedCustomer = getCustomerDetail(customerId);
+
+  if (!loadedCustomer) {
+    return { customer: null, draft: null, isEditOpen: false, isDeleteOpen: false, errors: {}, saveMessage: null };
+  }
+
+  const savedDraft = toDraft(loadedCustomer);
+  const editedDraft = toEditedDraft(loadedCustomer);
+
+  const draftByState: Record<DetailScreenState, EditableCustomerFields> = {
+    default: savedDraft,
+    "drawer-open": savedDraft,
+    "invalid-email": { ...editedDraft, email: "invalid-email" },
+    loading: editedDraft,
+    failure: editedDraft,
+    success: savedDraft,
+    "delete-confirm": savedDraft,
+  };
+
+  const saveMessageByState: Partial<Record<DetailScreenState, SaveMessage>> = {
+    success: {
+      tone: "success",
+      title: "顧客情報を保存しました",
+      description: "変更した会社名、担当者名、メールアドレス、ステータスを詳細に反映しました。",
+    },
+    failure: {
+      tone: "danger",
+      title: "顧客情報を保存できませんでした",
+      description: "入力内容はそのまま残しています。内容を確認して、もう一度保存してください。",
+    },
+  };
+
+  return {
+    customer: screenState === "success" ? { ...loadedCustomer, ...editedDraft } : loadedCustomer,
+    draft: draftByState[screenState],
+    isEditOpen:
+      screenState === "drawer-open" ||
+      screenState === "invalid-email" ||
+      screenState === "loading" ||
+      screenState === "failure",
+    isDeleteOpen: screenState === "delete-confirm",
+    errors: screenState === "invalid-email" ? { email: "メールアドレスの形式を確認してください。" } : {},
+    saveMessage: saveMessageByState[screenState] ?? null,
+  };
+}
+
+/** breakpoint.narrow(768px) を境に、テーブルとモバイルリストを入れ替える（layout.narrow） */
+function useIsNarrowLayout() {
+  const query = "(max-width: 767px)";
+  const getMatches = () =>
+    typeof window.matchMedia === "function" ? window.matchMedia(query).matches : false;
+  const [isNarrow, setIsNarrow] = useState(getMatches);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+
+    const mediaQuery = window.matchMedia(query);
+    const handleChange = (event: MediaQueryListEvent) => setIsNarrow(event.matches);
+
+    setIsNarrow(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  return isNarrow;
+}
+
+function AppHeader() {
+  return (
+    <header className="app-header">
+      <div className="page-shell app-header__inner">
+        <p className="app-header__eyebrow">営業・CS</p>
+        <strong className="app-header__name">顧客管理</strong>
+      </div>
+    </header>
+  );
+}
+
+/** 画面内に残す結果表示。Toast だけに結果を委ねない（state.failure / a11y.error-recovery） */
+function StatusFeedback({
+  title,
+  description,
+  tone = "success",
+}: {
+  title: string;
+  description: string;
+  tone?: FeedbackTone;
+}) {
+  return (
+    <Alert.Root status={tone}>
+      <Alert.Content>
+        <Alert.Title>{title}</Alert.Title>
+        <Alert.Description>{description}</Alert.Description>
+      </Alert.Content>
+    </Alert.Root>
+  );
+}
+
+function EmptyState({ title, description }: { title: string; description: string }) {
+  return (
+    <Card.Root className="empty-state">
+      <Card.Header>
+        <Card.Title>{title}</Card.Title>
+        <Card.Description>{description}</Card.Description>
+      </Card.Header>
+    </Card.Root>
+  );
+}
+
+function CustomerStatusChip({ status }: { status: CustomerStatus }) {
+  return (
+    <Chip.Root variant={getStatusVariant(status)}>
+      <Chip.Label>{status}</Chip.Label>
+    </Chip.Root>
+  );
+}
+
+function CustomerCollection({
+  items,
+  detailState,
+  isNarrow,
+}: {
+  items: CustomerSummary[];
+  detailState?: string;
+  isNarrow: boolean;
+}) {
+  if (isNarrow) {
+    return (
+      <div className="collection-list-mobile">
+        {items.map((customer) => (
+          <Card.Root key={customer.id}>
+            <Card.Header>
+              <Card.Title>
+                <Link href={buildDetailHref(customer.id, detailState)} className="table-link">
+                  {customer.companyName}
+                </Link>
+              </Card.Title>
+              <Card.Description>{customer.contactName}</Card.Description>
+            </Card.Header>
+            <Card.Content className="collection-list-mobile__content">
+              <div className="collection-list-mobile__meta">
+                <span>最終対応日</span>
+                <span className="numeric-text">{customer.lastContactedAt}</span>
+              </div>
+              <div>
+                <CustomerStatusChip status={customer.status} />
+              </div>
+            </Card.Content>
+          </Card.Root>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="collection-table-wrap">
+      <Table.Root variant="primary" aria-label="顧客" className="collection-table">
+        <Table.ScrollContainer>
+          <Table.Content>
+            <Table.Header columns={CUSTOMER_TABLE_COLUMNS}>
+              {(column) => (
+                <Table.Column
+                  key={column.id}
+                  id={column.id}
+                  isRowHeader={column.isRowHeader}
+                  style={{ width: column.width, minWidth: column.minWidth, textAlign: column.align }}
+                >
+                  {column.label}
+                </Table.Column>
+              )}
+            </Table.Header>
+            <Table.Body items={items}>
+              {(customer) => (
+                <Table.Row id={customer.id}>
+                  {CUSTOMER_TABLE_COLUMNS.map((column) => (
+                    <Table.Cell
+                      key={column.id}
+                      className={column.tabular ? "table-cell--numeric" : undefined}
+                      style={{ textAlign: column.align }}
+                    >
+                      {column.id === "companyName" ? (
+                        <Link href={buildDetailHref(customer.id, detailState)} className="table-link">
+                          {customer.companyName}
+                        </Link>
+                      ) : null}
+                      {column.id === "contactName" ? customer.contactName : null}
+                      {column.id === "lastContactedAt" ? customer.lastContactedAt : null}
+                      {column.id === "status" ? <CustomerStatusChip status={customer.status} /> : null}
+                    </Table.Cell>
+                  ))}
+                </Table.Row>
+              )}
+            </Table.Body>
+          </Table.Content>
+        </Table.ScrollContainer>
+      </Table.Root>
+    </div>
+  );
+}
+
+/** pattern.page-layout#collection-table */
+function CustomerListPage({ dataVersion }: { dataVersion: number }) {
+  const location = useLocation();
+  const rawState = new URLSearchParams(location.search).get("state");
+  const detailState = isDetailScreenState(rawState) ? rawState : undefined;
+  const isNarrow = useIsNarrowLayout();
+  const [searchValue, setSearchValue] = useState("");
+  const [items, setItems] = useState<CustomerSummary[]>(() =>
+    rawState === "empty" ? [] : listCustomerSummaries(),
+  );
+
+  useEffect(() => {
+    setItems(rawState === "empty" ? [] : listCustomerSummaries());
+  }, [dataVersion, rawState]);
+
+  const keyword = searchValue.trim();
+  const filteredItems = keyword ? items.filter((customer) => customer.companyName.includes(keyword)) : items;
+
+  return (
+    <main className="page-shell page-shell--stack">
+      <div className="page-heading">
+        <div className="page-heading__copy">
+          <h1>顧客一覧</h1>
+          <p>企業名から顧客を探し、選んだ会社の詳細画面で基本情報と対応状況を確認します。</p>
+        </div>
+      </div>
+
+      {/* 一覧操作Toolbar Rule: Toolbar と Table を同じ CollectionRegion に置く */}
+      <section className="collection-region" aria-label="顧客">
+        <Toolbar.Root aria-label="顧客の検索" className="collection-toolbar">
+          <SearchField.Root
+            aria-label="企業名で検索"
+            className="search-field"
+            value={searchValue}
+            onChange={setSearchValue}
+          >
+            <SearchField.Group>
+              <SearchField.SearchIcon />
+              <SearchField.Input placeholder="企業名で検索" />
+              <SearchField.ClearButton aria-label="検索条件を消す" />
+            </SearchField.Group>
+          </SearchField.Root>
+        </Toolbar.Root>
+
+        {filteredItems.length === 0 ? (
+          <EmptyState
+            title={keyword ? "該当する顧客が見つかりません" : "顧客がまだありません"}
+            description={
+              keyword
+                ? "企業名を変えて、もう一度検索してください。"
+                : "顧客が登録されると、企業名、担当者、最終対応日、ステータスをここに表示します。"
+            }
+          />
+        ) : (
+          <CustomerCollection items={filteredItems} detailState={detailState} isNarrow={isNarrow} />
+        )}
+      </section>
+    </main>
+  );
+}
+
+function DetailSection({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: ReactNode;
+}) {
+  return (
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>{title}</Card.Title>
+        {description ? <Card.Description>{description}</Card.Description> : null}
+      </Card.Header>
+      <Card.Content className="detail-section__content">{children}</Card.Content>
+    </Card.Root>
+  );
+}
+
+function DetailRow({ label, value, numeric = false }: { label: string; value: ReactNode; numeric?: boolean }) {
+  return (
+    <div className="detail-row">
+      <dt>{label}</dt>
+      <dd className={numeric ? "numeric-text" : undefined}>{value}</dd>
+    </div>
+  );
+}
+
+/** pattern.page-layout#single-one-column */
+function CustomerDetailPage({ onDataChange }: { onDataChange: () => void }) {
+  const editDescriptionId = useId();
+  const { customerId = "" } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const screenState = getDetailScreenState(new URLSearchParams(location.search).get("state"));
+  const initialViewModel = buildDetailViewModel(customerId, screenState);
+
+  const [customer, setCustomer] = useState<CustomerDetail | null>(initialViewModel.customer);
+  const [draft, setDraft] = useState<EditableCustomerFields | null>(initialViewModel.draft);
+  const [isEditOpen, setIsEditOpen] = useState(initialViewModel.isEditOpen);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(initialViewModel.isDeleteOpen);
+  const [errors, setErrors] = useState<FormErrors>(initialViewModel.errors);
+  const [saveMessage, setSaveMessage] = useState<SaveMessage | null>(initialViewModel.saveMessage);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(screenState === "loading");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [simulateSaveFailureOnce, setSimulateSaveFailureOnce] = useState(screenState === "failure");
+  const [simulateDeleteFailureOnce, setSimulateDeleteFailureOnce] = useState(screenState === "failure");
+
+  useEffect(() => {
+    const nextViewModel = buildDetailViewModel(customerId, screenState);
+
+    setCustomer(nextViewModel.customer);
+    setDraft(nextViewModel.draft);
+    setIsEditOpen(nextViewModel.isEditOpen);
+    setIsDeleteOpen(nextViewModel.isDeleteOpen);
+    setErrors(nextViewModel.errors);
+    setSaveMessage(nextViewModel.saveMessage);
+    setDeleteError(null);
+    setIsSaving(screenState === "loading");
+    setIsDeleting(false);
+    setSimulateSaveFailureOnce(screenState === "failure");
+    setSimulateDeleteFailureOnce(screenState === "failure");
+  }, [customerId, screenState]);
+
+  if (!customer) {
+    return <Navigate replace to="/customers" />;
+  }
+
+  const validateDraft = (candidate: EditableCustomerFields) => {
+    const nextErrors: FormErrors = {};
+
+    if (!candidate.companyName.trim()) {
+      nextErrors.companyName = "会社名を入力してください。";
+    }
+
+    if (!isEmailValid(candidate.email)) {
+      nextErrors.email = "メールアドレスの形式を確認してください。";
+    }
+
+    return nextErrors;
+  };
+
+  const handleEditOpenChange = (open: boolean) => {
+    if (isSaving && !open) return;
+    setIsEditOpen(open);
+  };
+
+  const handleSave = () => {
+    if (!draft || isSaving) return;
+
+    const nextErrors = validateDraft(draft);
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      setIsEditOpen(true);
+      return;
+    }
+
+    setSaveMessage(null);
+    setIsSaving(true);
+
+    window.setTimeout(() => {
+      const result = updateCustomer(customer.id, draft, { simulateFailure: simulateSaveFailureOnce });
+
+      if (!result.ok) {
+        // 失敗しても入力は保持したまま、Drawer 内で再試行できる状態に戻す
+        setSimulateSaveFailureOnce(false);
+        setSaveMessage({
+          tone: "danger",
+          title: "顧客情報を保存できませんでした",
+          description: result.reason,
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      setCustomer(result.customer);
+      setDraft(toDraft(result.customer));
+      setSaveMessage({
+        tone: "success",
+        title: "顧客情報を保存しました",
+        description: "変更した内容をこの詳細画面に反映しました。",
+      });
+      setIsSaving(false);
+      setIsEditOpen(false);
+      onDataChange();
+    }, SUBMIT_DELAY_MS);
+  };
+
+  const handleDelete = () => {
+    if (isDeleting) return;
+
+    setDeleteError(null);
+    setIsDeleting(true);
+
+    window.setTimeout(() => {
+      const result = deleteCustomer(customer.id, { simulateFailure: simulateDeleteFailureOnce });
+
+      if (!result.ok) {
+        setSimulateDeleteFailureOnce(false);
+        setDeleteError(result.reason);
+        setIsDeleting(false);
+        return;
+      }
+
+      toast.success("顧客を削除しました", {
+        description: `${customer.companyName}を顧客一覧から削除しました。`,
+      });
+      setIsDeleting(false);
+      setIsDeleteOpen(false);
+      onDataChange();
+      navigate("/customers");
+    }, SUBMIT_DELAY_MS);
+  };
+
+  return (
+    <main className="page-shell page-shell--stack">
+      {/* 戻るナビゲーション Rule: BackNavigation → PageHeading の順、間隔は .detail-page__heading */}
+      <div className="detail-page__heading">
+        <Link href={buildListHref()} className="back-link">
+          顧客一覧へ戻る
+        </Link>
+
+        <div className="page-heading">
+          <div className="page-heading__copy">
+            <h1>{customer.companyName}</h1>
+            <p>基本情報と対応状況を確認し、必要に応じて顧客情報を編集または削除します。</p>
+            <div className="page-heading__status">
+              <CustomerStatusChip status={customer.status} />
+            </div>
+          </div>
+
+          <div className="page-heading__action">
+            <div className="detail-actions">
+              {/* 編集分離 Rule: 軽い編集は Drawer に分離する */}
+              <Drawer.Root isOpen={isEditOpen} onOpenChange={handleEditOpenChange}>
+                <Drawer.Trigger className="button button--md button--primary">顧客を編集</Drawer.Trigger>
+                <Drawer.Backdrop>
+                  <Drawer.Content placement="right">
+                    <Drawer.Dialog aria-describedby={editDescriptionId}>
+                      <Drawer.Header>
+                        <Drawer.Heading>顧客情報の編集</Drawer.Heading>
+                        <Drawer.CloseTrigger aria-label="編集を閉じる" isDisabled={isSaving} />
+                      </Drawer.Header>
+                      <Drawer.Body className="drawer-body">
+                        <div>
+                          <p id={editDescriptionId} className="drawer-description">
+                            会社名、担当者名、メールアドレス、ステータスを変更できます。
+                          </p>
+                        </div>
+
+                        {isSaving ? (
+                          <StatusFeedback
+                            title="顧客情報を保存しています"
+                            description="保存が終わるまで、この画面を閉じずにお待ちください。"
+                          />
+                        ) : saveMessage ? (
+                          <StatusFeedback
+                            title={saveMessage.title}
+                            description={saveMessage.description}
+                            tone={saveMessage.tone}
+                          />
+                        ) : null}
+
+                        <Form.Root className="drawer-form" onSubmit={(event) => event.preventDefault()}>
+                          <TextField.Root
+                            isRequired
+                            isInvalid={Boolean(errors.companyName)}
+                            validationBehavior="aria"
+                            value={draft?.companyName ?? ""}
+                            onChange={(value) => {
+                              setDraft((current) => (current ? { ...current, companyName: value } : current));
+                              setErrors((current) => ({ ...current, companyName: undefined }));
+                            }}
+                          >
+                            <Label>会社名</Label>
+                            <Input />
+                            <FieldError>{errors.companyName}</FieldError>
+                          </TextField.Root>
+
+                          <TextField.Root
+                            value={draft?.contactName ?? ""}
+                            onChange={(value) => {
+                              setDraft((current) => (current ? { ...current, contactName: value } : current));
+                            }}
+                          >
+                            <Label>担当者名</Label>
+                            <Input autoComplete="name" />
+                          </TextField.Root>
+
+                          <TextField.Root
+                            isInvalid={Boolean(errors.email)}
+                            validationBehavior="aria"
+                            value={draft?.email ?? ""}
+                            onChange={(value) => {
+                              setDraft((current) => (current ? { ...current, email: value } : current));
+                              setErrors((current) => ({ ...current, email: undefined }));
+                            }}
+                          >
+                            <Label>メールアドレス</Label>
+                            <Input type="email" autoComplete="email" />
+                            <Description>一般的なメール形式で入力してください。</Description>
+                            <FieldError>{errors.email}</FieldError>
+                          </TextField.Root>
+
+                          <Select.Root
+                            selectedKey={draft?.status}
+                            onSelectionChange={(key) => {
+                              if (typeof key !== "string") return;
+                              setDraft((current) =>
+                                current ? { ...current, status: key as CustomerStatus } : current,
+                              );
+                            }}
+                          >
+                            <Label>ステータス</Label>
+                            <Select.Trigger>
+                              <Select.Value />
+                              <Select.Indicator />
+                            </Select.Trigger>
+                            <Select.Popover>
+                              <ListBox>
+                                {STATUS_OPTIONS.map((option) => (
+                                  <ListBox.Item key={option.id} id={option.id}>
+                                    {option.label}
+                                  </ListBox.Item>
+                                ))}
+                              </ListBox>
+                            </Select.Popover>
+                          </Select.Root>
+                        </Form.Root>
+                      </Drawer.Body>
+                      <Drawer.Footer>
+                        <Button variant="tertiary" onPress={() => handleEditOpenChange(false)} isDisabled={isSaving}>
+                          キャンセル
+                        </Button>
+                        {/* state.loading: loading と disabled を同期して二重送信を止める */}
+                        <Button variant="primary" onPress={handleSave} isPending={isSaving} isDisabled={isSaving}>
+                          {isSaving ? "保存中" : "保存"}
+                        </Button>
+                      </Drawer.Footer>
+                    </Drawer.Dialog>
+                  </Drawer.Content>
+                </Drawer.Backdrop>
+              </Drawer.Root>
+
+              {/* action.confirmation: 取り消せない削除は AlertDialog で対象と結果を確認する */}
+              <AlertDialog.Root isOpen={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+                <AlertDialog.Trigger>
+                  <Button variant="danger-soft">顧客を削除</Button>
+                </AlertDialog.Trigger>
+                <AlertDialog.Backdrop>
+                  <AlertDialog.Container size="md">
+                    <AlertDialog.Dialog>
+                      <AlertDialog.Header>
+                        <AlertDialog.Heading>顧客の削除</AlertDialog.Heading>
+                        <AlertDialog.CloseTrigger aria-label="削除の確認を閉じる" isDisabled={isDeleting} />
+                      </AlertDialog.Header>
+                      <AlertDialog.Body className="alert-dialog__body">
+                        <p>{customer.companyName}を削除します。</p>
+                        <p>削除すると顧客一覧と詳細から消え、元に戻せません。</p>
+                        {deleteError ? (
+                          <StatusFeedback title="顧客を削除できませんでした" description={deleteError} tone="danger" />
+                        ) : null}
+                      </AlertDialog.Body>
+                      <AlertDialog.Footer>
+                        <Button variant="tertiary" onPress={() => setIsDeleteOpen(false)} isDisabled={isDeleting}>
+                          キャンセル
+                        </Button>
+                        <Button variant="danger" onPress={handleDelete} isPending={isDeleting} isDisabled={isDeleting}>
+                          {isDeleting ? "削除中" : "削除する"}
+                        </Button>
+                      </AlertDialog.Footer>
+                    </AlertDialog.Dialog>
+                  </AlertDialog.Container>
+                </AlertDialog.Backdrop>
+              </AlertDialog.Root>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="detail-grid">
+        <div className="detail-content">
+          {saveMessage && !isEditOpen ? (
+            <StatusFeedback
+              title={saveMessage.title}
+              description={saveMessage.description}
+              tone={saveMessage.tone}
+            />
+          ) : null}
+
+          <DetailSection title="基本情報" description="担当者と連絡先を確認できます。">
+            <dl className="detail-list">
+              <DetailRow label="会社名" value={customer.companyName} />
+              <DetailRow label="担当者名" value={customer.contactName} />
+              <DetailRow label="メールアドレス" value={customer.email} />
+              <DetailRow label="電話番号" value={customer.phone} numeric />
+            </dl>
+          </DetailSection>
+
+          <DetailSection title="対応状況" description="現在の進行状況と共有メモです。">
+            <dl className="detail-list">
+              <DetailRow label="ステータス" value={<CustomerStatusChip status={customer.status} />} />
+              <DetailRow label="対応メモ" value={customer.note} />
+            </dl>
+          </DetailSection>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+export function App() {
+  const [dataVersion, setDataVersion] = useState(0);
+  const handleDataChange = () => setDataVersion((current) => current + 1);
+
+  return (
+    <HashRouter>
+      <AppHeader />
+      <Routes>
+        <Route path="/customers" element={<CustomerListPage dataVersion={dataVersion} />} />
+        <Route path="/customers/:customerId" element={<CustomerDetailPage onDataChange={handleDataChange} />} />
+        <Route path="*" element={<Navigate replace to="/customers" />} />
+      </Routes>
+      <Toast.Provider placement="top end" />
+    </HashRouter>
+  );
+}
