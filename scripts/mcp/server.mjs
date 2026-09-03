@@ -12,7 +12,11 @@ export function createAtlasMcpServer() {
     server.registerResource(
       resource.id,
       resource.uri,
-      { title: resource.name, description: resource.path, mimeType: resource.mimeType },
+      {
+        title: resource.name,
+        description: `Atlas design resource "${resource.id}" (${resource.path}). Read-only. Read it when resolve_design_contract lists this id in its resources array.`,
+        mimeType: resource.mimeType,
+      },
       async () => {
         const resolved = readAtlasResource(resource.uri);
         return { contents: [{ uri: resolved.uri, mimeType: resolved.mimeType, text: resolved.text }] };
@@ -24,10 +28,16 @@ export function createAtlasMcpServer() {
     "resolve_design_contract",
     {
       title: "Resolve Atlas design contract",
-      description: "Resolve Atlas Pattern and Example IDs to the minimum read-only resource set needed for implementation.",
+      description: [
+        "Resolve Atlas Pattern and Example IDs to the minimum read-only set of design resources needed to implement a screen.",
+        "Call this once before reading any Atlas file. It returns { version, requested, screens, resources }; resources lists the exact resource URIs to read (shared design docs, the requested patterns and examples, and the HeroUI components each example depends on).",
+        'IDs look like "pattern.page-layout#collection-table" (pattern id with optional #variant) and "example.account-management". At least one pattern or example is required.',
+        "An unknown pattern or example id, or an unknown component referenced by an example, returns an error; nothing partial is returned.",
+        "Do not call it to browse the catalog; list resources instead.",
+      ].join(" "),
       inputSchema: {
-        patterns: z.array(z.string()).default([]),
-        examples: z.array(z.string()).default([]),
+        patterns: z.array(z.string()).default([]).describe('Pattern ids from HARNESS.json designRefs, e.g. "pattern.page-layout#collection-table". Empty when the screen has no pattern.'),
+        examples: z.array(z.string()).default([]).describe('Example ids, e.g. "example.account-management". Empty when no example applies.'),
       },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },

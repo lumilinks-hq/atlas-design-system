@@ -1,5 +1,7 @@
 # Atlas Design System 公開までの残作業
 
+> 2026-09-03 追記: Presenter（`/demo/runs/account-management`）は廃止し、Design Harnessの説明（`/harness`）と生成結果の比較（`/examples/account-management/results`）へ置き換えた。以下の Presenter、Scene、1280×720 に関する記述は履歴として残している。
+
 更新日: 2026-09-02
 
 このファイルは現在の実装から公開版へ到達するための残作業を管理する。比較条件と受け入れ条件は[`MVP.md`](./MVP.md)、AIと人が参照する設計方針は[`DESIGN.md`](./DESIGN.md)を正本とする。

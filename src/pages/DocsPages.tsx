@@ -69,7 +69,7 @@ function AtlasToastProvider() {
   );
 }
 
-function PageHeader({ title, description }: { title: string; description: string }) {
+export function PageHeader({ title, description }: { title: string; description: string }) {
   return (
     <header className="page-header">
       <h1>{title}</h1>
@@ -89,6 +89,9 @@ export function HomePage() {
       <div className="hero-actions">
         <Button variant="primary" size="lg" onPress={() => navigate("/getting-started")}>
           導入方法を見る <ArrowRight size={16} />
+        </Button>
+        <Button variant="secondary" size="lg" onPress={() => navigate("/harness")}>
+          Design Harnessの仕組みを見る
         </Button>
       </div>
 
@@ -1275,7 +1278,7 @@ export function ExamplePage() {
   );
 }
 
-const ruleMethodLabels: Record<string, string> = {
+export const ruleMethodLabels: Record<string, string> = {
   automatic: "自動検証",
   "ai-review": "AIレビュー",
   human: "人の判断",

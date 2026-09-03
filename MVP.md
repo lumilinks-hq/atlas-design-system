@@ -1,5 +1,7 @@
 # Design Harness Demo MVP
 
+> 2026-09-03 追記: Presenter（`/demo/runs/account-management`）は廃止し、Design Harnessの説明（`/harness`）と生成結果の比較（`/examples/account-management/results`）へ置き換えた。以下の Presenter、Scene、1280×720 に関する記述は履歴として残している。
+
 ## MVPの目的
 
 カンファレンスとウェビナーで、次の流れを通信状態に左右されず説明できる状態を作る。

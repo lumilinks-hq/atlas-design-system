@@ -9,7 +9,7 @@ Use Atlas as an implementation contract. Do not copy its design data into this S
 
 ## Before implementation
 
-1. Confirm the Issue identifies the user, task, business constraints, required states, and completion checks. Stop and ask for the missing business decision when it would change the screen structure or behavior.
+1. Confirm the Issue identifies the user, task, business constraints, required states, and completion checks. When a business decision is missing and it would change the screen structure or behavior, decide from `brief.md` and `DESIGN.md`, then record the assumption and the alternative in the final report. Runs are non-interactive; nobody can answer a question mid-run.
 2. Read `DESIGN.md` at the Atlas repository root.
 3. Read the resolved experiment context when it exists:
 

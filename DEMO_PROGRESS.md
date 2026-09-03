@@ -72,6 +72,18 @@
   - コミット構成: ①theme:check 機能（theme.mjs / theme.test.mjs / generate-theme.mjs）②mvp-11 配線+docs（play×2 / DemoPage / conformance / preview / audit / verify-site / package.json / README / MVP / TASKS / 本ファイル）。**前セッションWIP（docs/, skills/, DocsPages.tsx, styles.css, design/components/*.json, 旧run mvp-07..10 等）はコミットしない**
   - **Chrome 実機確認完了（2026-09-02）**: /demo 4場面（矢印キー遷移・R リセット・横スクロールなし）、/play atlas・baseline × 8状態を確認。デスクトップは目視（delete-confirm の AlertDialog、success の更新完了表示、baseline の独自ダイアログ=検査 fail の根拠どおり）。モバイルは macOS Chrome がウィンドウを 390px まで縮められないため、**ページ内に正確な 390/320px 幅 iframe を生成して実描画・実測**する方式で全状態スイープ: atlas は 390/320 とも全状態 scrollWidth ≤ 幅（横スクロールなし）+ 390 でテーブル→モバイルカードリスト切替を確認、baseline も横スクロールなし。390px の一覧・Drawer は目視でも確認。コミット: `f08169e`(theme:check) `b32b03b`(mvp-11配線)
 
+- [x] **Phase 7: Presenter 廃止と比較・説明ページ（2026-09-03、未コミット）**
+  - 廃止: `src/pages/DemoPage.tsx`（4場面のスライド）と Presenter 用 CSS。`/demo`, `/demo/runs/account-management` は `/examples/account-management/results` へ redirect
+  - 追加: `src/data/runs.ts`（mvp-11 の評価 JSON・comparison.json・run.json を re-export、`runEnvironment` で環境情報を参照）
+  - 追加: `src/pages/HarnessPages.tsx` — `HarnessPage`（`/harness`、4層のループ図＋選択した層のファイル表（ファイル／役割）とリンク、「妥当性を、誰がどう担保するか」= 機械・AI・人の役割を4段落の文章で説明（件数は design/rules.json の method 別件数を埋め込み）、「顧客管理での1周」= 6ステップと harness 初回→corrected の違反数）と `ResultsPage`（`/examples/account-management/results`、なし/ありの2カラム、4種スクショ切替、28ルールの表、AIレビュー所見、Play ボタン）
+  - DocsShell ナビに「Design Harness」「生成結果の比較」を追加、ホームに「Design Harnessの仕組みを見る」ボタン
+  - テスト: `src/App.test.tsx` の Presenter テストを3件（説明ページ／比較ページ／redirect）へ置換。`scripts/verify-site.mjs` は `/harness` と results を 1440/390 で横スクロール・console error・画像読込を確認
+  - 数値はすべてデータ由来。Figma/Storybook はページに出さない。初回4違反→修正後0違反の「物語」は書かず、両 summary を並べるだけ
+  - 検証パス: typecheck / lint / test:run 151 / public:audit / links:check / test:e2e / build / bundle:check
+  - ループ図を React Flow（`@xyflow/react` 12.11.6）へ置換（2026-09-03）: `src/components/HarnessCycle.tsx`。4ノード（番号・アイコン・層名・1行）＋ラベル付き矢印4本＋中央「1周 = 1 Run」。ノードは `<button aria-pressed>`、クリックで下の詳細（ファイル・リンク）が切り替わる。図は静的（ドラッグ・ズーム・パン無効、`preventScrolling={false}`）。≤800px は `matchMedia` で縦一列（04→01 は左を回って戻る）。色は `--xy-*` 変数にトークンを流す。`src/test/setup.ts` に React Flow 用の jsdom モック（ResizeObserver は `contentRect` 必須、DOMMatrixReadOnly、offsetWidth/Height、getBBox）。main JS gzip 36→93 KiB（上限150）
+  - ページを簡素化（2026-09-03）: 説明文を1文に、各セクションの補足文・層の本文・用語集（SSoT 等）・検証方法のカードと本文・1周の各ステップ本文と checks・注記を削除。ノードの影と図のヒント文も削除。残したのは図、選択した層のファイルとリンク、主体別の件数、6ステップと違反数、比較ページへのリンク
+  - 追加調整（2026-09-03）: 「妥当性を、誰がどう担保するか」の3行リストを文章（機械→AI→人の順、件数は rules.json 由来、人の判断は「要確認」項目を画面で判断する役割として説明）に変更。選択した層のファイル一覧を HeroUI の `Table`（Root → ScrollContainer → Content、variant primary、列定義配列 `artifactColumns`、パス列に isRowHeader）に変更。全層で同じ表を使う。「顧客管理での1周」の番号付きリストを React Flow の静的な図（`src/components/HarnessLoop.tsx`、広い画面は2段3列、狭い画面は縦1列、04と06に違反数バッジ）に変更
+
 ## 重要な教訓・注意
 
 - **未コミット作業があるファイルに `git checkout --` を使わない**（drawer.json 消失→Write で復元済み）。破壊テストは Edit で壊して Edit で戻す

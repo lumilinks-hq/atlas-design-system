@@ -20,6 +20,22 @@ async function connect() {
 }
 
 describe("Atlas MCP server", () => {
+  it("explains id formats, return shape, and failure mode in the tool description", async () => {
+    const client = await connect();
+    const { tools } = await client.listTools();
+    const tool = tools.find((candidate) => candidate.name === "resolve_design_contract");
+    expect(tool.description).toContain("pattern.page-layout#collection-table");
+    expect(tool.description).toContain("example.account-management");
+    expect(tool.description).toContain("resources");
+    expect(tool.description).toMatch(/error/i);
+    expect(tool.inputSchema.properties.patterns.description).toContain("pattern.");
+    expect(tool.inputSchema.properties.examples.description).toContain("example.");
+
+    const { resources } = await client.listResources();
+    const resource = resources.find((candidate) => candidate.uri === "atlas://design/patterns/page-layout");
+    expect(resource.description).toContain("resolve_design_contract");
+  });
+
   it("lists and reads Atlas resources", async () => {
     const client = await connect();
     const listed = await client.listResources();

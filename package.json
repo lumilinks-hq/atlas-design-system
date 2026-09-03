@@ -42,6 +42,7 @@
     "@heroui/react": "3.2.4",
     "@heroui/styles": "3.2.4",
     "@modelcontextprotocol/sdk": "1.30.0",
+    "@xyflow/react": "12.11.6",
     "ajv": "8.20.0",
     "gen-interface-jp": "0.8.0",
     "lucide-react": "1.37.0",

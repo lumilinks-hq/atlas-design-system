@@ -47,25 +47,46 @@ try {
     await page.close();
   }
 
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    const { page, errors } = await openCheckedPage("/harness", viewport);
+    await page.getByRole("heading", { name: "Design Harness", level: 1 }).waitFor();
+    const cycleFigure = page.locator(".harness-flow");
+    assert(await cycleFigure.locator(".react-flow__node-layer").count() === 4, "Design Harnessの4層ノードが表示されていません");
+    await cycleFigure.locator(".react-flow__edge").nth(3).waitFor({ state: "attached" });
+    assert(await cycleFigure.locator(".react-flow__edge").count() === 4, "Design Harnessのループの矢印が4本表示されていません");
+    const loopFigure = page.locator(".harness-loop");
+    assert(await loopFigure.locator(".react-flow__node-step").count() === 6, "顧客管理での1周の6ノードが表示されていません");
+    await loopFigure.locator(".react-flow__edge").nth(4).waitFor({ state: "attached" });
+    assert(await loopFigure.locator(".react-flow__edge").count() === 5, "顧客管理での1周の矢印が5本表示されていません");
+    await page.getByRole("button", { name: "02 コンテキストを渡す層" }).click();
+    await page.getByRole("region", { name: "コンテキストを渡す層" }).getByText("DESIGN.md", { exact: true }).waitFor();
+    const hasHorizontalOverflow = await page.evaluate(() => globalThis.document.documentElement.scrollWidth > globalThis.innerWidth);
+    assert(!hasHorizontalOverflow, `Design Harnessの説明に横スクロールがあります: ${viewport.width}px`);
+    assert(errors.length === 0, `Design Harnessの説明のブラウザエラー:\n${errors.join("\n")}`);
+    await page.close();
+  }
+
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    const { page, errors } = await openCheckedPage("/examples/account-management/results", viewport);
+    await page.getByRole("heading", { name: "生成結果の比較", level: 1 }).waitFor();
+    await page.getByRole("button", { name: "詳細（モバイル）" }).click();
+    await page.waitForFunction(() => {
+      const images = Array.from(globalThis.document.querySelectorAll(".compare-figure img"));
+      return (
+        images.length === 2 &&
+        images.every((image) => image.complete && image.naturalWidth > 0 && (image.getAttribute("src") ?? "").endsWith("-detail-mobile.png"))
+      );
+    });
+    const hasHorizontalOverflow = await page.evaluate(() => globalThis.document.documentElement.scrollWidth > globalThis.innerWidth);
+    assert(!hasHorizontalOverflow, `生成結果の比較に横スクロールがあります: ${viewport.width}px`);
+    assert(errors.length === 0, `生成結果の比較のブラウザエラー:\n${errors.join("\n")}`);
+    await page.close();
+  }
+
   {
-    const { page, errors } = await openCheckedPage("/demo/runs/account-management?scene=issue", { width: 1280, height: 720 });
-    for (const scene of ["issue", "apply", "generate", "result"]) {
-      await page.goto(`${origin}/demo/runs/account-management?scene=${scene}`, { waitUntil: "networkidle" });
-      const layout = await page.evaluate(() => {
-        const stage = globalThis.document.querySelector(".demo-stage");
-        return {
-          overflowX: globalThis.document.documentElement.scrollWidth > globalThis.innerWidth,
-          overflowY: Boolean(stage && stage.scrollHeight > stage.clientHeight),
-        };
-      });
-      assert(!layout.overflowX && !layout.overflowY, `Presenterの${scene}が1280x720に収まりません`);
-    }
-    await page.goto(`${origin}/demo/runs/account-management?scene=issue`, { waitUntil: "networkidle" });
-    await page.keyboard.press("ArrowRight");
-    await page.getByRole("heading", { name: "Issueに、Atlasの設計情報を重ねる", level: 1 }).waitFor();
-    await page.keyboard.press("r");
-    await page.getByRole("heading", { name: "顧客を探して、情報を更新したい", level: 1 }).waitFor();
-    assert(errors.length === 0, `Presenterのブラウザエラー:\n${errors.join("\n")}`);
+    const { page } = await openCheckedPage("/demo/runs/account-management?scene=issue", { width: 1440, height: 900 });
+    await page.waitForURL(/\/examples\/account-management\/results$/);
+    await page.getByRole("heading", { name: "生成結果の比較", level: 1 }).waitFor();
     await page.close();
   }
 
@@ -90,7 +111,7 @@ try {
     await page.close();
   }
 
-  console.log("Site browser check OK: Overview, Getting started, Presenter, Play");
+  console.log("Site browser check OK: Overview, Getting started, Design Harness, Results, Play");
 } finally {
   await browser.close();
   await server.close();

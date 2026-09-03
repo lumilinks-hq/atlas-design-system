@@ -11,14 +11,17 @@ import {
   SpacingPatternPage,
   TechnicalSpecsPage,
 } from "./pages/DocsPages";
-import { DemoPage } from "./pages/DemoPage";
+import { HarnessPage, ResultsPage } from "./pages/HarnessPages";
 import { PlayPage } from "./pages/PlayPage";
+
+const resultsPath = "/examples/account-management/results";
 
 export function App() {
   return (
     <Routes>
       <Route element={<DocsShell />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/harness" element={<HarnessPage />} />
         <Route path="/getting-started" element={<GettingStartedPage />} />
         <Route path="/technical-specifications" element={<TechnicalSpecsPage />} />
         <Route path="/foundations" element={<FoundationsPage />} />
@@ -27,11 +30,11 @@ export function App() {
         <Route path="/patterns/spacing-layout" element={<SpacingPatternPage />} />
         <Route path="/patterns/account-management" element={<Navigate to="/patterns/page-layout" replace />} />
         <Route path="/examples/account-management" element={<ExamplePage />} />
+        <Route path={resultsPath} element={<ResultsPage />} />
         <Route path="/rules" element={<RulesPage />} />
-        <Route path="/harness" element={<Navigate to="/" replace />} />
       </Route>
-      <Route path="/demo" element={<Navigate to="/demo/runs/account-management" replace />} />
-      <Route path="/demo/runs/account-management" element={<DemoPage />} />
+      <Route path="/demo" element={<Navigate to={resultsPath} replace />} />
+      <Route path="/demo/runs/account-management" element={<Navigate to={resultsPath} replace />} />
       <Route path="/play/account-management" element={<PlayPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
