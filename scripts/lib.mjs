@@ -138,3 +138,13 @@ export async function runCommandToFiles(command, args, options) {
     child.on("close", (code) => finish({ code: code ?? -1 }));
   });
 }
+
+/**
+ * ユーザー名そのものと、_ や . を - に置き換えた形(Claude Code の projects ディレクトリ名など)に一致する
+ * @param {string} username
+ */
+export function usernamePattern(username) {
+  const variants = [...new Set([username, username.replace(/[._]/g, "-")])];
+  return new RegExp(`\\b(?:${variants.map(escapeRegExp).join("|")})\\b`, "g");
+}
+

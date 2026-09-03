@@ -39,6 +39,14 @@ describe("run artifact sanitizer", () => {
     expect(sanitizeText("ab cab", { env: {}, username: "ab" })).toBe("ab cab");
   });
 
+  it("区切り文字を-に置き換えた形のユーザー名も<user>へ置き換える", () => {
+    // Claude Code の projects ディレクトリ名は絶対パスの / と _ を - に変えるので、そこにユーザー名が残る
+    const text = "transcript at: <home>/.claude/projects/-Users-test-user-works-demo/abc.jsonl";
+    expect(sanitizeText(text, { env: {}, username: "test_user" })).toBe(
+      "transcript at: <home>/.claude/projects/-Users-<user>-works-demo/abc.jsonl",
+    );
+  });
+
   it("正規表現記号を含むユーザー名をそのまま扱う", () => {
     expect(sanitizeText("a.c abc", { env: {}, username: "a.c" })).toBe("<user> abc");
   });

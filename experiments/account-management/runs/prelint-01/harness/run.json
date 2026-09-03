@@ -1,0 +1,52 @@
+{
+  "$schema": "../../../../../design/schemas/run.schema.json",
+  "id": "prelint-01-harness",
+  "experimentId": "experiment.account-management",
+  "condition": "harness",
+  "status": "completed",
+  "createdAt": "2026-09-03T16:05:00.364Z",
+  "input": {
+    "briefSha256": "5cb085ea0f29284b5cfa3b26826e1ad0c53840db8a24bc61f1d272ffa10f08ee",
+    "starterSha256": "ae9261347c04de84577df53782adef0027cd0f8d33bf7e6ad3223dc9d0a94d69",
+    "promptSha256": "88cc0a2e27fcc2e46e90109a9d0bcbc1c2ef66c000a9185831c93597c718fa7f",
+    "designContractSha256": "5291e29050deba40542327305fa264956a3dd61fae7b775632ce03bf648da124"
+  },
+  "environment": {
+    "runner": "claude",
+    "model": "claude-opus-5",
+    "cliVersion": "2.1.259 (Claude Code)"
+  },
+  "artifacts": [
+    "events.jsonl",
+    "agent-stderr.log",
+    "changes.diff",
+    "source",
+    "typecheck.log",
+    "test.log",
+    "build.log",
+    "measurements.json",
+    "design-evaluation.json"
+  ],
+  "checks": [
+    {
+      "name": "typecheck",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "test",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "build",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "design-rules",
+      "status": "failed",
+      "exitCode": 1
+    }
+  ]
+}

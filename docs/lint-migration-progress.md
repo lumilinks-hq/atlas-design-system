@@ -32,6 +32,15 @@ JSX 内 raw color、jsx-a11y、manifest 駆動ルール(customer-routes / custom
 
 ## 進行中(2026-09-03)
 - [x] 比較ページで baseline の lint を「Atlas ルール非適用」と表示(`ChecksList` の `condition` prop、`check-skip`)
-- [ ] 対照 run `prelint-01`: main(lint 化前)の worktree `../atlas-prelint` で Opus の baseline/harness を実行中。終了後、workspace と runs をこのブランチへコピーし、本ブランチの評価器で `experiment:evaluate` を再実行して評価器を揃える。sanitize → demo:check → コミット。
+- [x] 対照 run `prelint-01`(main = lint 化前、claude-opus-5、worktree `../atlas-prelint`)。harness は API 500 で 1 回、採点器読み取りで 1 回止め、3 回目で完了。workspace をこのブランチにコピーし本ブランチの評価器で再評価(main の評価器と結果一致)。
+- [x] sanitize / audit がユーザー名の `-` 区切り形(Claude Code の projects ディレクトリ名)を見逃していたので `usernamePattern` を追加。lint-01 も再 sanitize。
+
+## prelint-01 の結果と注意点(2026-09-04)
+- App.tsx のみの評価: baseline 6 pass / 17 fail、harness 12 pass / 11 fail。
+- ただし両 run とも画面を複数ファイルに分割(CustomerListPage.tsx など)。評価器と lint の存在判定は App.tsx だけを見るため、多くの fail は「別ファイルにある」誤検知。全 tsx を連結した参考値では baseline 11 fail、harness 4 fail(component.approved の Spinner/cn import、Link の欠落、link-semantics、action.confirmation)。
+- mvp-11、lint-01 は全て単一 App.tsx だった。分割は同じプロンプト・同じモデルでも起きるので run のばらつき。評価器の単一ファイル前提は直すべき(entryFile を固定せず src/**/*.tsx を対象にする)。
+- lint-01 harness(lint 化後)0 fail と比べると lint 化の効果はありそうだが、n=1 かつ上記の誤検知があり、断定はできない。
+- 隔離の問題: workspace の node_modules symlink から親リポジトリの絶対パスが見え、prelint-01 harness の 2 回目はエージェントが `scripts/evaluate-experiment.mjs` を全文読んだ(止めた)。lint-01 harness も `ls ..` で親を 1 回覗いている。3 回目は親リポジトリへのアクセスなし。対策は未実施。
+- 費用: 失敗 2 回で約 17 ドル、完走 1 回で約 11 ドル。
 - [ ] 修正ループのデモは 1・3 の後に検討(ユーザー判断待ち)。
 - 注意: gh の active account を kgsi に切り替えた(戻すなら `gh auth switch --user kogiso-findy`)。

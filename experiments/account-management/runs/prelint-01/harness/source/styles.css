@@ -1,0 +1,86 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+@import "../design/component-theme.css";
+@import "../design/layout.css";
+
+html {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--dh-background);
+  color: var(--dh-text);
+}
+
+/* ページ見出しの操作領域。主要操作と副次操作を横並びにし、狭幅では縦へ積み替える。 */
+.page-heading__actions {
+  display: flex;
+  gap: var(--dh-space-3);
+  align-items: center;
+}
+
+.table-cell--end {
+  text-align: end;
+}
+
+.collection-empty {
+  margin: 0;
+  padding: var(--dh-space-6) 0;
+  color: var(--dh-text-muted);
+  font-size: var(--dh-type-small);
+  line-height: var(--dh-type-line-height-body);
+  text-align: center;
+}
+
+.collection-list-mobile {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.detail-field__label {
+  margin: 0;
+  color: var(--dh-text-muted);
+  font-size: var(--dh-type-small);
+  line-height: var(--dh-type-line-height-body);
+}
+
+.detail-field__value {
+  margin: var(--dh-space-1) 0 0;
+  font-size: var(--dh-type-body);
+  line-height: var(--dh-type-line-height-body);
+  white-space: pre-wrap;
+}
+
+/* Drawer.Dialogはflex列なので、Header/Body/FooterをまとめるFormも同じ流れに合わせる。 */
+.drawer-dialog-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.confirm-content {
+  display: grid;
+  gap: var(--dh-space-4);
+}
+
+.confirm-content p {
+  margin: 0;
+  line-height: var(--dh-type-line-height-body);
+}
+
+@media (max-width: 767px) {
+  .page-heading__actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .page-heading__actions .button {
+    width: 100%;
+  }
+}

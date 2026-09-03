@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 <repo>/.runs/account-management/prelint-01/baseline
+
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  22:08:45
+   Duration  3.45s (transform 42ms, setup 0ms, import 702ms, tests 2.27s, environment 421ms)
+
+$ vitest run
