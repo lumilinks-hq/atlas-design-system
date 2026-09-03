@@ -22,6 +22,7 @@ import {
   correctedEvaluation,
   harnessEvaluation,
   runEnvironment,
+  sameModelRuns,
   type RunCheck,
   type RunEvaluation,
 } from "../data/runs";
@@ -480,6 +481,53 @@ export function ResultsPage() {
             </article>
           ))}
         </div>
+      </section>
+
+      <section aria-labelledby="same-model-title" className="compare-section">
+        <div className="section-heading">
+          <h2 id="same-model-title">同じモデルでの比較</h2>
+          <p>
+            上の比較は生成 CLI と修正ループを含みます。ここでは同じモデル（{sameModelRuns[0]?.model}）で、ESLint 層を入れる前と後に 1 回ずつ生成した結果を、
+            修正なしの初回のまま並べます。各条件 1 run なので傾向を見るための数字で、統計的な差ではありません。
+            評価器は App.tsx だけを検査するため、画面を複数ファイルに分けた run は違反が多く出ます。
+          </p>
+        </div>
+        <div className="compare-table-scroll">
+          <table className="compare-table" aria-label="同じモデルでの比較">
+            <thead>
+              <tr>
+                <th scope="col">Run</th>
+                <th scope="col">条件</th>
+                <th scope="col">ESLint 層</th>
+                <th scope="col">合格</th>
+                <th scope="col">違反</th>
+                <th scope="col">要確認</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sameModelRuns.flatMap((run) =>
+                (["baseline", "harness"] as const).map((condition) => (
+                  <tr key={`${run.pairId}-${condition}`}>
+                    <th scope="row">
+                      <span className="compare-rule-title">{run.pairId}</span>
+                      <code>{run.model}</code>
+                    </th>
+                    <td>{condition === "baseline" ? "Design Harnessなし" : "Design Harnessあり"}</td>
+                    <td>{condition === "harness" && run.lintLayer ? "あり" : "なし"}</td>
+                    <td>{run[condition].summary.passed}</td>
+                    <td>{run[condition].summary.failed}</td>
+                    <td>{run[condition].summary.review}</td>
+                  </tr>
+                )),
+              )}
+            </tbody>
+          </table>
+        </div>
+        {sameModelRuns.map((run) => (
+          <p key={run.pairId} className="compare-note">
+            <strong>{run.pairId}</strong>: {run.note}
+          </p>
+        ))}
       </section>
 
       <p className="compare-back">

@@ -44,3 +44,9 @@ JSX 内 raw color、jsx-a11y、manifest 駆動ルール(customer-routes / custom
 - 費用: 失敗 2 回で約 17 ドル、完走 1 回で約 11 ドル。
 - [ ] 修正ループのデモは 1・3 の後に検討(ユーザー判断待ち)。
 - 注意: gh の active account を kgsi に切り替えた(戻すなら `gh auth switch --user kogiso-findy`)。
+
+## 2026-09-04 公開ページの参照 run の判断
+
+- mvp-11 を公開ページの主軸として残す。理由: 公開ページは baseline / harness / harness-corrected の 3 条件の物語で、play ページの source import、invalid-email スクリーンショット、design:conformance のバイト一致、audit の requiredArtifacts がすべて mvp-11 に結びついている。lint-01 には harness-corrected がなく、harness が違反 0 件なので修正ループを語れない。
+- 代わりに結果ページ末尾に「同じモデルでの比較」節を追加。prelint-01 と lint-01 の 4 条件の合格/違反/要確認を表で載せ、各条件 1 run と App.tsx 単一前提の注記を本文に書いた。数字は保存済み design-evaluation.json のみ（`src/data/runs.ts` の `sameModelRuns`）。
+- lint-01 の harness-corrected run は実施しない（違反 0 件で直すものがなく、約 11 ドルかけて示せることがない）。

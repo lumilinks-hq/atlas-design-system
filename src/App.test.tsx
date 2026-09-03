@@ -6,7 +6,7 @@ import { App } from "./App";
 import { designData } from "./data/design";
 import { ruleMethodLabels } from "./pages/DocsPages";
 import { ChecksList } from "./pages/HarnessPages";
-import { baselineEvaluation, comparison, correctedEvaluation, harnessEvaluation, runEnvironment } from "./data/runs";
+import { baselineEvaluation, comparison, correctedEvaluation, harnessEvaluation, runEnvironment, sameModelRuns } from "./data/runs";
 
 const statusLabels: Record<string, string> = { passed: "合格", failed: "違反", review: "要確認" };
 
@@ -306,6 +306,20 @@ describe("Atlas Design System demo", () => {
     expect(firstRow).toHaveTextContent(statusLabels[correctedStatus]!);
     expect(firstRow).toHaveTextContent(ruleMethodLabels[firstRule.method]!);
 
+
+    // 同じモデルで lint 層あり/なしを比べた run。数字は保存済みの design-evaluation.json だけを使う
+    const sameModel = screen.getByRole("table", { name: "同じモデルでの比較" });
+    expect(within(sameModel).getAllByRole("row")).toHaveLength(sameModelRuns.length * 2 + 1);
+    for (const run of sameModelRuns) {
+      const rows = within(sameModel).getAllByRole("row", { name: new RegExp(`^${run.pairId}${run.model}`) });
+      expect(rows).toHaveLength(2);
+      expect(rows[0]).toHaveTextContent(run.model);
+      expect(rows[0]).toHaveTextContent(`${run.baseline.summary.failed}`);
+      expect(rows[1]).toHaveTextContent(`${run.harness.summary.failed}`);
+    }
+    const sameModelSection = screen.getByRole("region", { name: "同じモデルでの比較" });
+    expect(sameModelSection).toHaveTextContent("各条件 1 run");
+    expect(sameModelSection).toHaveTextContent("App.tsx");
     expect(screen.getByRole("button", { name: "設計指示なしの画面を操作する" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Atlas適用後の画面を操作する" })).toBeInTheDocument();
   });
