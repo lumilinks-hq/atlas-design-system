@@ -119,6 +119,7 @@ await cp(resolve(workspaceDir, "src"), resolve(outputDir, "source"), { recursive
 
 const checkCommands = [
   ["typecheck", ["exec", "tsc", "-p", "tsconfig.app.json", "--pretty", "false", "--noUncheckedIndexedAccess"]],
+  ["lint", ["lint"]],
   ["test", ["test:run"]],
   ["build", ["build"]],
 ];
@@ -132,7 +133,7 @@ for (const [name, commandArgs] of checkCommands) {
 run = {
   ...run,
   status: agentResult.code === 0 ? "completed" : "failed",
-  artifacts: ["events.jsonl", "agent-stderr.log", "changes.diff", "source", "typecheck.log", "test.log", "build.log"],
+  artifacts: ["events.jsonl", "agent-stderr.log", "changes.diff", "source", "typecheck.log", "lint.log", "test.log", "build.log"],
   checks,
 };
 await writeFile(resolve(outputDir, "run.json"), `${JSON.stringify(run, null, 2)}\n`);

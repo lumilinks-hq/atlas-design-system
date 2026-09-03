@@ -46,8 +46,8 @@ token_source: ./design/tokens.json
 ### Global Constraints
 
 - React 19、TypeScript、HeroUI v3を使う
-- HeroUIで提供される操作部品を独自HTMLで再実装しない → `design/components/*.json`の契約から選ぶ
-- JSXやCSSへ色コードを直接書かない → `design/tokens.json`から生成した`--dh-*`を使う
+- 部品は`design/components/*.json`の契約から選ぶ（独自HTMLでの再実装は`pnpm lint`の`atlas/component-approved`が検出する）
+- JSXへ色コードを直接書かない → `design/tokens.json`から生成した`--dh-*`を使う（CSS側は`atlas/no-raw-color`が検出する）
 - 1画面で塗りの主要ボタンは一つにする → 補助操作はsecondaryまたはghostを使う
 - 状態を色だけで伝えない → 状態名、アイコン、回復操作を併記する
 - フォームのsubmitは入力前から操作可能にし、submit時に検証して対象入力の近くへ回復方法を表示する
@@ -315,7 +315,7 @@ Cardは`Card.Header`と`Card.Content`、Drawerは`Drawer.Header`、`Drawer.Body`
 - `design/components/*.json` — HeroUIコンポーネントの許可variantと必須状態
 - `design/patterns/page-layout.json` — Page Layoutのanatomyとvariant
 - `design/examples/*.json` — Issue固有のPattern適用例
-- `design/rules.json` — automatic、ai-review、humanの検査ルール
+- `design/rules.json` — lint、automatic、ai-review、humanの検査ルール。lintの分はESLint（`atlas/*`）が担い、生成側に渡すrules.jsonからは除く
 
 ### Resolution Order
 

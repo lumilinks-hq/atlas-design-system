@@ -150,6 +150,7 @@ export function HarnessPage() {
     counts[rule.method] = (counts[rule.method] ?? 0) + 1;
     return counts;
   }, {});
+  const lintCount = methodCounts["lint"] ?? 0;
   const automaticCount = methodCounts["automatic"] ?? 0;
   const aiReviewCount = methodCounts["ai-review"] ?? 0;
   const humanCount = methodCounts["human"] ?? 0;
@@ -219,8 +220,8 @@ export function HarnessPage() {
         <div className="method-text">
           <p>検査の役割を、機械、AI、人の順に分けます。</p>
           <p>
-            機械は、<code>design/rules.json</code> のルールで生成物を検査します。{rules.length}件のルールのうち
-            {automaticCount}件が自動検証で、承認済みの部品を使っているか、色コードを直接書いていないか、必要な画面状態があるかを、毎回同じ基準で判定します。
+            機械は、<code>design/rules.json</code> のルールで生成物を検査します。{rules.length}件のルールのうち{lintCount}件はESLintで、
+            {automaticCount}件は評価スクリプトで自動検証します。承認済みの部品を使っているか、色コードを直接書いていないか、必要な画面状態があるかを、毎回同じ基準で判定します。
           </p>
           <p>
             AIは画面の画像を見て、色だけで状態を伝えていないか、エラーから回復できるかなど、値の照合では決められない

@@ -4,6 +4,7 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 import { designData } from "./data/design";
+import { ruleMethodLabels } from "./pages/DocsPages";
 import { baselineEvaluation, comparison, correctedEvaluation, harnessEvaluation, runEnvironment } from "./data/runs";
 
 const statusLabels: Record<string, string> = { passed: "合格", failed: "違反", review: "要確認" };
@@ -209,13 +210,14 @@ describe("Atlas Design System demo", () => {
     await user.keyboard("{Enter}");
     expect(within(diagram).getByRole("button", { name: "03 検証する層" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("region", { name: "検証する層" })).toHaveTextContent("scripts/evaluate-experiment.mjs");
+    const lint = designData.rules.filter((rule) => rule.method === "lint").length;
     const automatic = designData.rules.filter((rule) => rule.method === "automatic").length;
     const aiReview = designData.rules.filter((rule) => rule.method === "ai-review").length;
     const human = designData.rules.filter((rule) => rule.method === "human").length;
     const methods = screen.getByRole("region", { name: "妥当性を、誰がどう担保するか" });
     expect(within(methods).queryByRole("list")).not.toBeInTheDocument();
     expect(within(methods).getAllByRole("paragraph").length).toBeGreaterThanOrEqual(3);
-    expect(methods).toHaveTextContent(`${designData.rules.length}件のルールのうち${automatic}件が自動検証`);
+    expect(methods).toHaveTextContent(`${designData.rules.length}件のルールのうち${lint}件はESLintで、${automatic}件は評価スクリプトで自動検証`);
     expect(methods).toHaveTextContent(`${aiReview}件をレビュー`);
     expect(methods).toHaveTextContent(`人に任せているルールは${human}件`);
 
@@ -280,7 +282,7 @@ describe("Atlas Design System demo", () => {
     const firstRow = within(table).getByRole("row", { name: new RegExp(firstRule.title) });
     expect(firstRow).toHaveTextContent(statusLabels[baselineStatus]!);
     expect(firstRow).toHaveTextContent(statusLabels[correctedStatus]!);
-    expect(firstRow).toHaveTextContent("自動検証");
+    expect(firstRow).toHaveTextContent(ruleMethodLabels[firstRule.method]!);
 
     expect(screen.getByRole("button", { name: "設計指示なしの画面を操作する" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Atlas適用後の画面を操作する" })).toBeInTheDocument();

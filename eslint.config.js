@@ -6,6 +6,7 @@ export default tseslint.config(
   { ignores: ["dist", ".runs", "experiments/**/runs/**"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  { languageOptions: { parserOptions: { tsconfigRootDir: import.meta.dirname } } },
   {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
@@ -14,7 +15,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["scripts/**/*.mjs", "skills/*/scripts/**/*.mjs"],
+    files: ["scripts/**/*.mjs", "skills/*/scripts/**/*.mjs", "packages/**/*.mjs"],
     languageOptions: {
       ecmaVersion: 2023,
       globals: globals.node,

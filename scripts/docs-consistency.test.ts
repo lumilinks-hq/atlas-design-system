@@ -53,6 +53,7 @@ describe("design contract coverage on the docs site", () => {
     expect(docsPage).toContain('automatic: "自動検証"');
     expect(docsPage).toContain('"ai-review": "AIレビュー"');
     expect(docsPage).toContain('human: "人の判断"');
+    expect(docsPage).toContain('lint: "Lint"');
   });
 
   it("wires the form and alert contracts into the design data and the component page", async () => {

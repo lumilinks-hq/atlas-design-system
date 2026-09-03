@@ -1279,6 +1279,7 @@ export function ExamplePage() {
 }
 
 export const ruleMethodLabels: Record<string, string> = {
+  lint: "Lint",
   automatic: "自動検証",
   "ai-review": "AIレビュー",
   human: "人の判断",
@@ -1287,7 +1288,7 @@ export const ruleMethodLabels: Record<string, string> = {
 export function RulesPage() {
   return (
     <article className="doc-page">
-      <PageHeader title="検証ルール" description="自動検証、AIレビュー、人の判断を混ぜずに管理します。" />
+      <PageHeader title="検証ルール" description="Lint、自動検証、AIレビュー、人の判断を混ぜずに管理します。" />
       <div className="rules-table" role="table" aria-label="検証ルール一覧">
         <div className="rules-row rules-head" role="row"><span>ルール</span><span>確認方法</span><span>重要度</span></div>
         {designData.rules.map((rule) => (
