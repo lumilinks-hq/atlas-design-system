@@ -6,6 +6,7 @@ import {
   ExternalLink,
   FileText,
   Layers,
+  Minus,
   RefreshCw,
   ScanSearch,
   X,
@@ -52,18 +53,32 @@ function reviewFinding(evaluation: RunEvaluation, ruleId: string) {
 function StatusIcon({ status }: { status: string }) {
   if (status === "passed") return <Check size={14} aria-hidden="true" />;
   if (status === "failed") return <X size={14} aria-hidden="true" />;
+  if (status === "skipped") return <Minus size={14} aria-hidden="true" />;
   return <CircleAlert size={14} aria-hidden="true" />;
 }
 
-function ChecksList({ checks, label }: { checks: RunCheck[]; label: string }) {
+// baseline の workspace は Atlas 層(eslint-plugin-atlas)を受け取らないため、
+// lint が通っても基本ルール(js/tseslint recommended)を通っただけ。合格と見せない
+function describeCheck(check: RunCheck, condition: string) {
+  if (check.name !== "lint") return { label: checkLabels[check.name] ?? check.name, status: check.status };
+  if (condition === "baseline") return { label: "Lint（Atlas ルール非適用、基本ルールのみ）", status: "skipped" };
+  return { label: "Lint（Atlas ルール含む）", status: check.status };
+}
+
+const checkClassNames: Record<string, string> = { passed: "check-pass", skipped: "check-skip" };
+
+export function ChecksList({ checks, label, condition }: { checks: RunCheck[]; label: string; condition: string }) {
   return (
     <ul className="check-list" aria-label={label}>
-      {checks.map((check) => (
-        <li key={check.name} className={check.status === "passed" ? "check-pass" : "check-fail"}>
-          <StatusIcon status={check.status} />
-          {checkLabels[check.name] ?? check.name}
-        </li>
-      ))}
+      {checks.map((check) => {
+        const shown = describeCheck(check, condition);
+        return (
+          <li key={check.name} className={checkClassNames[shown.status] ?? "check-fail"}>
+            <StatusIcon status={shown.status} />
+            {shown.label}
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -364,7 +379,7 @@ export function ResultsPage() {
                     <strong>{condition.evaluation.summary.review}</strong> 要確認
                   </li>
                 </ul>
-                <ChecksList checks={condition.checks} label={`${condition.title}の実行検査`} />
+                <ChecksList checks={condition.checks} label={`${condition.title}の実行検査`} condition={condition.id} />
                 {condition.note && <p className="compare-note">{condition.note}</p>}
                 <Button
                   variant={condition.id === "harness" ? "primary" : "secondary"}

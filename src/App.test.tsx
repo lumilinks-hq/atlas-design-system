@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 import { designData } from "./data/design";
 import { ruleMethodLabels } from "./pages/DocsPages";
+import { ChecksList } from "./pages/HarnessPages";
 import { baselineEvaluation, comparison, correctedEvaluation, harnessEvaluation, runEnvironment } from "./data/runs";
 
 const statusLabels: Record<string, string> = { passed: "合格", failed: "違反", review: "要確認" };
@@ -241,6 +242,27 @@ describe("Atlas Design System demo", () => {
     expect(screen.queryByText("Agent-ready")).not.toBeInTheDocument();
     expect(screen.queryByRole("list", { name: /の実行検査$/ })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "生成結果の比較を見る" })).toHaveAttribute("href", "/examples/account-management/results");
+  });
+
+  it("shows the baseline lint check as Atlas-not-applied instead of passed", () => {
+    // baseline は Atlas 層を受け取らないので、lint が通っても「Atlas ルールで合格」ではない
+    const checks = [
+      { name: "lint", status: "passed", exitCode: 0 },
+      { name: "build", status: "passed", exitCode: 0 },
+    ];
+    render(<ChecksList checks={checks} label="baseline" condition="baseline" />);
+    const items = within(screen.getByRole("list", { name: "baseline" })).getAllByRole("listitem");
+    expect(items[0]).toHaveTextContent("Lint（Atlas ルール非適用、基本ルールのみ）");
+    expect(items[0]).toHaveClass("check-skip");
+    expect(items[0]).not.toHaveClass("check-pass");
+    expect(items[1]).toHaveTextContent("ビルド");
+    expect(items[1]).toHaveClass("check-pass");
+    cleanup();
+
+    render(<ChecksList checks={checks} label="harness" condition="harness" />);
+    const harnessItem = within(screen.getByRole("list", { name: "harness" })).getAllByRole("listitem")[0];
+    expect(harnessItem).toHaveTextContent("Lint（Atlas ルール含む）");
+    expect(harnessItem).toHaveClass("check-pass");
   });
 
   it("compares the baseline and harness results side by side from the saved run", async () => {

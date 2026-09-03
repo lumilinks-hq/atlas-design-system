@@ -400,6 +400,7 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .harness-loop-badge { font-size: .75rem; font-weight: 700; }
 .result-pass, .check-pass, .status-passed { color: var(--dh-success); }
 .result-fail, .check-fail, .status-failed, .status-verdict-concern { color: var(--dh-danger); }
+.check-skip { color: var(--dh-text-muted); }
 .result-review, .status-review { color: var(--dh-warning, var(--dh-text-muted)); }
 .harness-cta { display: inline-flex; align-items: center; gap: 4px; margin-top: var(--dh-space-6); color: var(--dh-accent); font-weight: 600; text-decoration: none; }
 .check-list { display: flex; flex-wrap: wrap; gap: var(--dh-space-2) var(--dh-space-3); margin: 0; padding: 0; list-style: none; font-size: .8125rem; font-weight: 600; }
