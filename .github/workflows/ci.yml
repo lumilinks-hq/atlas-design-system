@@ -25,3 +25,57 @@ jobs:
       - run: pnpm demo:check
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+    concurrency:
+      group: deploy-${{ github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      HAS_CREDENTIALS: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: 本番へデプロイ
+        if: env.HAS_CREDENTIALS == 'true' && github.event_name == 'push'
+        run: pnpm exec wrangler deploy
+      - name: プレビュー版をアップロード
+        id: preview
+        if: env.HAS_CREDENTIALS == 'true' && github.event_name == 'pull_request'
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: bash
+        run: |
+          log="$RUNNER_TEMP/wrangler-upload.log"
+          pnpm exec wrangler versions upload --preview-alias "pr-$PR_NUMBER" | tee "$log"
+          url=$(sed 's/\x1b\[[0-9;]*m//g' "$log" | grep -oE "https://pr-$PR_NUMBER-[a-z0-9.-]+\.workers\.dev" | head -1)
+          if [ -z "$url" ]; then
+            echo "プレビューURLを出力から取得できませんでした"
+            exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: プレビューURLをPRへコメント
+        if: env.HAS_CREDENTIALS == 'true' && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PREVIEW_URL: ${{ steps.preview.outputs.url }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          body=$(printf 'プレビュー: %s\n\nこのPRの %s をアップロードしたバージョンです。本番 https://atlas-design-system.kuusai1998.workers.dev はmainへマージするまで変わりません。' "$PREVIEW_URL" "${HEAD_SHA:0:7}")
+          gh pr comment "$PR_NUMBER" --edit-last --create-if-none --body "$body"
