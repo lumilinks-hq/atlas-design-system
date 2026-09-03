@@ -1,0 +1,59 @@
+{
+  "pairId": "prelint-01",
+  "experimentId": "experiment.account-management",
+  "conditionsMatch": true,
+  "blindOrder": {
+    "A": "harness",
+    "B": "baseline"
+  },
+  "reveal": {
+    "baseline": "prelint-01-baseline",
+    "harness": "prelint-01-harness"
+  },
+  "checks": {
+    "baseline": [
+      {
+        "name": "typecheck",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "test",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "build",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "design-rules",
+        "status": "failed",
+        "exitCode": 1
+      }
+    ],
+    "harness": [
+      {
+        "name": "typecheck",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "test",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "build",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "design-rules",
+        "status": "failed",
+        "exitCode": 1
+      }
+    ]
+  }
+}

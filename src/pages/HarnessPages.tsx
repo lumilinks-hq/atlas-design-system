@@ -6,6 +6,7 @@ import {
   ExternalLink,
   FileText,
   Layers,
+  Minus,
   RefreshCw,
   ScanSearch,
   X,
@@ -21,6 +22,7 @@ import {
   correctedEvaluation,
   harnessEvaluation,
   runEnvironment,
+  sameModelRuns,
   type RunCheck,
   type RunEvaluation,
 } from "../data/runs";
@@ -52,18 +54,32 @@ function reviewFinding(evaluation: RunEvaluation, ruleId: string) {
 function StatusIcon({ status }: { status: string }) {
   if (status === "passed") return <Check size={14} aria-hidden="true" />;
   if (status === "failed") return <X size={14} aria-hidden="true" />;
+  if (status === "skipped") return <Minus size={14} aria-hidden="true" />;
   return <CircleAlert size={14} aria-hidden="true" />;
 }
 
-function ChecksList({ checks, label }: { checks: RunCheck[]; label: string }) {
+// baseline の workspace は Atlas 層(eslint-plugin-atlas)を受け取らないため、
+// lint が通っても基本ルール(js/tseslint recommended)を通っただけ。合格と見せない
+function describeCheck(check: RunCheck, condition: string) {
+  if (check.name !== "lint") return { label: checkLabels[check.name] ?? check.name, status: check.status };
+  if (condition === "baseline") return { label: "Lint（Atlas ルール非適用、基本ルールのみ）", status: "skipped" };
+  return { label: "Lint（Atlas ルール含む）", status: check.status };
+}
+
+const checkClassNames: Record<string, string> = { passed: "check-pass", skipped: "check-skip" };
+
+export function ChecksList({ checks, label, condition }: { checks: RunCheck[]; label: string; condition: string }) {
   return (
     <ul className="check-list" aria-label={label}>
-      {checks.map((check) => (
-        <li key={check.name} className={check.status === "passed" ? "check-pass" : "check-fail"}>
-          <StatusIcon status={check.status} />
-          {checkLabels[check.name] ?? check.name}
-        </li>
-      ))}
+      {checks.map((check) => {
+        const shown = describeCheck(check, condition);
+        return (
+          <li key={check.name} className={checkClassNames[shown.status] ?? "check-fail"}>
+            <StatusIcon status={shown.status} />
+            {shown.label}
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -150,6 +166,7 @@ export function HarnessPage() {
     counts[rule.method] = (counts[rule.method] ?? 0) + 1;
     return counts;
   }, {});
+  const lintCount = methodCounts["lint"] ?? 0;
   const automaticCount = methodCounts["automatic"] ?? 0;
   const aiReviewCount = methodCounts["ai-review"] ?? 0;
   const humanCount = methodCounts["human"] ?? 0;
@@ -219,8 +236,8 @@ export function HarnessPage() {
         <div className="method-text">
           <p>検査の役割を、機械、AI、人の順に分けます。</p>
           <p>
-            機械は、<code>design/rules.json</code> のルールで生成物を検査します。{rules.length}件のルールのうち
-            {automaticCount}件が自動検証で、承認済みの部品を使っているか、色コードを直接書いていないか、必要な画面状態があるかを、毎回同じ基準で判定します。
+            機械は、<code>design/rules.json</code> のルールで生成物を検査します。{rules.length}件のルールのうち{lintCount}件はESLintで、
+            {automaticCount}件は評価スクリプトで自動検証します。承認済みの部品を使っているか、色コードを直接書いていないか、必要な画面状態があるかを、毎回同じ基準で判定します。
           </p>
           <p>
             AIは画面の画像を見て、色だけで状態を伝えていないか、エラーから回復できるかなど、値の照合では決められない
@@ -363,7 +380,7 @@ export function ResultsPage() {
                     <strong>{condition.evaluation.summary.review}</strong> 要確認
                   </li>
                 </ul>
-                <ChecksList checks={condition.checks} label={`${condition.title}の実行検査`} />
+                <ChecksList checks={condition.checks} label={`${condition.title}の実行検査`} condition={condition.id} />
                 {condition.note && <p className="compare-note">{condition.note}</p>}
                 <Button
                   variant={condition.id === "harness" ? "primary" : "secondary"}
@@ -464,6 +481,53 @@ export function ResultsPage() {
             </article>
           ))}
         </div>
+      </section>
+
+      <section aria-labelledby="same-model-title" className="compare-section">
+        <div className="section-heading">
+          <h2 id="same-model-title">同じモデルでの比較</h2>
+          <p>
+            上の比較は生成 CLI と修正ループを含みます。ここでは同じモデル（{sameModelRuns[0]?.model}）で、ESLint 層を入れる前と後に 1 回ずつ生成した結果を、
+            修正なしの初回のまま並べます。各条件 1 run なので傾向を見るための数字で、統計的な差ではありません。
+            評価器は App.tsx だけを検査するため、画面を複数ファイルに分けた run は違反が多く出ます。
+          </p>
+        </div>
+        <div className="compare-table-scroll">
+          <table className="compare-table" aria-label="同じモデルでの比較">
+            <thead>
+              <tr>
+                <th scope="col">Run</th>
+                <th scope="col">条件</th>
+                <th scope="col">ESLint 層</th>
+                <th scope="col">合格</th>
+                <th scope="col">違反</th>
+                <th scope="col">要確認</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sameModelRuns.flatMap((run) =>
+                (["baseline", "harness"] as const).map((condition) => (
+                  <tr key={`${run.pairId}-${condition}`}>
+                    <th scope="row">
+                      <span className="compare-rule-title">{run.pairId}</span>
+                      <code>{run.model}</code>
+                    </th>
+                    <td>{condition === "baseline" ? "Design Harnessなし" : "Design Harnessあり"}</td>
+                    <td>{condition === "harness" && run.lintLayer ? "あり" : "なし"}</td>
+                    <td>{run[condition].summary.passed}</td>
+                    <td>{run[condition].summary.failed}</td>
+                    <td>{run[condition].summary.review}</td>
+                  </tr>
+                )),
+              )}
+            </tbody>
+          </table>
+        </div>
+        {sameModelRuns.map((run) => (
+          <p key={run.pairId} className="compare-note">
+            <strong>{run.pairId}</strong>: {run.note}
+          </p>
+        ))}
       </section>
 
       <p className="compare-back">

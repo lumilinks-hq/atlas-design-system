@@ -4,6 +4,8 @@ import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
+import { lintAtlasSources } from "eslint-plugin-atlas";
+import { buildAtlasLintOptions } from "eslint-plugin-atlas/options";
 import { resolveManifest } from "./design-catalog.mjs";
 import { parseArgs, rootDir } from "./lib.mjs";
 
@@ -81,55 +83,19 @@ for (const [key, className] of Object.entries(layoutAnchors)) {
     throw new Error(`評価器のanchor ${className} が契約のlayout.classesにありません`);
   }
 }
-const approvedComponents = new Map(
-  [
-    ["Button", "button"],
-    ["Card", "card"],
-    ["Card.Root", "card"],
-    ["Chip", "chip"],
-    ["Select", "select"],
-    ["Select.Root", "select"],
-    ["Input", "text-field"],
-    ["Link", "link"],
-    ["SearchField", "search-field"],
-    ["Surface", "surface"],
-    ["Table.Root", "table"],
-    ["Toolbar", "toolbar"],
-    ["Drawer.Backdrop", "drawer"],
-    ["AlertDialog.Backdrop", "alert-dialog"],
-  ].map(([tagName, slug]) => [
-    tagName,
-    JSON.parse(readFileSync(resolve(rootDir, "design", "components", `${slug}.json`), "utf8")),
-  ]),
-);
-
-// exampleが参照する契約の集合。importの許可リストとcomponentUsageの判定はここから導く
-const exampleComponentContracts = accountManagementExample.components.map((componentId) =>
-  JSON.parse(
-    readFileSync(resolve(rootDir, "design", "components", `${componentId.slice("component.".length)}.json`), "utf8"),
-  ),
-);
-
-// @heroui/reactからimportしてよい識別子。契約単位の親子関係は見ず、全契約の和集合で判定する。
-// text-fieldのLabelをSelect.Rootの中で使うような正しい組み合わせを誤検知しないため
-export const approvedHeroUiImportNames = new Set(
-  exampleComponentContracts.flatMap((contract) => [contract.implementation, ...(contract.anatomy ?? [])]),
-);
-
-// exampleのcomponentUsageが「この画面で使う」と宣言している部品
-const requiredComponentUsage = Object.keys(accountManagementExample.componentUsage).map((componentId) => {
-  const contract = exampleComponentContracts.find((item) => item.id === componentId);
-  if (!contract) throw new Error(`${componentId}: componentUsageの契約がexampleのcomponentsにありません`);
-  return { name: contract.name, implementation: contract.implementation };
+// lint 化したルール(method: lint)の判定条件。契約 JSON から組み、生成 workspace の HARNESS_LINT.json と同じ関数を通す
+export const atlasLintOptions = buildAtlasLintOptions({
+  componentsDir: resolve(rootDir, "design", "components"),
+  examplePath: resolve(rootDir, exampleResource.path),
 });
+
+// @heroui/reactからimportしてよい識別子。exampleが参照する契約のimplementationとanatomyの和集合
+export const approvedHeroUiImportNames = new Set(atlasLintOptions.approvedImports);
 
 function result(id, status, evidence) {
   return { id, status, evidence };
 }
 
-function countMatches(value, pattern) {
-  return [...value.matchAll(pattern)].length;
-}
 
 function getJsxTagName(name) {
   if (ts.isIdentifier(name)) return name.text;
@@ -149,45 +115,6 @@ function findJsxOpenings(sourceFile, tagName) {
   return matches;
 }
 
-// @heroui/reactからのnamed importを契約名で集める。asで別名を付けていても元の名前で判定し、
-// 型だけのimportは実行時に部品を増やさないため対象外にする
-function findHeroUiImportNames(sourceFile) {
-  const names = [];
-  for (const statement of sourceFile.statements) {
-    if (!ts.isImportDeclaration(statement)) continue;
-    if (!ts.isStringLiteral(statement.moduleSpecifier)) continue;
-    if (statement.moduleSpecifier.text !== "@heroui/react") continue;
-    const clause = statement.importClause;
-    if (!clause || clause.isTypeOnly) continue;
-    if (!clause.namedBindings || !ts.isNamedImports(clause.namedBindings)) continue;
-    for (const element of clause.namedBindings.elements) {
-      if (element.isTypeOnly) continue;
-      names.push((element.propertyName ?? element.name).text);
-    }
-  }
-  return names;
-}
-
-// <Toolbar.Root>をToolbarとして数えるため、ドット記法の先頭の識別子まで辿る
-function getJsxBaseName(name) {
-  if (ts.isPropertyAccessExpression(name)) return getJsxBaseName(name.expression);
-  if (ts.isIdentifier(name)) return name.text;
-  return undefined;
-}
-
-function collectJsxBaseNames(sourceFile) {
-  const names = new Set();
-  const visit = (node) => {
-    if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
-      const base = getJsxBaseName(node.tagName);
-      if (base) names.add(base);
-    }
-    ts.forEachChild(node, visit);
-  };
-  visit(sourceFile);
-  return names;
-}
-
 function findJsxElements(sourceFile, tagName) {
   const matches = [];
   const visit = (node) => {
@@ -196,20 +123,6 @@ function findJsxElements(sourceFile, tagName) {
   };
   visit(sourceFile);
   return matches;
-}
-
-function containsJsxTag(node, tagName) {
-  let found = false;
-  const visit = (child) => {
-    if (found) return;
-    if ((ts.isJsxOpeningElement(child) || ts.isJsxSelfClosingElement(child)) && getJsxTagName(child.tagName) === tagName) {
-      found = true;
-      return;
-    }
-    ts.forEachChild(child, visit);
-  };
-  visit(node);
-  return found;
 }
 
 function getJsxAttribute(opening, name) {
@@ -402,9 +315,6 @@ function evaluateTableContract(app, styles) {
     ...findJsxOpenings(sourceFile, "Table.Root"),
     ...findJsxOpenings(sourceFile, "Table"),
   ];
-  const variants = roots.map((root) => getJsxAttributeValue(getJsxAttribute(root, "variant")) ?? "primary");
-  const variantMatches = roots.length > 0 && variants.every((variant) => variant === expectedTableUsage.variant);
-
   const definitions = [
     ...findColumnDefinitions(sourceFile),
     ...findCanonicalColumnDefinitions(sourceFile),
@@ -450,15 +360,6 @@ function evaluateTableContract(app, styles) {
   const surfaceMatches = roots.length > 0 && !rootUtilityShadow && surfaceDecorations.length === 0 && usesBaseRadius;
 
   return {
-    variant: result(
-      "component.table.variant",
-      variantMatches ? "passed" : "failed",
-      variantMatches
-        ? [`Table.Rootは${expectedTableUsage.variant} variant`]
-        : roots.length === 0
-          ? ["Table.Rootを確認できません"]
-          : [`検出variant: ${variants.map((value) => typeof value === "string" ? value : "動的指定").join(", ")}`],
-    ),
     columns: result(
       "component.table.columns",
       columnsMatch ? "passed" : "failed",
@@ -485,58 +386,6 @@ function evaluateTableContract(app, styles) {
               ],
     ),
   };
-}
-
-function evaluateComponentVariants(sourceFile) {
-  const invalid = [];
-  const dynamic = [];
-  for (const [tagName, component] of approvedComponents) {
-    for (const opening of findJsxOpenings(sourceFile, tagName)) {
-      const attribute = getJsxAttribute(opening, "variant");
-      if (!attribute) continue;
-      const value = getJsxAttributeValue(attribute);
-      if (typeof value === "string") {
-        if (!component.variants.includes(value)) invalid.push(`${component.name}: ${value}`);
-        continue;
-      }
-      // 式で渡されたvariantは静的に契約と突き合わせられない。素通りさせず人の確認へ回す
-      dynamic.push(`動的なvariantのため機械判定不能: ${component.name} ${attribute.getText()}`);
-    }
-  }
-  // リテラルの契約違反は確定した違反なので、判定不能より優先してfailedにする
-  const status = invalid.length > 0 ? "failed" : dynamic.length > 0 ? "review" : "passed";
-  return result(
-    "component.variants",
-    status,
-    status === "passed" ? ["静的に指定されたvariantはAtlas契約内"] : [...new Set([...invalid, ...dynamic])],
-  );
-}
-
-function evaluateComponentUsage(sourceFile) {
-  const rendered = collectJsxBaseNames(sourceFile);
-  // importしただけで描画していない部品は「使っている」とみなさない
-  const missing = requiredComponentUsage.filter((entry) => !rendered.has(entry.implementation));
-  return result(
-    "component.usage",
-    missing.length === 0 ? "passed" : "failed",
-    missing.length === 0
-      ? ["exampleのcomponentUsageが求める部品はすべて実装に現れています"]
-      : missing.map((entry) => `${entry.name}: componentUsageで求められていますが実装に現れません`),
-  );
-}
-
-function evaluateCollectionItemNames(sourceFile) {
-  const missing = findJsxElements(sourceFile, "ListBox.Item").filter((element) => {
-    if (getJsxAttribute(element.openingElement, "textValue")) return false;
-    return element.children.some((child) => ts.isJsxElement(child) || ts.isJsxSelfClosingElement(child));
-  });
-  return result(
-    "a11y.collection-item-name",
-    missing.length === 0 ? "passed" : "failed",
-    missing.length === 0
-      ? ["複合表示のListBox.ItemにtextValueあり"]
-      : [`textValueのない複合ListBox.Item: ${missing.length}件`],
-  );
 }
 
 function parsePxValue(value) {
@@ -755,70 +604,10 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
   const source = `${app}\n${fixtures}\n${styles}`;
   const effectiveStyles = `${styles}\n${componentTheme}`;
   const sourceFile = ts.createSourceFile("App.tsx", app, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  const nativePrimitives = [
-    ["button", /<button\b/g],
-    ["table", /<table\b/g],
-    ["select", /<select\b/g],
-    ["input", /<input\b/g],
-    ["custom dialog", /role=["']dialog["']/g],
-  ]
-    .map(([name, pattern]) => [name, countMatches(app, pattern)])
-    .filter(([, count]) => count > 0);
-  const issueScopeMatches = [
-    ...app.matchAll(/(Atlas CRM|ワークスペース|顧客を追加|契約管理|料金管理|利用人数|権限管理)/g),
-  ].map((match) => match[0]);
-  if (issueScopeMatches.length > 0) {
-    nativePrimitives.push([
-      `Issue対象外のUI（削除対象: ${[...new Set(issueScopeMatches)].join("、")}）`,
-      issueScopeMatches.length,
-    ]);
-  }
-  const unapprovedImports = [...new Set(findHeroUiImportNames(sourceFile))].filter(
-    (name) => !approvedHeroUiImportNames.has(name),
-  );
-  // 独自HTML部品とimportの契約外部品は、どちらもcomponent.approvedの違反として同じruleで報告する
-  const approvedViolations = [
-    ...nativePrimitives.map(([name, count]) => `${name}: ${count}件`),
-    ...unapprovedImports.map((name) => `契約にないHeroUI import: ${name}`),
-  ];
-  const rawColorCount = countMatches(styles, /#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(/g);
   const missingStates = requiredStates.filter((state) => !source.includes(state));
-  const hasFormLabel = /<label\b|<Label\b|aria-label=/.test(app);
   const hasCustomerNameGuard = /companyName/.test(app) && /(required|isRequired)/.test(app);
-  const hasEmailGuard =
-    /<Input\b[^>]*type=["']email["']/.test(app) ||
-    /<TextField\b[^>]*type=["']email["']/.test(app) ||
-    (/<Input\b/.test(app) && /type=["']email["']/.test(app));
   const hasLoadingGuard = /(isSaving|isLoading|saving)/.test(app) && /(disabled|isDisabled|isPending)/.test(app);
   const hasRetry = /(failure|失敗)/i.test(app) && /(retry|再試行)/i.test(app);
-  const hasDestructiveAction = /(削除|delete|remove)/i.test(app);
-  const hasAlertDialogRoot =
-    findJsxOpenings(sourceFile, "AlertDialog.Root").length > 0 || findJsxOpenings(sourceFile, "AlertDialog").length > 0;
-  const alertDialogTriggerElements = findJsxElements(sourceFile, "AlertDialog.Trigger");
-  const alertTriggerHasButton = alertDialogTriggerElements.some((element) => containsJsxTag(element, "Button"));
-  const hasConfirmation = hasAlertDialogRoot && alertTriggerHasButton;
-  const confirmationEvidence = !hasDestructiveAction
-    ? "取り消せない操作なし"
-    : !hasAlertDialogRoot || alertDialogTriggerElements.length === 0
-      ? "取り消せない操作にHeroUI AlertDialog.Triggerがありません"
-      : !alertTriggerHasButton
-        ? "AlertDialog.Triggerの内側にHeroUI Buttonがありません"
-        : "AlertDialog.Triggerから確認画面を開き、起点はHeroUI Button";
-  const drawerCloseTriggers = findJsxOpenings(sourceFile, "Drawer.CloseTrigger");
-  const drawerCloseElements = findJsxElements(sourceFile, "Drawer.CloseTrigger");
-  const hasIconOnlyDrawerClose =
-    drawerCloseTriggers.length > 0 &&
-    drawerCloseElements.every((element) =>
-      element.children.every((child) => !ts.isJsxText(child) || child.text.trim().length === 0),
-    );
-  const drawerTriggerElements = findJsxElements(sourceFile, "Drawer.Trigger");
-  const drawerTriggerHasNestedButton = drawerTriggerElements.some((element) => containsJsxTag(element, "Button"));
-  const hasManagedDrawer =
-    /<Drawer(?:\.Root)?(?:\s|>)/.test(app) &&
-    /<Drawer\.Trigger\b[^>]*className=/.test(app) &&
-    !drawerTriggerHasNestedButton &&
-    /<Drawer\.Backdrop(?:\s|>)/.test(app) &&
-    hasIconOnlyDrawerClose;
   const hasMobileList = /className=[^\n]*mobile-list/.test(app);
   const hasVerticalMobileList =
     /\.mobile-list\s*\{[^}]*flex-direction:\s*column/s.test(styles) ||
@@ -849,23 +638,6 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
       getJsxAttribute(element.openingElement, "href") ||
       getJsxAttribute(element.openingElement, "to"),
     );
-  const tableObjectNameCell = findJsxElements(sourceFile, "Table.Cell").find((element) =>
-    element.getText(sourceFile).includes("customer.companyName"),
-  );
-  const hasTableObjectNameLink = Boolean(
-    tableObjectNameCell &&
-    /<(?:Link|RouterLink)\b[^>]*(?:href|to)=/.test(tableObjectNameCell.getText(sourceFile)),
-  );
-  const hasMobileDetailLink = navigationLinks.some((element) =>
-    hasNavigationTarget(element) &&
-    Boolean(findAncestorJsxElement(element.openingElement, (ancestor) => {
-      const className = getJsxAttributeValue(getJsxAttribute(ancestor.openingElement, "className"));
-      return typeof className === "string" && className.split(/\s+/).includes("collection-list-mobile");
-    })),
-  );
-  const hasBackLink = navigationLinks.some((element) =>
-    hasNavigationTarget(element) && /顧客一覧(?:へ|に)戻る/.test(element.getText(sourceFile)),
-  );
   const backLinkElement = navigationLinks.find((element) =>
     hasNavigationTarget(element) && /顧客一覧(?:へ|に)戻る/.test(element.getText(sourceFile)),
   );
@@ -902,15 +674,6 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
     new RegExp(`gap\\s*:\\s*var\\(--dh-${gapToPageHeading}\\)`).test(detailHeadingGroupStyles) &&
     new RegExp(`margin-bottom\\s*:\\s*var\\(--dh-${gapAfterPageHeading}\\)`).test(detailHeadingGroupStyles) &&
     !/className=["'][^"']*\bdetail-actions\b/.test(app);
-  const navigationButtons = [
-    ...findJsxElements(sourceFile, "Button"),
-    ...findJsxElements(sourceFile, "ButtonRoot"),
-  ].filter((element) => /customer\.companyName|顧客を確認|顧客一覧(?:へ|に)戻る/.test(element.getText(sourceFile)));
-  const hasLinkSemantics =
-    hasTableObjectNameLink &&
-    hasMobileDetailLink &&
-    hasBackLink &&
-    navigationButtons.length === 0;
   const hasSplitCustomerScreens =
     /(CustomerListPage|CustomersPage)/.test(app) &&
     /(CustomerDetailPage|CustomerPage)/.test(app);
@@ -920,7 +683,18 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
     /(listCustomerSummaries|getCustomerSummaries)/.test(source) &&
     /getCustomerDetail/.test(source);
   const tableContract = evaluateTableContract(app, effectiveStyles);
-  const importsComponentTheme = /@import\s+["'][^"']*design\/component-theme\.css["']/.test(styles);
+  const lint = lintAtlasSources({ app, styles, options: atlasLintOptions });
+  const lintMessages = (ruleName) => lint.messagesByRule.get(ruleName) ?? [];
+  const describeMessages = (messages) => messages.map((message) => `${message.line}:${message.column} ${message.message}`);
+  // 構文エラーで lint が走れなかったときは、lint 由来の rule をすべて failed にして原因を残す
+  const fatalEvidence = lint.fatal.length > 0 ? describeMessages(lint.fatal).map((text) => `構文エラー: ${text}`) : undefined;
+  const lintResult = (id, ruleName, passedEvidence, failedEvidence = describeMessages) => {
+    if (fatalEvidence) return result(id, "failed", fatalEvidence);
+    const messages = lintMessages(ruleName);
+    return messages.length === 0
+      ? result(id, "passed", [passedEvidence])
+      : result(id, "failed", failedEvidence(messages));
+  };
   const hasRadiusAdapter =
     /--radius\s*:\s*calc\(var\(--dh-radius-base\)\s*\/\s*3\)/.test(componentTheme) &&
     /\.table-root--primary[^{]*\{[^}]*border-radius\s*:\s*var\(--dh-radius-base\)/s.test(componentTheme);
@@ -983,6 +757,27 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
     hasResponsiveSearchWidth &&
     !usesTextFieldForSearch;
 
+  // 動的なvariantしか指摘がなければ機械判定不能としてreviewへ回す
+  const variantMessages = lintMessages("component-variants");
+  const variantInvalid = variantMessages.filter((message) => message.messageId !== "dynamic");
+  const componentVariantsResult = fatalEvidence
+    ? result("component.variants", "failed", fatalEvidence)
+    : variantInvalid.length > 0
+      ? result("component.variants", "failed", describeMessages(variantMessages))
+      : variantMessages.length > 0
+        ? result("component.variants", "review", describeMessages(variantMessages))
+        : result("component.variants", "passed", ["静的に指定されたvariantはAtlas契約内"]);
+  const importsComponentTheme = !fatalEvidence && lintMessages("component-theme-import").length === 0;
+  const tokenRadiusResult = result(
+    "token.radius",
+    importsComponentTheme && hasRadiusAdapter ? "passed" : "failed",
+    fatalEvidence ?? [
+      importsComponentTheme && hasRadiusAdapter
+        ? "AtlasのHeroUI theme adapterを読み込み"
+        : "design/component-theme.cssの読み込みまたはradius adapterを確認できません",
+    ],
+  );
+
   const measuredLayout =
     measurements && collectionScreen && detailScreen
       ? {
@@ -994,33 +789,17 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
       : undefined;
 
   return [
-    result(
-      "component.approved",
-      approvedViolations.length === 0 ? "passed" : "failed",
-      approvedViolations.length === 0 ? ["契約対象の独自HTML部品は検出されませんでした"] : approvedViolations,
-    ),
-    evaluateComponentUsage(sourceFile),
-    evaluateComponentVariants(sourceFile),
-    tableContract.variant,
+    lintResult("component.approved", "component-approved", "契約対象の独自HTML部品は検出されませんでした"),
+    lintResult("component.usage", "component-usage", "exampleのcomponentUsageが求める部品はすべて実装に現れています"),
+    componentVariantsResult,
+    lintResult("component.table.variant", "table-variant", `Table.Rootは${expectedTableUsage.variant} variant`),
     tableContract.columns,
     tableContract.surface,
-    result(
-      "token.radius",
-      importsComponentTheme && hasRadiusAdapter ? "passed" : "failed",
-      [
-        importsComponentTheme && hasRadiusAdapter
-          ? "AtlasのHeroUI theme adapterを読み込み"
-          : "design/component-theme.cssの読み込みまたはradius adapterを確認できません",
-      ],
-    ),
-    result(
-      "token.no-raw-color",
-      rawColorCount === 0 ? "passed" : "failed",
-      [rawColorCount === 0 ? "raw colorなし" : `raw color: ${rawColorCount}件`],
-    ),
+    tokenRadiusResult,
+    lintResult("token.no-raw-color", "no-raw-color", "raw colorなし", (messages) => [`raw color: ${messages.length}件`]),
     result("a11y.control-name", "review", ["実ブラウザのaccessibility treeで確認する"]),
-    evaluateCollectionItemNames(sourceFile),
-    result("a11y.form-label", hasFormLabel ? "passed" : "failed", [hasFormLabel ? "視覚ラベルまたはaria-labelあり" : "入力ラベルを確認できません"]),
+    lintResult("a11y.collection-item-name", "collection-item-name", "複合表示のListBox.ItemにtextValueあり"),
+    lintResult("a11y.form-label", "form-label", "視覚ラベルまたはaria-labelあり"),
     // 文言の有無しか見ていないため合否は決めず、所見だけを残してレビューへ回す
     result("a11y.error-recovery", "review", [
       hasRecoveryCopy ? "参考: 原因または回復方法の文言を検出" : "参考: 回復方法の文言を検出できず",
@@ -1031,7 +810,7 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
       "色以外の手掛かりが実画面で読めるかはAIレビューと人の確認で判定する",
     ]),
     result("business.customer-name", hasCustomerNameGuard ? "passed" : "failed", [hasCustomerNameGuard ? "顧客名の必須制御あり" : "顧客名の必須制御を確認できません"]),
-    result("business.contact-email", hasEmailGuard ? "passed" : "failed", [hasEmailGuard ? "メール形式の入力制御あり" : "メール形式の入力制御を確認できません"]),
+    lintResult("business.contact-email", "contact-email", "メール形式の入力制御あり"),
     result(
       "navigation.customer-routes",
       hasCustomerRoutes && hasSplitCustomerScreens ? "passed" : "failed",
@@ -1041,15 +820,7 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
           : "顧客一覧、顧客詳細、一覧へ戻る経路の分離を確認できません",
       ],
     ),
-    result(
-      "navigation.link-semantics",
-      hasLinkSemantics ? "passed" : "failed",
-      [
-        hasLinkSemantics
-          ? "Tableのオブジェクト名、モバイル詳細導線、一覧へ戻る導線をLinkとして実装"
-          : "画面移動にButtonを使わず、Tableの企業名、モバイル一覧（.collection-list-mobile内）の詳細導線、顧客一覧に戻るをhrefまたはtoを持つLinkにしてください",
-      ],
-    ),
+    lintResult("navigation.link-semantics", "link-semantics", "Tableのオブジェクト名、モバイル詳細導線、一覧へ戻る導線をLinkとして実装"),
     result(
       "architecture.customer-read-models",
       hasCustomerReadModels ? "passed" : "failed",
@@ -1109,20 +880,8 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
       "失敗後に再試行できるかはAIレビューと人の確認で判定する",
     ]),
     result("color.semantic", "review", ["semantic colorの意味はblind reviewする"]),
-    result("action.confirmation", !hasDestructiveAction || hasConfirmation ? "passed" : "failed", [confirmationEvidence]),
-    result(
-      "a11y.focus-management",
-      hasManagedDrawer ? "passed" : "failed",
-      [
-        hasManagedDrawer
-          ? "Drawer.Triggerの視覚スタイルとアイコンのみのCloseTriggerあり"
-          : drawerTriggerHasNestedButton
-            ? "Drawer.Trigger内にHeroUI Buttonが入れ子です（buttonの入れ子はHTML違反）。Buttonを削除し、Drawer.Trigger自体へ主要Buttonの視覚スタイルのclassNameを付けてラベルテキストを直接入れてください"
-            : !hasIconOnlyDrawerClose
-              ? "Drawer.CloseTriggerがないか、狭い標準枠へ表示テキストを入れています"
-              : "Drawer.Trigger自体にclassName（主要Buttonの視覚スタイル）を確認できません。ラベルはTriggerに直接入れます",
-      ],
-    ),
+    lintResult("action.confirmation", "action-confirmation", "AlertDialog.Triggerから確認画面を開き、起点はHeroUI Button"),
+    lintResult("a11y.focus-management", "focus-management", "Drawer.Triggerの視覚スタイルとアイコンのみのCloseTriggerあり"),
   ];
 }
 

@@ -33,7 +33,7 @@ Use Atlas as an implementation contract. Do not copy its design data into this S
 
 ## Validation and correction
 
-Run `pnpm design:check`, type checking, tests, and the production build. Run the design evaluation configured by the experiment when working with a saved Run. Return failed rule IDs to the next correction Run; do not edit generated comparison artifacts by hand.
+Run `pnpm lint` (Atlas rules are enforced as ESLint rules `atlas/*`; fix every reported violation), type checking, tests, and the production build. Run the design evaluation configured by the experiment when working with a saved Run. Return failed rule IDs to the next correction Run; do not edit generated comparison artifacts by hand.
 
 Do not report completion while a required check fails. Keep human review items separate from automatic pass or fail results.
 

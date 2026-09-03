@@ -1,0 +1,229 @@
+{
+  "pairId": "prelint-01",
+  "mode": "baseline",
+  "summary": {
+    "passed": 6,
+    "failed": 17,
+    "review": 5
+  },
+  "rules": [
+    {
+      "id": "component.approved",
+      "status": "failed",
+      "evidence": [
+        "1:10 契約にないHeroUI import: RouterProvider"
+      ]
+    },
+    {
+      "id": "component.usage",
+      "status": "failed",
+      "evidence": [
+        "1:1 Link: componentUsageで求められていますが実装に現れません",
+        "1:1 Toolbar: componentUsageで求められていますが実装に現れません",
+        "1:1 AlertDialog: componentUsageで求められていますが実装に現れません",
+        "1:1 Table: componentUsageで求められていますが実装に現れません"
+      ]
+    },
+    {
+      "id": "component.variants",
+      "status": "passed",
+      "evidence": [
+        "静的に指定されたvariantはAtlas契約内"
+      ]
+    },
+    {
+      "id": "component.table.variant",
+      "status": "failed",
+      "evidence": [
+        "1:1 Table.Rootを確認できません"
+      ]
+    },
+    {
+      "id": "component.table.columns",
+      "status": "failed",
+      "evidence": [
+        "期待する列順: companyName → contactName → lastContactedAt → status",
+        "HeaderとRowが同じ列定義を参照していません",
+        "tabular列の適用を確認できません"
+      ]
+    },
+    {
+      "id": "component.table.surface",
+      "status": "failed",
+      "evidence": [
+        "Table.Rootを確認できません"
+      ]
+    },
+    {
+      "id": "token.radius",
+      "status": "failed",
+      "evidence": [
+        "design/component-theme.cssの読み込みまたはradius adapterを確認できません"
+      ]
+    },
+    {
+      "id": "token.no-raw-color",
+      "status": "passed",
+      "evidence": [
+        "raw colorなし"
+      ]
+    },
+    {
+      "id": "a11y.control-name",
+      "status": "review",
+      "evidence": [
+        "実ブラウザのaccessibility treeで確認する"
+      ]
+    },
+    {
+      "id": "a11y.collection-item-name",
+      "status": "passed",
+      "evidence": [
+        "複合表示のListBox.ItemにtextValueあり"
+      ]
+    },
+    {
+      "id": "a11y.form-label",
+      "status": "failed",
+      "evidence": [
+        "1:1 入力ラベルを確認できません"
+      ]
+    },
+    {
+      "id": "a11y.error-recovery",
+      "status": "review",
+      "evidence": [
+        "参考: 回復方法の文言を検出できず",
+        "文言の実際の伝わり方はAIレビューと人の確認で判定する"
+      ]
+    },
+    {
+      "id": "a11y.color-only",
+      "status": "review",
+      "evidence": [
+        "参考: 状態を示す文字を検出できず",
+        "色以外の手掛かりが実画面で読めるかはAIレビューと人の確認で判定する"
+      ]
+    },
+    {
+      "id": "business.customer-name",
+      "status": "failed",
+      "evidence": [
+        "顧客名の必須制御を確認できません"
+      ]
+    },
+    {
+      "id": "business.contact-email",
+      "status": "failed",
+      "evidence": [
+        "1:1 メール形式の入力制御を確認できません"
+      ]
+    },
+    {
+      "id": "navigation.customer-routes",
+      "status": "passed",
+      "evidence": [
+        "/customersと/customers/:customerIdを独立した画面として実装"
+      ]
+    },
+    {
+      "id": "navigation.link-semantics",
+      "status": "failed",
+      "evidence": [
+        "1:1 Tableのオブジェクト名(customer.companyName)をhrefまたはtoを持つLinkにしてください",
+        "1:1 モバイル一覧（.collection-list-mobile内）の詳細導線をhrefまたはtoを持つLinkにしてください",
+        "1:1 一覧へ戻る導線をhrefまたはtoを持つLinkにしてください"
+      ]
+    },
+    {
+      "id": "architecture.customer-read-models",
+      "status": "passed",
+      "evidence": [
+        "CustomerSummaryとCustomerDetailの取得経路を分離"
+      ]
+    },
+    {
+      "id": "state.complete",
+      "status": "failed",
+      "evidence": [
+        "不足: default, empty, drawer-open, invalid-email, loading, success, failure, delete-confirm"
+      ]
+    },
+    {
+      "id": "layout.grouping",
+      "status": "failed",
+      "evidence": [
+        "契約クラス .detail-grid がDOMにありません",
+        "契約クラス .detail-content がDOMにありません",
+        "契約クラス .drawer-form がDrawer内にありません"
+      ]
+    },
+    {
+      "id": "layout.collection-toolbar",
+      "status": "failed",
+      "evidence": [
+        "契約クラス .collection-region が1440pxのDOMにありません",
+        "契約クラス .collection-toolbar が1440pxのDOMにありません",
+        "契約クラス .search-field が1440pxのDOMにありません",
+        "契約クラス .collection-toolbar / .search-field が390pxのDOMにありません"
+      ]
+    },
+    {
+      "id": "layout.back-navigation",
+      "status": "failed",
+      "evidence": [
+        "戻るLinkがページ見出しより前",
+        "契約クラス .detail-page__heading がDOMにありません"
+      ]
+    },
+    {
+      "id": "layout.narrow",
+      "status": "failed",
+      "evidence": [
+        "/customers 320px: scrollWidth 320px",
+        "/customers/:customerId 320px: scrollWidth 320px",
+        "390pxでTableが表示されたままです",
+        "契約クラス .collection-list-mobile が390pxのDOMにありません"
+      ]
+    },
+    {
+      "id": "state.loading",
+      "status": "failed",
+      "evidence": [
+        "二重送信防止を確認できません"
+      ]
+    },
+    {
+      "id": "state.failure",
+      "status": "review",
+      "evidence": [
+        "参考: 再試行の文言を検出できず",
+        "失敗後に再試行できるかはAIレビューと人の確認で判定する"
+      ]
+    },
+    {
+      "id": "color.semantic",
+      "status": "review",
+      "evidence": [
+        "semantic colorの意味はblind reviewする"
+      ]
+    },
+    {
+      "id": "action.confirmation",
+      "status": "passed",
+      "evidence": [
+        "AlertDialog.Triggerから確認画面を開き、起点はHeroUI Button"
+      ]
+    },
+    {
+      "id": "a11y.focus-management",
+      "status": "failed",
+      "evidence": [
+        "1:1 Drawer.Rootを確認できません",
+        "1:1 Drawer.Trigger自体にclassName（主要Buttonの視覚スタイル）を確認できません。ラベルはTriggerに直接入れます",
+        "1:1 Drawer.Backdropを確認できません",
+        "1:1 Drawer.CloseTriggerがないか、狭い標準枠へ表示テキストを入れています"
+      ]
+    }
+  ]
+}

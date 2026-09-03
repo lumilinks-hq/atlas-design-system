@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 <repo>/.runs/account-management/lint-01/baseline
+
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  17:30:21
+   Duration  3.78s (transform 30ms, setup 0ms, import 707ms, tests 2.59s, environment 418ms)
+
+$ vitest run

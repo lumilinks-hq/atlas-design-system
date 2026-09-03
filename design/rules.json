@@ -7,36 +7,36 @@
       "title": "承認済みHeroUIコンポーネントを使う",
       "category": "component",
       "severity": "error",
-      "method": "automatic",
+      "method": "lint",
       "description": "契約に存在しないUI部品を追加しない",
-      "fix": "独自HTML部品はHeroUIへ置き換え、IssueやExampleで対象外とした製品ヘッダー、操作、説明は削除する"
+      "fix": "独自HTML部品はHeroUIへ置き換え、IssueやExampleで対象外とした製品ヘッダー、操作、説明は削除する（lint: atlas/component-approved）"
     },
     {
       "id": "component.usage",
       "title": "Exampleが求めるコンポーネントを実装で使う",
       "category": "component",
       "severity": "error",
-      "method": "automatic",
+      "method": "lint",
       "description": "ExampleのcomponentUsageが指定した部品を、importだけで終わらせず画面に実装する",
-      "fix": "design/examples/account-management.jsonのcomponentUsageを確認し、未使用の部品を該当箇所へ実装する"
+      "fix": "design/examples/account-management.jsonのcomponentUsageを確認し、未使用の部品を該当箇所へ実装する（lint: atlas/component-usage）"
     },
     {
       "id": "component.variants",
       "title": "Atlasで承認したHeroUI variantを使う",
       "category": "component",
       "severity": "error",
-      "method": "automatic",
+      "method": "lint",
       "description": "HeroUIのvariant名とAtlasのコンポーネント契約を一致させる",
-      "fix": "design/componentsのvariantsとdefaultsを確認し、存在しないvariantやcolorとの混同を修正する"
+      "fix": "design/componentsのvariantsとdefaultsを確認し、存在しないvariantやcolorとの混同を修正する（lint: atlas/component-variants）"
     },
     {
       "id": "component.table.variant",
       "title": "Tableの標準variantを使う",
       "category": "component",
       "severity": "error",
-      "method": "automatic",
+      "method": "lint",
       "description": "顧客一覧のTableは契約で定義したprimary variantを使う",
-      "fix": "Table.Rootのvariantをprimaryにし、secondary固有の見た目を持ち込まない"
+      "fix": "Table.Rootのvariantをprimaryにし、secondary固有の見た目を持ち込まない（lint: atlas/table-variant）"
     },
     {
       "id": "component.table.columns",
@@ -61,18 +61,18 @@
       "title": "AtlasのHeroUI角丸アダプターを使う",
       "category": "token",
       "severity": "error",
-      "method": "automatic",
+      "method": "lint",
       "description": "基本角丸8pxをHeroUIの倍率と複合コンポーネント構造を保ったまま適用する",
-      "fix": "src/styles.cssからdesign/component-theme.cssを読み込み、個別の.button上書きを削除する"
+      "fix": "src/styles.cssからdesign/component-theme.cssを読み込み、個別の.button上書きを削除する（lint: atlas/component-theme-import）"
     },
     {
       "id": "token.no-raw-color",
       "title": "JSXへ色コードを書かない",
       "category": "token",
       "severity": "error",
-      "method": "automatic",
+      "method": "lint",
       "description": "色はsemantic tokenを介して利用する",
-      "fix": "design/tokens.jsonに対応するCSS変数を使う"
+      "fix": "design/tokens.jsonに対応するCSS変数を使う（lint: atlas/no-raw-color）"
     },
     {
       "id": "a11y.control-name",
@@ -88,18 +88,18 @@
       "title": "複合表示の選択肢にテキスト名を付ける",
       "category": "accessibility",
       "severity": "error",
-      "method": "automatic",
+      "method": "lint",
       "description": "ListBox.Itemの表示をJSXで組み立てる場合も検索と支援技術が使える名前を渡す",
-      "fix": "ListBox.Itemへ表示内容と一致するtextValueを指定する"
+      "fix": "ListBox.Itemへ表示内容と一致するtextValueを指定する（lint: atlas/collection-item-name）"
     },
     {
       "id": "a11y.form-label",
       "title": "入力に視覚ラベルを付ける",
       "category": "accessibility",
       "severity": "error",
-      "method": "automatic",
+      "method": "lint",
       "description": "placeholderだけをLabelとして使わない",
-      "fix": "HeroUIのLabelを入力へ関連付ける"
+      "fix": "HeroUIのLabelを入力へ関連付ける（lint: atlas/form-label）"
     },
     {
       "id": "a11y.error-recovery",
@@ -133,9 +133,9 @@
       "title": "連絡先メールアドレスの形式を検証する",
       "category": "business",
       "severity": "error",
-      "method": "automatic",
+      "method": "lint",
       "description": "連絡先として利用できない形式を保存しない",
-      "fix": "TextFieldへtype=emailを指定し、送信前にも形式を検証する"
+      "fix": "TextFieldへtype=emailを指定し、送信前にも形式を検証する（lint: atlas/contact-email）"
     },
     {
       "id": "navigation.customer-routes",
@@ -151,9 +151,9 @@
       "title": "移動にはLink、操作にはButtonを使う",
       "category": "navigation",
       "severity": "error",
-      "method": "automatic",
+      "method": "lint",
       "description": "詳細ビューや一覧へ移動する要素はhrefまたはtoを持つLinkとし、ButtonのonPressで画面遷移させない",
-      "fix": "Tableのオブジェクト名、モバイル一覧の詳細導線、一覧へ戻る導線をLinkにする。編集、削除、保存だけをButtonとして残す"
+      "fix": "Tableのオブジェクト名、モバイル一覧の詳細導線、一覧へ戻る導線をLinkにする。編集、削除、保存だけをButtonとして残す（lint: atlas/link-semantics）"
     },
     {
       "id": "architecture.customer-read-models",
@@ -241,18 +241,18 @@
       "title": "取り消せない変更を確定前に確認する",
       "category": "interaction",
       "severity": "error",
-      "method": "automatic",
+      "method": "lint",
       "description": "削除など取り消せない操作の対象と結果を、AlertDialog.Triggerから開いた確認画面で確認する",
-      "fix": "取り消せない操作だけにAlertDialogを使い、対象と結果を表示する"
+      "fix": "取り消せない操作だけにAlertDialogを使い、対象と結果を表示する（lint: atlas/action-confirmation）"
     },
     {
       "id": "a11y.focus-management",
       "title": "Drawerのフォーカスを管理する",
       "category": "accessibility",
       "severity": "error",
-      "method": "automatic",
+      "method": "lint",
       "description": "開閉時にフォーカスを失わず、起点を主要操作として識別できる",
-      "fix": "Drawer.Root内でDrawer.TriggerとDrawer.Backdropを組にし、Triggerへ主要Buttonの視覚スタイルを適用する"
+      "fix": "Drawer.Root内でDrawer.TriggerとDrawer.Backdropを組にし、Triggerへ主要Buttonの視覚スタイルを適用する（lint: atlas/focus-management）"
     }
   ]
 }

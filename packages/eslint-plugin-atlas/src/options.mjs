@@ -1,0 +1,81 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+// variant を検査する JSX タグと契約 slug の対応。契約側に tag 名の情報が無いためここで持つ
+export const variantTagMap = {
+  Button: "button",
+  Card: "card",
+  "Card.Root": "card",
+  Chip: "chip",
+  Select: "select",
+  "Select.Root": "select",
+  Input: "text-field",
+  Link: "link",
+  SearchField: "search-field",
+  Surface: "surface",
+  "Table.Root": "table",
+  Toolbar: "toolbar",
+  "Drawer.Backdrop": "drawer",
+  "AlertDialog.Backdrop": "alert-dialog",
+};
+
+// Issue の対象外として削除すべき UI の文言。account-management 固有で、manifest 移管は Phase 2
+export const defaultForbiddenText = ["Atlas CRM", "ワークスペース", "顧客を追加", "契約管理", "料金管理", "利用人数", "権限管理"];
+
+function readJson(path) {
+  return JSON.parse(readFileSync(path, "utf8"));
+}
+
+/**
+ * design/components と example から、ルールへ渡す options を組む。
+ * 評価器と生成 workspace の両方が同じ関数を通るので、判定条件は 1 か所に集まる。
+ * 戻り値は JSON 化できる(HARNESS_LINT.json として workspace へ書く)
+ */
+export function buildAtlasLintOptions({ componentsDir, examplePath, forbiddenText = defaultForbiddenText }) {
+  const contracts = new Map(
+    readdirSync(componentsDir)
+      .filter((file) => file.endsWith(".json"))
+      .map((file) => {
+        const contract = readJson(resolve(componentsDir, file));
+        return [contract.id, { slug: file.slice(0, -".json".length), ...contract }];
+      }),
+  );
+  const example = readJson(examplePath);
+  const exampleContracts = example.components.map((componentId) => {
+    const contract = contracts.get(componentId);
+    if (!contract) throw new Error(`${examplePath}: ${componentId} の契約が ${componentsDir} にありません`);
+    return contract;
+  });
+
+  const approvedImports = [
+    ...new Set(exampleContracts.flatMap((contract) => [contract.implementation, ...(contract.anatomy ?? [])])),
+  ];
+  const componentUsage = Object.keys(example.componentUsage).map((componentId) => {
+    const contract = exampleContracts.find((item) => item.id === componentId);
+    if (!contract) throw new Error(`${componentId}: componentUsage の契約が example の components にありません`);
+    return { name: contract.name, implementation: contract.implementation };
+  });
+  const variants = Object.fromEntries(
+    Object.entries(variantTagMap).map(([tagName, slug]) => {
+      const contract = [...contracts.values()].find((item) => item.slug === slug);
+      if (!contract) throw new Error(`variantTagMap: ${slug}.json が ${componentsDir} にありません`);
+      return [tagName, { name: contract.name, variants: contract.variants ?? [] }];
+    }),
+  );
+  const tableUsage = example.componentUsage["component.table"];
+
+  return {
+    approvedImports,
+    forbiddenText: [...forbiddenText],
+    componentUsage,
+    variants,
+    tableVariant: tableUsage?.variant ?? "primary",
+    linkSemantics: {
+      objectNameExpression: "customer.companyName",
+      backLinkPattern: "顧客一覧(?:へ|に)戻る",
+      mobileListClass: "collection-list-mobile",
+      navigationTextPattern: "customer\\.companyName|顧客を確認|顧客一覧(?:へ|に)戻る",
+    },
+    componentThemeImport: "design/component-theme.css",
+  };
+}

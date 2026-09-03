@@ -4,7 +4,7 @@ import { approvedHeroUiImportNames, evaluateSource } from "./evaluate-experiment
 describe("evaluateSource", () => {
   it("detects design contract escapes", () => {
     const rules = evaluateSource({
-      app: '<button>削除</button><div role="dialog">確認</div>',
+      app: '<><button>削除</button><div role="dialog">確認</div></>',
       styles: ".panel { color: #123456; }",
     });
     const byId = new Map(rules.map((rule) => [rule.id, rule]));
@@ -104,9 +104,11 @@ describe("evaluateSource", () => {
   it("accepts HeroUI v3 callable roots and pending state props", () => {
     const rules = evaluateSource({
       app: `
+        <>
         <Table variant="primary" />
         <Drawer><Drawer.Trigger className="button button--primary">編集</Drawer.Trigger><Drawer.Backdrop><Drawer.CloseTrigger aria-label="閉じる" /></Drawer.Backdrop></Drawer>
         <Button isPending={isSaving}>保存</Button>
+        </>
       `,
       styles: '@import "../design/component-theme.css";',
       componentTheme: ':root { --radius: calc(var(--dh-radius-base) / 3); } .table-root--primary { border-radius: var(--dh-radius-base); }',
@@ -201,18 +203,22 @@ describe("evaluateSource", () => {
   it("uses links for navigation and buttons only for actions", () => {
     const invalid = evaluateSource({
       app: `
+        <>
         <Table.Cell><Button onPress={() => openCustomer(customer.id)}>{customer.companyName}</Button></Table.Cell>
         <Button onPress={() => openCustomer(customer.id)}>顧客を確認</Button>
         <Button onPress={() => navigate("/customers")}>顧客一覧に戻る</Button>
+        </>
       `,
       styles: "",
     });
     const valid = evaluateSource({
       app: `
+        <>
         <Table.Cell><RouterLink className="link" to={\`/customers/\${customer.id}\`}>{customer.companyName}</RouterLink></Table.Cell>
         <div className="collection-list-mobile"><Card.Root><Card.Title><RouterLink className="collection-list-mobile__link" to={\`/customers/\${customer.id}\`}>{customer.companyName}</RouterLink></Card.Title></Card.Root></div>
         <RouterLink className="link" to="/customers">顧客一覧に戻る</RouterLink>
         <Button onPress={saveCustomer}>保存</Button>
+        </>
       `,
       styles: "",
     });
@@ -224,19 +230,23 @@ describe("evaluateSource", () => {
   it("judges the mobile detail link by the contract container, not a hardcoded label", () => {
     const containerLinkWithoutLabel = evaluateSource({
       app: `
+        <>
         <Table.Cell><Link className="table-link" href={\`/customers/\${customer.id}\`}>{customer.companyName}</Link></Table.Cell>
         <div className="collection-list-mobile"><Card.Root><Card.Title><Link className="table-link" href={\`/customers/\${customer.id}\`}>{customer.companyName}</Link></Card.Title></Card.Root></div>
         <Link className="back-link" href="/customers">顧客一覧に戻る</Link>
         <Button onPress={saveCustomer}>保存</Button>
+        </>
       `,
       styles: "",
     });
     const labeledLinkOutsideContainer = evaluateSource({
       app: `
+        <>
         <Table.Cell><Link className="table-link" href={\`/customers/\${customer.id}\`}>{customer.companyName}</Link></Table.Cell>
         <Link className="link" href={\`/customers/\${customer.id}\`}>顧客を確認</Link>
         <Link className="back-link" href="/customers">顧客一覧に戻る</Link>
         <Button onPress={saveCustomer}>保存</Button>
+        </>
       `,
       styles: "",
     });
@@ -371,7 +381,7 @@ describe("evaluateSource", () => {
 
   it("rejects HeroUI variants outside the Atlas component contracts", () => {
     const rules = evaluateSource({
-      app: '<Button variant="link">保存</Button><Chip variant="default">利用中</Chip><Select variant="default" />',
+      app: '<><Button variant="link">保存</Button><Chip variant="default">利用中</Chip><Select variant="default" /></>',
       styles: '@import "../design/component-theme.css";',
     });
 
@@ -384,7 +394,7 @@ describe("evaluateSource", () => {
 
   it("accepts approved HeroUI variants and the shared radius adapter", () => {
     const rules = evaluateSource({
-      app: '<Button variant="outline">編集</Button><Chip variant="soft">利用中</Chip><Select variant="secondary" />',
+      app: '<><Button variant="outline">編集</Button><Chip variant="soft">利用中</Chip><Select variant="secondary" /></>',
       styles: '@import "../design/component-theme.css";',
       componentTheme: ":root { --radius: calc(var(--dh-radius-base) / 3); } .table-root--primary, .list-box-item { border-radius: var(--dh-radius-base); }",
     });
@@ -463,9 +473,11 @@ describe("evaluateSource", () => {
   it("componentUsageが要求する部品がJSXに出ていればcomponent.usageをpassedにする", () => {
     const rules = evaluateSource({
       app: `
+        <>
         <Toolbar.Root><Link href="/customers">顧客一覧</Link></Toolbar.Root>
         <Table.Root variant="primary" />
         <AlertDialog.Root><AlertDialog.Dialog /></AlertDialog.Root>
+        </>
       `,
       styles: '@import "../design/component-theme.css";',
     });
@@ -477,8 +489,10 @@ describe("evaluateSource", () => {
     const rules = evaluateSource({
       app: `
         import { AlertDialog, Link, Table, Toolbar } from "@heroui/react";
+        <>
         <Toolbar.Root><Link href="/customers">顧客一覧</Link></Toolbar.Root>
         <Table.Root variant="primary" />
+        </>
       `,
       styles: '@import "../design/component-theme.css";',
     });
@@ -524,8 +538,10 @@ describe("evaluateSource", () => {
   it("リテラルの契約違反は動的variantより優先してfailedにする", () => {
     const rules = evaluateSource({
       app: `
+        <>
         <Button variant="link">保存</Button>
         <Chip variant={statusVariant}>利用中</Chip>
+        </>
       `,
       styles: '@import "../design/component-theme.css";',
     });

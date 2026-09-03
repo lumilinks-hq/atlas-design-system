@@ -1,0 +1,252 @@
+{
+  "pairId": "lint-01",
+  "mode": "harness",
+  "summary": {
+    "passed": 23,
+    "failed": 0,
+    "review": 5
+  },
+  "rules": [
+    {
+      "id": "component.approved",
+      "status": "passed",
+      "evidence": [
+        "契約対象の独自HTML部品は検出されませんでした"
+      ]
+    },
+    {
+      "id": "component.usage",
+      "status": "passed",
+      "evidence": [
+        "exampleのcomponentUsageが求める部品はすべて実装に現れています"
+      ]
+    },
+    {
+      "id": "component.variants",
+      "status": "passed",
+      "evidence": [
+        "静的に指定されたvariantはAtlas契約内"
+      ]
+    },
+    {
+      "id": "component.table.variant",
+      "status": "passed",
+      "evidence": [
+        "Table.Rootはprimary variant"
+      ]
+    },
+    {
+      "id": "component.table.columns",
+      "status": "passed",
+      "evidence": [
+        "Exampleの列定義をHeaderとRowで共有"
+      ]
+    },
+    {
+      "id": "component.table.surface",
+      "status": "passed",
+      "evidence": [
+        "Tableへradius.baseを適用し、外側にsurface装飾なし"
+      ]
+    },
+    {
+      "id": "token.radius",
+      "status": "passed",
+      "evidence": [
+        "AtlasのHeroUI theme adapterを読み込み"
+      ]
+    },
+    {
+      "id": "token.no-raw-color",
+      "status": "passed",
+      "evidence": [
+        "raw colorなし"
+      ]
+    },
+    {
+      "id": "a11y.control-name",
+      "status": "review",
+      "evidence": [
+        "実ブラウザのaccessibility treeで確認する"
+      ]
+    },
+    {
+      "id": "a11y.collection-item-name",
+      "status": "passed",
+      "evidence": [
+        "複合表示のListBox.ItemにtextValueあり"
+      ]
+    },
+    {
+      "id": "a11y.form-label",
+      "status": "passed",
+      "evidence": [
+        "視覚ラベルまたはaria-labelあり"
+      ]
+    },
+    {
+      "id": "a11y.error-recovery",
+      "status": "review",
+      "evidence": [
+        "参考: 原因または回復方法の文言を検出",
+        "文言の実際の伝わり方はAIレビューと人の確認で判定する"
+      ]
+    },
+    {
+      "id": "a11y.color-only",
+      "status": "review",
+      "evidence": [
+        "参考: 状態名の文字表示を検出",
+        "色以外の手掛かりが実画面で読めるかはAIレビューと人の確認で判定する"
+      ]
+    },
+    {
+      "id": "business.customer-name",
+      "status": "passed",
+      "evidence": [
+        "顧客名の必須制御あり"
+      ]
+    },
+    {
+      "id": "business.contact-email",
+      "status": "passed",
+      "evidence": [
+        "メール形式の入力制御あり"
+      ]
+    },
+    {
+      "id": "navigation.customer-routes",
+      "status": "passed",
+      "evidence": [
+        "/customersと/customers/:customerIdを独立した画面として実装"
+      ]
+    },
+    {
+      "id": "navigation.link-semantics",
+      "status": "passed",
+      "evidence": [
+        "Tableのオブジェクト名、モバイル詳細導線、一覧へ戻る導線をLinkとして実装"
+      ]
+    },
+    {
+      "id": "architecture.customer-read-models",
+      "status": "passed",
+      "evidence": [
+        "CustomerSummaryとCustomerDetailの取得経路を分離"
+      ]
+    },
+    {
+      "id": "state.complete",
+      "status": "passed",
+      "evidence": [
+        "必須8状態あり"
+      ]
+    },
+    {
+      "id": "layout.grouping",
+      "status": "passed",
+      "evidence": [
+        "セクション間: 実測24px（契約24px）",
+        "グループ間: 実測16px（契約16px）",
+        "Drawerフォームgap: 実測24px（契約24px）"
+      ]
+    },
+    {
+      "id": "layout.collection-toolbar",
+      "status": "passed",
+      "evidence": [
+        "見出し→一覧領域: 実測24px（契約24px）",
+        "Toolbar→Table: 実測12px（契約12px）",
+        "Toolbarはflex末尾揃え",
+        "SearchField幅 実測256px（契約256px）",
+        "ToolbarはTable直前",
+        "390px: SearchField幅 366px = Toolbar幅（契約100%）"
+      ]
+    },
+    {
+      "id": "layout.back-navigation",
+      "status": "passed",
+      "evidence": [
+        "戻るLinkがページ見出しより前",
+        "戻るLink→見出し: 実測16px（契約16px）",
+        "見出し→詳細コンテンツ: 実測32px（契約32px）"
+      ]
+    },
+    {
+      "id": "layout.narrow",
+      "status": "passed",
+      "evidence": [
+        "/customers 320px: scrollWidth 320px",
+        "/customers/:customerId 320px: scrollWidth 320px",
+        "390px: Table非表示、.collection-list-mobile 表示"
+      ]
+    },
+    {
+      "id": "state.loading",
+      "status": "passed",
+      "evidence": [
+        "保存中のdisabled制御あり"
+      ]
+    },
+    {
+      "id": "state.failure",
+      "status": "review",
+      "evidence": [
+        "参考: 失敗と再試行の文言を検出",
+        "失敗後に再試行できるかはAIレビューと人の確認で判定する"
+      ]
+    },
+    {
+      "id": "color.semantic",
+      "status": "review",
+      "evidence": [
+        "semantic colorの意味はblind reviewする"
+      ]
+    },
+    {
+      "id": "action.confirmation",
+      "status": "passed",
+      "evidence": [
+        "AlertDialog.Triggerから確認画面を開き、起点はHeroUI Button"
+      ]
+    },
+    {
+      "id": "a11y.focus-management",
+      "status": "passed",
+      "evidence": [
+        "Drawer.Triggerの視覚スタイルとアイコンのみのCloseTriggerあり"
+      ]
+    }
+  ],
+  "review": {
+    "reviewedAt": "2026-09-03T08:47:08.865Z",
+    "model": "claude-opus-5",
+    "findings": [
+      {
+        "ruleId": "a11y.control-name",
+        "verdict": "pass",
+        "note": "操作要素は検索フィールド、「顧客を編集」「顧客を削除」、「顧客一覧へ戻る」のみで、いずれもテキストラベルを持つ。検索欄の虫眼鏡アイコンは装飾で、プレースホルダー「企業名で検索」が付いているためアイコンのみの操作は見当たらない。"
+      },
+      {
+        "ruleId": "a11y.error-recovery",
+        "verdict": "concern",
+        "note": "一覧・詳細ともエラー表示が画面上に一切なく、検索結果ゼロ件や取得失敗時に何が起きたか・次に何をすればよいかを示す領域が確認できない。"
+      },
+      {
+        "ruleId": "a11y.color-only",
+        "verdict": "pass",
+        "note": "ステータスは「利用中」「商談中」「休眠」と状態名がテキストで書かれており、バッジの色だけに依存していない。"
+      },
+      {
+        "ruleId": "state.failure",
+        "verdict": "concern",
+        "note": "編集・削除の後に失敗が起きた場合の残存表示が画面上に確認できず、再試行導線（エラー領域や再実行ボタン）がどこにも見当たらない。"
+      },
+      {
+        "ruleId": "color.semantic",
+        "verdict": "pass",
+        "note": "赤系（淡いピンク背景＋赤文字）は「顧客を削除」にのみ使われ、通常操作の「顧客を編集」は青のプライマリで区別されている。"
+      }
+    ]
+  }
+}

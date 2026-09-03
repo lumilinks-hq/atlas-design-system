@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 <repo>/.runs/account-management/prelint-01/harness
+
+
+ Test Files  2 passed (2)
+      Tests  13 passed (13)
+   Start at  01:31:34
+   Duration  2.81s (transform 96ms, setup 20ms, import 1.69s, tests 1.55s, environment 935ms)
+
+$ vitest run

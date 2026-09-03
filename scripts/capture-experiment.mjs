@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { chromium } from "@playwright/test";
@@ -15,6 +16,11 @@ const browser = await chromium.launch({ headless: true });
 try {
   for (const mode of modes) {
     const workspaceDir = resolve(rootDir, ".runs", "account-management", args.pair, mode);
+    // measure と同じく、修正 Run が無い pair（初回で全件 passed）ではそのモードを飛ばす
+    if (!existsSync(workspaceDir)) {
+      console.log(`${mode}: workspaceなし、スキップ`);
+      continue;
+    }
     const server = await createServer({
       root: workspaceDir,
       configLoader: "runner",

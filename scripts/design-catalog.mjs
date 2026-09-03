@@ -80,13 +80,20 @@ export const atlasResources = [
 const resourcesByUri = new Map(atlasResources.map((resource) => [resource.uri, resource]));
 const resourcesById = new Map(atlasResources.map((resource) => [resource.id, resource]));
 
+/**
+ * lint で検査するルールを rules.json から除く。ESLint(eslint-plugin-atlas)が
+ * 機械判定する分は AI に読ませず、違反は lint 出力として返す
+ */
+export function stripLintRules(rulesDocument) {
+  return { ...rulesDocument, rules: rulesDocument.rules.filter((rule) => rule.method !== "lint") };
+}
+
 export function readAtlasResource(uri) {
   const resource = resourcesByUri.get(uri);
   if (!resource) throw new Error(`Unknown Atlas resource: ${uri}`);
-  return {
-    ...resource,
-    text: readFileSync(resolve(rootDir, resource.path), "utf8"),
-  };
+  const raw = readFileSync(resolve(rootDir, resource.path), "utf8");
+  const text = uri === "atlas://design/rules" ? `${JSON.stringify(stripLintRules(JSON.parse(raw)), null, 2)}\n` : raw;
+  return { ...resource, text };
 }
 
 function resolvePatternRef(ref) {

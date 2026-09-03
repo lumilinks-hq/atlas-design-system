@@ -4,7 +4,9 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 import { designData } from "./data/design";
-import { baselineEvaluation, comparison, correctedEvaluation, harnessEvaluation, runEnvironment } from "./data/runs";
+import { ruleMethodLabels } from "./pages/DocsPages";
+import { ChecksList } from "./pages/HarnessPages";
+import { baselineEvaluation, comparison, correctedEvaluation, harnessEvaluation, runEnvironment, sameModelRuns } from "./data/runs";
 
 const statusLabels: Record<string, string> = { passed: "合格", failed: "違反", review: "要確認" };
 
@@ -209,13 +211,14 @@ describe("Atlas Design System demo", () => {
     await user.keyboard("{Enter}");
     expect(within(diagram).getByRole("button", { name: "03 検証する層" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("region", { name: "検証する層" })).toHaveTextContent("scripts/evaluate-experiment.mjs");
+    const lint = designData.rules.filter((rule) => rule.method === "lint").length;
     const automatic = designData.rules.filter((rule) => rule.method === "automatic").length;
     const aiReview = designData.rules.filter((rule) => rule.method === "ai-review").length;
     const human = designData.rules.filter((rule) => rule.method === "human").length;
     const methods = screen.getByRole("region", { name: "妥当性を、誰がどう担保するか" });
     expect(within(methods).queryByRole("list")).not.toBeInTheDocument();
     expect(within(methods).getAllByRole("paragraph").length).toBeGreaterThanOrEqual(3);
-    expect(methods).toHaveTextContent(`${designData.rules.length}件のルールのうち${automatic}件が自動検証`);
+    expect(methods).toHaveTextContent(`${designData.rules.length}件のルールのうち${lint}件はESLintで、${automatic}件は評価スクリプトで自動検証`);
     expect(methods).toHaveTextContent(`${aiReview}件をレビュー`);
     expect(methods).toHaveTextContent(`人に任せているルールは${human}件`);
 
@@ -239,6 +242,27 @@ describe("Atlas Design System demo", () => {
     expect(screen.queryByText("Agent-ready")).not.toBeInTheDocument();
     expect(screen.queryByRole("list", { name: /の実行検査$/ })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "生成結果の比較を見る" })).toHaveAttribute("href", "/examples/account-management/results");
+  });
+
+  it("shows the baseline lint check as Atlas-not-applied instead of passed", () => {
+    // baseline は Atlas 層を受け取らないので、lint が通っても「Atlas ルールで合格」ではない
+    const checks = [
+      { name: "lint", status: "passed", exitCode: 0 },
+      { name: "build", status: "passed", exitCode: 0 },
+    ];
+    render(<ChecksList checks={checks} label="baseline" condition="baseline" />);
+    const items = within(screen.getByRole("list", { name: "baseline" })).getAllByRole("listitem");
+    expect(items[0]).toHaveTextContent("Lint（Atlas ルール非適用、基本ルールのみ）");
+    expect(items[0]).toHaveClass("check-skip");
+    expect(items[0]).not.toHaveClass("check-pass");
+    expect(items[1]).toHaveTextContent("ビルド");
+    expect(items[1]).toHaveClass("check-pass");
+    cleanup();
+
+    render(<ChecksList checks={checks} label="harness" condition="harness" />);
+    const harnessItem = within(screen.getByRole("list", { name: "harness" })).getAllByRole("listitem")[0];
+    expect(harnessItem).toHaveTextContent("Lint（Atlas ルール含む）");
+    expect(harnessItem).toHaveClass("check-pass");
   });
 
   it("compares the baseline and harness results side by side from the saved run", async () => {
@@ -280,8 +304,22 @@ describe("Atlas Design System demo", () => {
     const firstRow = within(table).getByRole("row", { name: new RegExp(firstRule.title) });
     expect(firstRow).toHaveTextContent(statusLabels[baselineStatus]!);
     expect(firstRow).toHaveTextContent(statusLabels[correctedStatus]!);
-    expect(firstRow).toHaveTextContent("自動検証");
+    expect(firstRow).toHaveTextContent(ruleMethodLabels[firstRule.method]!);
 
+
+    // 同じモデルで lint 層あり/なしを比べた run。数字は保存済みの design-evaluation.json だけを使う
+    const sameModel = screen.getByRole("table", { name: "同じモデルでの比較" });
+    expect(within(sameModel).getAllByRole("row")).toHaveLength(sameModelRuns.length * 2 + 1);
+    for (const run of sameModelRuns) {
+      const rows = within(sameModel).getAllByRole("row", { name: new RegExp(`^${run.pairId}${run.model}`) });
+      expect(rows).toHaveLength(2);
+      expect(rows[0]).toHaveTextContent(run.model);
+      expect(rows[0]).toHaveTextContent(`${run.baseline.summary.failed}`);
+      expect(rows[1]).toHaveTextContent(`${run.harness.summary.failed}`);
+    }
+    const sameModelSection = screen.getByRole("region", { name: "同じモデルでの比較" });
+    expect(sameModelSection).toHaveTextContent("各条件 1 run");
+    expect(sameModelSection).toHaveTextContent("App.tsx");
     expect(screen.getByRole("button", { name: "設計指示なしの画面を操作する" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Atlas適用後の画面を操作する" })).toBeInTheDocument();
   });

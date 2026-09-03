@@ -1,7 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
 import { userInfo } from "node:os";
 import { relative, resolve } from "node:path";
-import { escapeRegExp, rootDir, walk } from "./lib.mjs";
+import { rootDir, usernamePattern, walk } from "./lib.mjs";
 
 const excludedSegments = new Set([
   ".git",
@@ -63,7 +63,7 @@ export function auditText(value, path = "", options = {}) {
   if (!intentionalFixtures.has(path)) {
     rules.push(["openai-key", /\bsk-[A-Za-z0-9_-]{20,}\b/g]);
     for (const name of usernames) {
-      rules.push(["local-user-name", new RegExp(`\\b${escapeRegExp(name)}\\b`, "g")]);
+      rules.push(["local-user-name", usernamePattern(name)]);
     }
   }
 

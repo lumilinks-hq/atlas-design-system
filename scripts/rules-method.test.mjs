@@ -57,6 +57,11 @@ describe("rules.jsonのmethod宣言と判定実装の整合（mvp-11 harness-cor
     expect(violations("automatic", ["passed", "failed"])).toEqual([]);
   });
 
+  it("lintのruleはESLint経由で機械判定（passed/failed）が付く", () => {
+    // component.variantsだけは動的variantが混ざるとreviewになる設計なので、この入力ではpassedを確認する
+    expect(violations("lint", ["passed", "failed"])).toEqual([]);
+  });
+
   it("ai-reviewのruleは機械判定せずreviewを返す", () => {
     expect(violations("ai-review", ["review"])).toEqual([]);
   });

@@ -31,6 +31,12 @@ describe("public data audit", () => {
     expect(auditText("testuserx", "README.md", { usernames: ["testuser"] })).toEqual([]);
   });
 
+  it("区切り文字を-に置き換えた形のユーザー名も検出する", () => {
+    expect(auditText("projects/-Users-test-user-works", "x.jsonl", { usernames: ["test_user"] })).toEqual([
+      { id: "local-user-name", match: "test-user" },
+    ]);
+  });
+
   it("skips the user name rule on CI and for short names", () => {
     expect(resolveAuditUsernames({ env: { CI: "true" }, username: "runner" })).toEqual([]);
     expect(resolveAuditUsernames({ env: {}, username: "ab" })).toEqual([]);

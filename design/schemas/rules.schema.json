@@ -17,7 +17,7 @@
           "title": { "type": "string", "minLength": 1 },
           "category": { "type": "string", "minLength": 1 },
           "severity": { "enum": ["error", "warning", "info"] },
-          "method": { "enum": ["automatic", "ai-review", "human"] },
+          "method": { "enum": ["automatic", "lint", "ai-review", "human"] },
           "description": { "type": "string", "minLength": 1 },
           "fix": { "type": "string", "minLength": 1 }
         },

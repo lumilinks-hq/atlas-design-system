@@ -2,7 +2,7 @@ import { readFile, readdir, writeFile } from "node:fs/promises";
 import { userInfo } from "node:os";
 import { extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { escapeRegExp, parseArgs, rootDir } from "./lib.mjs";
+import { parseArgs, rootDir, usernamePattern } from "./lib.mjs";
 
 const textExtensions = new Set([".diff", ".json", ".jsonl", ".log", ".md", ".tsx", ".ts", ".css"]);
 
@@ -35,8 +35,9 @@ export function sanitizeText(value, options = {}) {
 
   const username = resolveMaskedUsername(options);
   if (!username) return output;
-  return output.replace(new RegExp(`\\b${escapeRegExp(username)}\\b`, "g"), "<user>");
+  return output.replace(usernamePattern(username), "<user>");
 }
+
 
 /**
  * イベント1件をsanitizeする。

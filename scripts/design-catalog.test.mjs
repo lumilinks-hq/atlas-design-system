@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
-import { atlasResources, readAtlasResource, resolveDesignContract, resolveManifest } from "./design-catalog.mjs";
+import { atlasResources, readAtlasResource, resolveDesignContract, resolveManifest, stripLintRules } from "./design-catalog.mjs";
 
 describe("Atlas design catalog", () => {
   it("lists only fixed read-only design resources", () => {
@@ -144,5 +144,26 @@ describe("Atlas design catalog", () => {
         ],
       }),
     ).toThrow("Unknown component reference");
+  });
+});
+
+describe("stripLintRules", () => {
+  it("lint で検査するルールを除き、それ以外はそのまま残す", () => {
+    const stripped = stripLintRules({
+      version: "1",
+      rules: [
+        { id: "a", method: "lint" },
+        { id: "b", method: "automatic" },
+        { id: "c", method: "ai-review" },
+      ],
+    });
+    expect(stripped.version).toBe("1");
+    expect(stripped.rules.map((rule) => rule.id)).toEqual(["b", "c"]);
+  });
+
+  it("MCP の atlas://design/rules も lint ルールを含まない", () => {
+    const document = JSON.parse(readAtlasResource("atlas://design/rules").text);
+    expect(document.rules.length).toBeGreaterThan(0);
+    expect(document.rules.some((rule) => rule.method === "lint")).toBe(false);
   });
 });

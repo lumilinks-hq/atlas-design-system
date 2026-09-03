@@ -1,18 +1,65 @@
 import { createHash } from "node:crypto";
-import { cp, mkdir, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
-import { resolveManifest } from "./design-catalog.mjs";
+import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { buildAtlasLintOptions } from "eslint-plugin-atlas/options";
+import { resolveManifest, stripLintRules } from "./design-catalog.mjs";
 import { hashPath, rootDir } from "./lib.mjs";
+
+// workspace の eslint.config.js。starter の土台に Atlas ルールを重ねる。
+// options は HARNESS_LINT.json から読むので、設定ファイル自体は契約に依存しない
+const workspaceEslintConfig = `import { readFileSync } from "node:fs";
+import js from "@eslint/js";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+import { atlasConfigs } from "eslint-plugin-atlas";
+
+// Atlas の設計契約から生成した lint options。手で編集しない
+const atlasOptions = JSON.parse(readFileSync(new URL("./HARNESS_LINT.json", import.meta.url), "utf8"));
+
+export default tseslint.config(
+  { ignores: ["dist", "node_modules", ".agents"] },
+  // CSS も lint 対象に入るため、JS/TS 向けの推奨ルールはファイル種別を限定して適用する
+  {
+    files: ["**/*.{js,mjs,cjs,ts,tsx}"],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    languageOptions: { parserOptions: { tsconfigRootDir: import.meta.dirname } },
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: { ecmaVersion: 2023, globals: globals.browser },
+  },
+  // design/ 配下の CSS はトークン定義そのものなので対象外。生成物の src/ だけを検査する
+  ...atlasConfigs({ options: atlasOptions, tsxFiles: ["src/**/*.tsx"], cssFiles: ["src/**/*.css"] }),
+);
+`;
+
+export function buildWorkspaceLintOptions(resolvedContract) {
+  const exampleResource = resolvedContract.resources.find((resource) => resource.uri.includes("/examples/"));
+  if (!exampleResource) throw new Error("契約にexampleがありません");
+  return buildAtlasLintOptions({
+    componentsDir: resolve(rootDir, "design", "components"),
+    examplePath: resolve(rootDir, exampleResource.path),
+  });
+}
 
 export async function syncHarnessContext(workspaceDir, manifestPath) {
   const resolvedContract = resolveManifest(manifestPath);
   const manifestAbsolutePath = resolve(rootDir, manifestPath);
 
   await cp(resolve(rootDir, "DESIGN.md"), resolve(workspaceDir, "DESIGN.md"), { force: true });
-  await cp(resolve(rootDir, "design"), resolve(workspaceDir, "design"), {
-    recursive: true,
-    force: true,
-  });
+  // design/ は丸ごとではなく、manifest から解決した資源だけを渡す。
+  // rules.json は lint が検査するルールを除いた版を同じパスに書く
+  for (const resource of resolvedContract.resources) {
+    if (resource.path === "DESIGN.md") continue;
+    const target = resolve(workspaceDir, resource.path);
+    await mkdir(dirname(target), { recursive: true });
+    if (resource.path === "design/rules.json") {
+      const rulesDocument = JSON.parse(await readFile(resolve(rootDir, resource.path), "utf8"));
+      await writeFile(target, `${JSON.stringify(stripLintRules(rulesDocument), null, 2)}\n`);
+    } else {
+      await cp(resolve(rootDir, resource.path), target, { force: true });
+    }
+  }
   await cp(manifestAbsolutePath, resolve(workspaceDir, "HARNESS.json"), { force: true });
   const workspaceContract = {
     ...resolvedContract,
@@ -25,6 +72,11 @@ export async function syncHarnessContext(workspaceDir, manifestPath) {
     resolve(workspaceDir, "HARNESS_RESOLVED.json"),
     `${JSON.stringify(workspaceContract, null, 2)}\n`,
   );
+  await writeFile(
+    resolve(workspaceDir, "HARNESS_LINT.json"),
+    `${JSON.stringify(buildWorkspaceLintOptions(resolvedContract), null, 2)}\n`,
+  );
+  await writeFile(resolve(workspaceDir, "eslint.config.js"), workspaceEslintConfig);
 
   const skillsDirectory = resolve(workspaceDir, ".agents", "skills");
   await mkdir(skillsDirectory, { recursive: true });
