@@ -25,3 +25,13 @@ starter を `.runs/lint-check-*` にコピーし node_modules を symlink、`syn
 
 ## Phase 2 候補(未着手)
 JSX 内 raw color、jsx-a11y、manifest 駆動ルール(customer-routes / customer-name / state.complete)、forbiddenText の manifest 移管、layout.* の lint 化、`hashHarnessContext` の resolved 限定、mvp-11 再生成、autofix。
+
+## lint-01 の結果(2026-09-03、claude-opus-5)
+- baseline: 12 pass / 11 fail / 5 review。harness 初回: 23 pass / 0 fail / 5 review、Atlas lint 0 違反。harness-corrected は失敗なしのため未実施。
+- 問題: mvp-11 は gpt-5.4 なので lint 化の効果と model の差が分離できない。baseline の lint は Atlas 層が無いのに passed と記録される。
+
+## 進行中(2026-09-03)
+- [x] 比較ページで baseline の lint を「Atlas ルール非適用」と表示(`ChecksList` の `condition` prop、`check-skip`)
+- [ ] 対照 run `prelint-01`: main(lint 化前)の worktree `../atlas-prelint` で Opus の baseline/harness を実行中。終了後、workspace と runs をこのブランチへコピーし、本ブランチの評価器で `experiment:evaluate` を再実行して評価器を揃える。sanitize → demo:check → コミット。
+- [ ] 修正ループのデモは 1・3 の後に検討(ユーザー判断待ち)。
+- 注意: gh の active account を kgsi に切り替えた(戻すなら `gh auth switch --user kogiso-findy`)。
