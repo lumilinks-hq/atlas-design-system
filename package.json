@@ -25,6 +25,8 @@
     "public:audit": "node scripts/audit-public-data.mjs",
     "links:check": "node scripts/check-links.mjs",
     "bundle:check": "node scripts/check-bundle-size.mjs",
+    "site:preview": "wrangler dev",
+    "site:deploy": "pnpm build && wrangler deploy",
     "skills:check": "node scripts/validate-skills.mjs",
     "mcp:start": "node scripts/mcp/server.mjs",
     "experiment:run": "node scripts/run-experiment.mjs",
@@ -70,6 +72,7 @@
     "typescript": "6.0.3",
     "typescript-eslint": "8.68.0",
     "vite": "8.2.2",
-    "vitest": "4.1.11"
+    "vitest": "4.1.11",
+    "wrangler": "4.128.0"
   }
 }
