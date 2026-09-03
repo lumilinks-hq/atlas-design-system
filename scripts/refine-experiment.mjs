@@ -1,4 +1,6 @@
 import { cp, readFile, writeFile } from "node:fs/promises";
+import { resolveRunner } from "./agent-runners/index.mjs";
+import { correctionPrompt } from "./correction-prompt.mjs";
 import { resolve } from "node:path";
 import { evaluateRun } from "./evaluate-experiment.mjs";
 import { hashHarnessContext, syncHarnessContext } from "./harness-context.mjs";
@@ -47,20 +49,10 @@ if (beforeRefinement.summary.failed === 0 && !hasFailedChecks) {
   console.log(`${mode}: runtime check failed; continuing to agent refinement`);
 }
 
-const prompt = "$atlas-design-system、$heroui-react、$ui-writingを使い、VALIDATION.mdの失敗項目、pnpm exec tsc -p tsconfig.app.json --pretty false --noUncheckedIndexedAccess、pnpm test:runで再現する失敗だけを修正してください。各項目の証拠と修正指示を文字通り確認し、削除対象として挙がったUIは別部品へ置き換えず削除してください。修正方法はHARNESS_RESOLVED.jsonが指すAtlas契約（screensのvariant、pattern・componentのlayout、exampleのcomposition、design/layout.cssのクラス）に従い、レイアウトを独自に再発明しないでください。DESIGN.mdとdesign/は変更せず、既存の画面要件と機能を保ってください。テストではHeroUI操作前にfake timersを有効化するとuserEventやDrawerの完了処理が停止するため、操作はreal timersで行い、保存完了だけwaitForで待ってください。debug.test.tsxは残さないでください。修正後に厳格typecheck、test:run、buildを実行してください。";
-const result = await runCommandToFiles("codex", [
-  "exec",
-  "--ignore-user-config",
-  "--ignore-rules",
-  "--ephemeral",
-  "--json",
-  "--approve-for-me",
-  "--model",
-  run.environment.model,
-  "-C",
-  workspaceDir,
-  prompt,
-], {
+const prompt = correctionPrompt;
+// runnerは run.json に記録されたものを使う（同じpairは同じCLIで通す）
+const runner = resolveRunner(run.environment.runner);
+const result = await runCommandToFiles(runner.command, runner.buildExecArgs({ model: run.environment.model, prompt, cwd: workspaceDir, json: true }), {
   cwd: workspaceDir,
   stdoutPath: resolve(outputDir, "refinement-events.jsonl"),
   stderrPath: resolve(outputDir, "refinement-stderr.log"),

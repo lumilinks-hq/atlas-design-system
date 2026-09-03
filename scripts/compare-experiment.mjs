@@ -23,7 +23,8 @@ for (const key of ["briefSha256", "starterSha256", "promptSha256"]) {
 if (baseline.input.designContractSha256 !== null) throw new Error("Baselineへ設計契約が含まれています");
 if (harness.input.designContractSha256 === null) throw new Error("Harnessへ設計契約が含まれていません");
 if (baseline.environment.model !== harness.environment.model) throw new Error("AIモデルが一致しません");
-if (baseline.environment.cliVersion !== harness.environment.cliVersion) throw new Error("Codex CLIが一致しません");
+if (baseline.environment.runner !== harness.environment.runner) throw new Error("runnerが一致しません");
+if (baseline.environment.cliVersion !== harness.environment.cliVersion) throw new Error("CLIバージョンが一致しません");
 
 const blindOrder = createHash("sha256").update(args.pair).digest()[0] % 2 === 0
   ? { A: "baseline", B: "harness" }

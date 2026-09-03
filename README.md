@@ -2,7 +2,7 @@
 
 Atlasは、[デザインハーネス](https://design-harness.com/)を用いて設計・検証するデモ用デザインシステムです。同じB2B画面を、設計契約なしのBaselineと、Atlasを参照する条件でAIに実装させ、その差と修正過程を確認できます。UI基盤には[HeroUI](https://www.heroui.com/)を使っています。
 
-公開サイトはデザインシステムの参照資料、Presenter modeはカンファレンスやウェビナーで使う保存済みRunの再生画面です。閲覧時にAIやAPIキーは使いません。
+公開サイトはデザインシステムの参照資料です。Design Harnessの仕組みの説明と、保存済みRunの生成結果の比較も同じサイトに含みます。閲覧時にAIやAPIキーは使いません。
 
 ## 現在のシナリオ
 
@@ -22,9 +22,10 @@ pnpm dev
 - デザインシステム: `http://localhost:4173/`
 - 導入方法: `http://localhost:4173/getting-started`
 - 生成画面の操作: `http://localhost:4173/play/account-management?mode=atlas`
-- Presenter mode: `http://localhost:4173/demo/runs/account-management`
+- Design Harnessの説明: `http://localhost:4173/harness`
+- 生成結果の比較: `http://localhost:4173/examples/account-management/results`
 
-Presenter modeは、Issue、設計の適用、生成と検査、結果比較の4場面です。画面下の操作か左右キーで進め、`R`で初期状態へ戻せます。結果画面から、BaselineとAtlas適用後の生成画面を開けます。
+生成結果の比較は、同じIssueからDesign Harnessなし／ありで生成した顧客管理画面を並べ、検査結果をルールごとに表示します。Design Harnessの説明は、制約・コンテキスト・検証・フィードバックの4層をリポジトリの実物と対応づけて示します。以前の`/demo/runs/account-management`は生成結果の比較へリダイレクトします。
 
 ## 生成された実装を別ポートで試す
 
@@ -98,7 +99,7 @@ claude mcp get atlas-design-system
 
 ## 比較を再実行する
 
-再実行には認証済みのCodex CLIが必要です。`PAIR_ID`は新しい値へ変えてください。生成先の`.runs/`は隔離された作業ディレクトリで、公開対象には含まれません。
+再実行には認証済みのAIエージェントCLIが必要です。既定は`codex`で、`--runner claude`（または環境変数`AGENT_RUNNER`）でClaude Codeへ切り替えられます。CLI固有のフラグは`scripts/agent-runners/`のadapterに閉じています。`PAIR_ID`は新しい値へ変えてください。生成先の`.runs/`は隔離された作業ディレクトリで、公開対象には含まれません。
 
 Harness実行ではmanifestから`HARNESS.json`と`HARNESS_RESOLVED.json`を生成し、指定したAgent Skillsを隔離workspaceの`.agents/skills/`へ配置します。AIは`DESIGN.md`を入口に、一覧用の`pattern.page-layout#collection-table`、詳細用の`pattern.page-layout#single-one-column`、`example.account-management`、関連するHeroUIコンポーネントと検証ルールをIDで解決します。Baselineには設計契約もAgent Skillsも渡しません。
 
@@ -133,7 +134,7 @@ pnpm demo:check
 
 `pnpm design:conformance`は、Harness修正版のソースと保存済み評価結果が現在の設計契約（幾何計測の実測値を含む）とずれていないかを短時間で確認します。`pnpm theme:check`は`design/tokens.json`から生成されるテーマCSSが手編集などで乖離していないかを確認します。
 
-実ブラウザで主要ルート、1280×720のPresenter、比較条件と状態のURL同期、Drawerの表示を確認する場合は`pnpm test:e2e`を実行します。Production build後のCSS・JavaScriptとオフライン用フォントの上限は`pnpm bundle:check`で確認できます。
+実ブラウザで主要ルート、Design Harnessの説明と生成結果の比較（1440pxと390px）、比較条件と状態のURL同期、Drawerの表示を確認する場合は`pnpm test:e2e`を実行します。Production build後のCSS・JavaScriptとオフライン用フォントの上限は`pnpm bundle:check`で確認できます。
 
 ## 公開時の注意
 

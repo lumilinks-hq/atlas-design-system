@@ -1,5 +1,7 @@
 import { cp, lstat, mkdir, readFile, symlink, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { defaultRunnerId, resolveRunner } from "./agent-runners/index.mjs";
+import { correctionPrompt } from "./correction-prompt.mjs";
 import { hashHarnessContext, syncHarnessContext } from "./harness-context.mjs";
 import { hashPath, parseArgs, rootDir, runCommand, runCommandToFiles } from "./lib.mjs";
 import { sanitizeRunArtifacts } from "./sanitize-run-artifacts.mjs";
@@ -15,7 +17,8 @@ if (typeof mode !== "string" || !allowedModes.has(mode)) {
 const pairId = typeof args.pair === "string" ? args.pair : new Date().toISOString().replaceAll(/[:.]/g, "-");
 if (!/^[a-zA-Z0-9_-]+$/.test(pairId)) throw new Error("--pairには英数字、_、-だけを使えます");
 
-const model = typeof args.model === "string" ? args.model : "gpt-5.4";
+const runner = resolveRunner(defaultRunnerId(args));
+const model = typeof args.model === "string" ? args.model : runner.defaultModel;
 const dryRun = args["dry-run"] === true;
 const experimentDir = resolve(rootDir, "experiments", "account-management");
 const starterDir = resolve(experimentDir, "starter");
@@ -58,6 +61,7 @@ if (mode === "harness-corrected") {
 
 if (mode !== "baseline") {
   await syncHarnessContext(workspaceDir, "experiments/account-management/manifest.json");
+  await runner.prepareWorkspace?.(workspaceDir);
 }
 
 if (!(await exists(resolve(workspaceDir, "node_modules")))) {
@@ -70,7 +74,7 @@ const promptSha256 = await hashPath(promptPath);
 const designContractSha256 = mode === "baseline"
   ? null
   : await hashHarnessContext("experiments/account-management/manifest.json");
-const cliVersionResult = await runCommand("codex", ["--version"]);
+const cliVersionResult = await runCommand(runner.command, runner.versionArgs);
 const cliVersion = cliVersionResult.stdout.trim() || cliVersionResult.stderr.trim();
 const createdAt = new Date().toISOString();
 
@@ -82,7 +86,7 @@ let run = {
   status: dryRun ? "prepared" : "running",
   createdAt,
   input: { briefSha256, starterSha256, promptSha256, designContractSha256 },
-  environment: { runner: "codex", model, cliVersion },
+  environment: { runner: runner.id, model, cliVersion },
   artifacts: [],
   checks: [],
 };
@@ -99,24 +103,11 @@ await runCommand("git", ["add", "."], { cwd: workspaceDir });
 await runCommand("git", ["-c", "user.name=Design Harness", "-c", "user.email=demo@example.com", "commit", "--quiet", "-m", "starter"], { cwd: workspaceDir });
 
 const basePrompt = await readFile(promptPath, "utf8");
-const correctionPrompt = "VALIDATION.mdの失敗項目を確認し、$atlas-design-system、$heroui-react、$ui-writingを使って、設計契約とbrief.mdを保ったまま問題を修正してください。独自HTMLへ置き換えず、design/componentsで指定したHeroUIコンポーネントとsemantic tokenを使用してください。修正後に利用可能な検証を再実行してください。";
 const prompt = mode === "harness-corrected" ? correctionPrompt : basePrompt;
-const codexArgs = [
-  "exec",
-  "--ignore-user-config",
-  "--ignore-rules",
-  "--ephemeral",
-  "--json",
-  "--approve-for-me",
-  "--model",
-  model,
-  "-C",
-  workspaceDir,
-  prompt,
-];
+const agentArgs = runner.buildExecArgs({ model, prompt, cwd: workspaceDir, json: true });
 const eventsPath = resolve(outputDir, "events.jsonl");
 const stderrPath = resolve(outputDir, "agent-stderr.log");
-const codexResult = await runCommandToFiles("codex", codexArgs, {
+const agentResult = await runCommandToFiles(runner.command, agentArgs, {
   cwd: workspaceDir,
   stdoutPath: eventsPath,
   stderrPath,
@@ -140,7 +131,7 @@ for (const [name, commandArgs] of checkCommands) {
 
 run = {
   ...run,
-  status: codexResult.code === 0 ? "completed" : "failed",
+  status: agentResult.code === 0 ? "completed" : "failed",
   artifacts: ["events.jsonl", "agent-stderr.log", "changes.diff", "source", "typecheck.log", "test.log", "build.log"],
   checks,
 };
@@ -149,4 +140,4 @@ await sanitizeRunArtifacts(outputDir);
 
 console.log(`${mode}: ${run.status}`);
 console.log(`Run: experiments/account-management/runs/${pairId}/${mode}/run.json`);
-if (codexResult.code !== 0) process.exitCode = codexResult.code;
+if (agentResult.code !== 0) process.exitCode = agentResult.code;

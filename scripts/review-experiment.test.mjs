@@ -1,21 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildReviewArgs, parseReviewFindings } from "./review-experiment.mjs";
-
-describe("buildReviewArgs", () => {
-  it("可変長の-iにpromptが飲まれないよう--区切りの後にpromptを置く", () => {
-    const args = buildReviewArgs({
-      model: "gpt-5.4",
-      images: ["/shots/a.png", "/shots/b.png"],
-      prompt: "レビューしてください",
-    });
-
-    expect(args.at(-1)).toBe("レビューしてください");
-    expect(args.at(-2)).toBe("--");
-    const separatorIndex = args.indexOf("--");
-    expect(args.indexOf("-i")).toBeGreaterThan(-1);
-    expect(args.lastIndexOf("/shots/b.png")).toBeLessThan(separatorIndex);
-  });
-});
+import { parseReviewFindings } from "./review-experiment.mjs";
 
 describe("parseReviewFindings", () => {
   it("素のJSONからfindingsを取り出す", () => {
@@ -43,5 +27,15 @@ describe("parseReviewFindings", () => {
 
   it("findings配列が無いJSONはundefinedを返す", () => {
     expect(parseReviewFindings('{"summary":"ok"}')).toBeUndefined();
+  });
+
+  it("verdictがpass/concern以外、または必須キー欠落の要素を含む場合はundefinedを返す", () => {
+    expect(parseReviewFindings('{"findings":[{"ruleId":"a","verdict":"fail","note":"x"}]}')).toBeUndefined();
+    expect(parseReviewFindings('{"findings":[{"ruleId":"a","verdict":"pass"}]}')).toBeUndefined();
+  });
+
+  it("findingsの前後に余分なJSONが混ざっても最後のfindingsオブジェクトを取り出す", () => {
+    const text = '{"thinking":"..."}\n{"findings":[{"ruleId":"a","verdict":"pass","note":"ok"}]}';
+    expect(parseReviewFindings(text)).toEqual([{ ruleId: "a", verdict: "pass", note: "ok" }]);
   });
 });

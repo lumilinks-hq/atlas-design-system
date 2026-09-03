@@ -2,6 +2,8 @@ import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import * as z from "zod/v4";
+import { resolveRunner } from "./agent-runners/index.mjs";
 import { parseArgs, rootDir, runCommand } from "./lib.mjs";
 
 export function selectReviewRuleIds(rulesDocument) {
@@ -9,32 +11,26 @@ export function selectReviewRuleIds(rulesDocument) {
   return rulesDocument.rules.filter((rule) => rule.method === "ai-review").map((rule) => rule.id);
 }
 
-export function parseReviewFindings(text) {
-  const start = text.indexOf("{");
-  const end = text.lastIndexOf("}");
-  if (start < 0 || end <= start) return undefined;
-  try {
-    const parsed = JSON.parse(text.slice(start, end + 1));
-    return Array.isArray(parsed.findings) ? parsed.findings : undefined;
-  } catch {
-    return undefined;
-  }
-}
+const findingsSchema = z.object({
+  findings: z.array(z.object({ ruleId: z.string(), verdict: z.enum(["pass", "concern"]), note: z.string() })),
+});
 
-export function buildReviewArgs({ model, images, prompt }) {
-  // codex execの-i/--imageは可変長のため、promptは--区切りの後に置かないと画像パス扱いされる
-  return [
-    "exec",
-    "--ignore-user-config",
-    "--ignore-rules",
-    "--ephemeral",
-    "--approve-for-me",
-    "--model",
-    model,
-    ...images.flatMap((path) => ["-i", path]),
-    "--",
-    prompt,
-  ];
+export function parseReviewFindings(text) {
+  // モデル出力には前置きやコードフェンスが混ざりうるので、{ … } の候補を後ろから順に試す
+  const candidates = [];
+  for (let start = text.indexOf("{"); start >= 0; start = text.indexOf("{", start + 1)) {
+    const end = text.lastIndexOf("}");
+    if (end > start) candidates.push(text.slice(start, end + 1));
+  }
+  for (const candidate of candidates.reverse()) {
+    try {
+      const parsed = findingsSchema.safeParse(JSON.parse(candidate));
+      if (parsed.success) return parsed.data.findings;
+    } catch {
+      // 次の候補へ
+    }
+  }
+  return undefined;
 }
 
 async function reviewRun({ pairId, mode }) {
@@ -62,13 +58,14 @@ async function reviewRun({ pairId, mode }) {
     '出力は次のJSONのみとします: {"findings":[{"ruleId":"...","verdict":"pass|concern","note":"..."}]}',
   ].join("\n\n");
 
+  const runner = resolveRunner(run.environment.runner);
   const result = await runCommand(
-    "codex",
-    buildReviewArgs({ model: run.environment.model, images, prompt }),
+    runner.command,
+    runner.buildExecArgs({ model: run.environment.model, images, prompt }),
     { timeoutMs: 300_000 },
   );
   if (result.code !== 0) {
-    return { skipped: false, error: `codex exec failed (exit ${result.code}): ${result.stderr.slice(0, 500)}` };
+    return { skipped: false, error: `${runner.command} failed (exit ${result.code}): ${result.stderr.slice(0, 500)}` };
   }
 
   const findings = parseReviewFindings(result.stdout);

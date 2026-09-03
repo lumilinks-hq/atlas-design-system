@@ -44,7 +44,7 @@ export function sanitizeText(value, options = {}) {
  * @param {{ env?: Record<string, string | undefined>, username?: string }} [options]
  */
 export function sanitizeEventRecord(record, options = {}) {
-  if (record?.item?.type === "command_execution" && /\/(?:\.agents|\.codex)\/skills\//.test(record.item.command ?? "")) {
+  if (record?.item?.type === "command_execution" && /\/(?:\.agents|\.codex|\.claude)\/skills\//.test(record.item.command ?? "")) {
     record.item.command = "[redacted: local agent instruction read]";
     record.item.aggregated_output = "[redacted: local agent instruction]";
   }
