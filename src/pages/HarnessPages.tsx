@@ -489,7 +489,7 @@ export function ResultsPage() {
           <p>
             上の比較は生成 CLI と修正ループを含みます。ここでは同じモデル（{sameModelRuns[0]?.model}）で、ESLint 層を入れる前と後に 1 回ずつ生成した結果を、
             修正なしの初回のまま並べます。各条件 1 run なので傾向を見るための数字で、統計的な差ではありません。
-            評価器は App.tsx だけを検査するため、画面を複数ファイルに分けた run は違反が多く出ます。
+            評価器は App.tsx から import で辿れるファイルをまとめて検査するので、画面を複数ファイルに分けた run も同じ基準で数えています。
           </p>
         </div>
         <div className="compare-table-scroll">

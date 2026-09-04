@@ -319,7 +319,7 @@ describe("Atlas Design System demo", () => {
     }
     const sameModelSection = screen.getByRole("region", { name: "同じモデルでの比較" });
     expect(sameModelSection).toHaveTextContent("各条件 1 run");
-    expect(sameModelSection).toHaveTextContent("App.tsx");
+    expect(sameModelSection).toHaveTextContent("import で辿れるファイル");
     expect(screen.getByRole("button", { name: "設計指示なしの画面を操作する" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Atlas適用後の画面を操作する" })).toBeInTheDocument();
   });

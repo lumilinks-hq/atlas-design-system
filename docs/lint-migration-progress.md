@@ -50,3 +50,12 @@ JSX 内 raw color、jsx-a11y、manifest 駆動ルール(customer-routes / custom
 - mvp-11 を公開ページの主軸として残す。理由: 公開ページは baseline / harness / harness-corrected の 3 条件の物語で、play ページの source import、invalid-email スクリーンショット、design:conformance のバイト一致、audit の requiredArtifacts がすべて mvp-11 に結びついている。lint-01 には harness-corrected がなく、harness が違反 0 件なので修正ループを語れない。
 - 代わりに結果ページ末尾に「同じモデルでの比較」節を追加。prelint-01 と lint-01 の 4 条件の合格/違反/要確認を表で載せ、各条件 1 run と App.tsx 単一前提の注記を本文に書いた。数字は保存済み design-evaluation.json のみ（`src/data/runs.ts` の `sameModelRuns`）。
 - lint-01 の harness-corrected run は実施しない（違反 0 件で直すものがなく、約 11 ドルかけて示せることがない）。
+
+## 2026-09-04 評価器と lint の単一 App.tsx 前提を撤廃
+
+- `packages/eslint-plugin-atlas/src/screen-sources.mjs` の `collectScreenSourcesSync(srcDir)` が App.tsx の相対 import を辿り、画面を構成する .tsx / .ts / .css を集める(テストと main.tsx は含めない)。`scripts/screen-sources.mjs` はその薄い wrapper。
+- `evaluateRun` は 3 ファイル固定読みをやめ、この collector の連結文字列を `evaluateSource` に渡す。単一 App.tsx の run では文字列が元ファイルと一致するので、mvp-11 / lint-01 の保存済み評価は合否・evidence とも変わらず、`pnpm design:conformance` のバイト一致も維持。
+- `lintAtlasSources` は `tsxFiles` を受け取ると、存在判定系 7 ルールは連結全体で 1 回、ファイル内ルールは各ファイルを実名で検査する。evidence には App.tsx 以外の由来ファイル名を付ける。
+- workspace の `pnpm lint` 用に ESLint processor `atlas/screen` を追加。`atlasConfigs({ screen: true })` で App.tsx を lint するとき import で辿れる画面全体を仮想ブロック `App.tsx/1_screen.tsx` として存在判定にかける。`harness-context.mjs` の生成設定はこれを使う。ESLint は仮想ブロックの本文が元と同一だと設定を再解決しないので、末尾に `// atlas:screen` を足している。
+- prelint-01 を再評価: baseline 6→12 pass / 17→11 fail、harness 12→18 pass / 11→4 fail。harness の残り 4 件(Spinner・cn・buttonVariants の import、HeroUI Link の欠落、link-semantics、AlertDialog.Trigger の欠落)は実物の違反。prelint-01 harness のコピーで新旧設定の eslint を比べると 18→7 problems で、残りは評価器の fail と同じ内容。
+- 未対応: workspace 脱出(`.runs` がリポジトリ内、`node_modules` が親への symlink)。直すには `.runs` をリポジトリ外へ出して workspace ごとに依存を実インストールする必要があり、run の再取得も伴うので今回は見送り。

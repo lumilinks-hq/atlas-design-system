@@ -2,56 +2,53 @@
   "pairId": "prelint-01",
   "mode": "harness",
   "summary": {
-    "passed": 12,
-    "failed": 11,
-    "review": 5
+    "passed": 18,
+    "failed": 4,
+    "review": 6
   },
   "rules": [
     {
       "id": "component.approved",
-      "status": "passed",
+      "status": "failed",
       "evidence": [
-        "契約対象の独自HTML部品は検出されませんでした"
+        "src/CustomerEditDrawer.tsx 11:3 契約にないHeroUI import: Spinner",
+        "src/CustomerEditDrawer.tsx 13:3 契約にないHeroUI import: buttonVariants",
+        "src/CustomerListPage.tsx 1:45 契約にないHeroUI import: cn"
       ]
     },
     {
       "id": "component.usage",
       "status": "failed",
       "evidence": [
-        "1:1 Link: componentUsageで求められていますが実装に現れません",
-        "1:1 Toolbar: componentUsageで求められていますが実装に現れません",
-        "1:1 AlertDialog: componentUsageで求められていますが実装に現れません",
-        "1:1 Table: componentUsageで求められていますが実装に現れません"
+        "1:1 Link: componentUsageで求められていますが実装に現れません"
       ]
     },
     {
       "id": "component.variants",
-      "status": "passed",
+      "status": "review",
       "evidence": [
-        "静的に指定されたvariantはAtlas契約内"
+        "src/CustomerStatusChip.tsx 23:46 動的なvariantのため機械判定不能: Chip variant={appearance.variant}"
       ]
     },
     {
       "id": "component.table.variant",
-      "status": "failed",
+      "status": "passed",
       "evidence": [
-        "1:1 Table.Rootを確認できません"
+        "Table.Rootはprimary variant"
       ]
     },
     {
       "id": "component.table.columns",
-      "status": "failed",
+      "status": "passed",
       "evidence": [
-        "期待する列順: companyName → contactName → lastContactedAt → status",
-        "HeaderとRowが同じ列定義を参照していません",
-        "tabular列の適用を確認できません"
+        "Exampleの列定義をHeaderとRowで共有"
       ]
     },
     {
       "id": "component.table.surface",
-      "status": "failed",
+      "status": "passed",
       "evidence": [
-        "Table.Rootを確認できません"
+        "Tableへradius.baseを適用し、外側にsurface装飾なし"
       ]
     },
     {
@@ -84,16 +81,16 @@
     },
     {
       "id": "a11y.form-label",
-      "status": "failed",
+      "status": "passed",
       "evidence": [
-        "1:1 入力ラベルを確認できません"
+        "視覚ラベルまたはaria-labelあり"
       ]
     },
     {
       "id": "a11y.error-recovery",
       "status": "review",
       "evidence": [
-        "参考: 回復方法の文言を検出できず",
+        "参考: 原因または回復方法の文言を検出",
         "文言の実際の伝わり方はAIレビューと人の確認で判定する"
       ]
     },
@@ -101,22 +98,22 @@
       "id": "a11y.color-only",
       "status": "review",
       "evidence": [
-        "参考: 状態を示す文字を検出できず",
+        "参考: 状態名の文字表示を検出",
         "色以外の手掛かりが実画面で読めるかはAIレビューと人の確認で判定する"
       ]
     },
     {
       "id": "business.customer-name",
-      "status": "failed",
+      "status": "passed",
       "evidence": [
-        "顧客名の必須制御を確認できません"
+        "顧客名の必須制御あり"
       ]
     },
     {
       "id": "business.contact-email",
-      "status": "failed",
+      "status": "passed",
       "evidence": [
-        "1:1 メール形式の入力制御を確認できません"
+        "メール形式の入力制御あり"
       ]
     },
     {
@@ -130,9 +127,7 @@
       "id": "navigation.link-semantics",
       "status": "failed",
       "evidence": [
-        "1:1 Tableのオブジェクト名(customer.companyName)をhrefまたはtoを持つLinkにしてください",
-        "1:1 モバイル一覧（.collection-list-mobile内）の詳細導線をhrefまたはtoを持つLinkにしてください",
-        "1:1 一覧へ戻る導線をhrefまたはtoを持つLinkにしてください"
+        "1:1 Tableのオブジェクト名(customer.companyName)をhrefまたはtoを持つLinkにしてください"
       ]
     },
     {
@@ -144,9 +139,9 @@
     },
     {
       "id": "state.complete",
-      "status": "failed",
+      "status": "passed",
       "evidence": [
-        "不足: default, drawer-open, invalid-email, loading, success, failure, delete-confirm"
+        "必須8状態あり"
       ]
     },
     {
@@ -190,16 +185,16 @@
     },
     {
       "id": "state.loading",
-      "status": "failed",
+      "status": "passed",
       "evidence": [
-        "二重送信防止を確認できません"
+        "保存中のdisabled制御あり"
       ]
     },
     {
       "id": "state.failure",
       "status": "review",
       "evidence": [
-        "参考: 再試行の文言を検出できず",
+        "参考: 失敗と再試行の文言を検出",
         "失敗後に再試行できるかはAIレビューと人の確認で判定する"
       ]
     },
@@ -212,19 +207,16 @@
     },
     {
       "id": "action.confirmation",
-      "status": "passed",
+      "status": "failed",
       "evidence": [
-        "AlertDialog.Triggerから確認画面を開き、起点はHeroUI Button"
+        "1:1 取り消せない操作にHeroUI AlertDialog.Triggerがありません"
       ]
     },
     {
       "id": "a11y.focus-management",
-      "status": "failed",
+      "status": "passed",
       "evidence": [
-        "1:1 Drawer.Rootを確認できません",
-        "1:1 Drawer.Trigger自体にclassName（主要Buttonの視覚スタイル）を確認できません。ラベルはTriggerに直接入れます",
-        "1:1 Drawer.Backdropを確認できません",
-        "1:1 Drawer.CloseTriggerがないか、狭い標準枠へ表示テキストを入れています"
+        "Drawer.Triggerの視覚スタイルとアイコンのみのCloseTriggerあり"
       ]
     }
   ]

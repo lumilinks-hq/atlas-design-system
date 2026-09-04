@@ -29,7 +29,8 @@ export default tseslint.config(
     languageOptions: { ecmaVersion: 2023, globals: globals.browser },
   },
   // design/ 配下の CSS はトークン定義そのものなので対象外。生成物の src/ だけを検査する
-  ...atlasConfigs({ options: atlasOptions, tsxFiles: ["src/**/*.tsx"], cssFiles: ["src/**/*.css"] }),
+  // screen: true で App.tsx から import で辿れる画面全体に存在判定をかける(複数ファイル分割でも誤検知しない)
+  ...atlasConfigs({ options: atlasOptions, tsxFiles: ["src/**/*.tsx"], cssFiles: ["src/**/*.css"], screen: true }),
 );
 `;
 

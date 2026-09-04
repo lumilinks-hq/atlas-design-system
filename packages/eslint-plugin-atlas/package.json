@@ -6,7 +6,8 @@
   "description": "Atlas Design System の機械検査可能なルールを ESLint で検査する",
   "exports": {
     ".": "./src/index.mjs",
-    "./options": "./src/options.mjs"
+    "./options": "./src/options.mjs",
+    "./screen-sources": "./src/screen-sources.mjs"
   },
   "peerDependencies": {
     "eslint": ">=9"

@@ -8,6 +8,7 @@ import { lintAtlasSources } from "eslint-plugin-atlas";
 import { buildAtlasLintOptions } from "eslint-plugin-atlas/options";
 import { resolveManifest } from "./design-catalog.mjs";
 import { parseArgs, rootDir } from "./lib.mjs";
+import { collectScreenSources } from "./screen-sources.mjs";
 
 const manifestPath = "experiments/account-management/manifest.json";
 const designContract = resolveManifest(manifestPath);
@@ -600,7 +601,7 @@ function evaluateGroupingMeasurements(measurements, negativeMargins) {
   return result("layout.grouping", ok ? "passed" : "failed", evidence);
 }
 
-export function evaluateSource({ app, styles, fixtures = "", componentTheme = "", measurements }) {
+export function evaluateSource({ app, styles, fixtures = "", componentTheme = "", measurements, tsxFiles }) {
   const source = `${app}\n${fixtures}\n${styles}`;
   const effectiveStyles = `${styles}\n${componentTheme}`;
   const sourceFile = ts.createSourceFile("App.tsx", app, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -683,9 +684,16 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
     /(listCustomerSummaries|getCustomerSummaries)/.test(source) &&
     /getCustomerDetail/.test(source);
   const tableContract = evaluateTableContract(app, effectiveStyles);
-  const lint = lintAtlasSources({ app, styles, options: atlasLintOptions });
+  const lint = lintAtlasSources({ app, styles, options: atlasLintOptions, tsxFiles });
   const lintMessages = (ruleName) => lint.messagesByRule.get(ruleName) ?? [];
-  const describeMessages = (messages) => messages.map((message) => `${message.line}:${message.column} ${message.message}`);
+  // 画面を複数ファイルに分けた run では、App.tsx 以外の由来ファイル名を先頭に付ける
+  const describeMessages = (messages) =>
+    messages.map((message) => {
+      const location = `${message.line}:${message.column} ${message.message}`;
+      return message.filename && message.filename !== "src/App.tsx" && message.filename !== "src/styles.css"
+        ? `${message.filename} ${location}`
+        : location;
+    });
   // 構文エラーで lint が走れなかったときは、lint 由来の rule をすべて failed にして原因を残す
   const fatalEvidence = lint.fatal.length > 0 ? describeMessages(lint.fatal).map((text) => `構文エラー: ${text}`) : undefined;
   const lintResult = (id, ruleName, passedEvidence, failedEvidence = describeMessages) => {
@@ -904,10 +912,9 @@ function toMarkdown(evaluation, rulesById) {
 export async function evaluateRun({ pairId, mode, outDir }) {
   const workspaceDir = resolve(rootDir, ".runs", "account-management", pairId, mode);
   const outputDir = outDir ? resolve(outDir) : resolve(rootDir, "experiments", "account-management", "runs", pairId, mode);
-  const [app, fixtures, styles, componentTheme, rulesDocument] = await Promise.all([
-    readFile(resolve(workspaceDir, "src", "App.tsx"), "utf8"),
-    readFile(resolve(workspaceDir, "src", "fixtures.ts"), "utf8"),
-    readFile(resolve(workspaceDir, "src", "styles.css"), "utf8"),
+  // App.tsx から import で辿れる画面ファイルをまとめて評価する(単一ファイル前提を置かない)
+  const [{ app, fixtures, styles, tsxFiles }, componentTheme, rulesDocument] = await Promise.all([
+    collectScreenSources(resolve(workspaceDir, "src")),
     readFile(resolve(rootDir, "design", "component-theme.css"), "utf8"),
     readFile(resolve(rootDir, "design", "rules.json"), "utf8").then(JSON.parse),
   ]);
@@ -916,7 +923,7 @@ export async function evaluateRun({ pairId, mode, outDir }) {
   const measurements = existsSync(measurementsPath)
     ? JSON.parse(await readFile(measurementsPath, "utf8"))
     : undefined;
-  const rules = evaluateSource({ app, fixtures, styles, componentTheme, measurements });
+  const rules = evaluateSource({ app, fixtures, styles, componentTheme, measurements, tsxFiles });
   const summary = {
     passed: rules.filter((item) => item.status === "passed").length,
     failed: rules.filter((item) => item.status === "failed").length,

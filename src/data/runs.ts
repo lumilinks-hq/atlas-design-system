@@ -36,7 +36,7 @@ export const sameModelRuns: SameModelRun[] = [
     pairId: "prelint-01",
     model: prelint01Run["environment"].model,
     lintLayer: false,
-    note: "ESLint 層を入れる前。両条件とも画面を複数ファイルに分割したため、App.tsx だけを見る評価器の違反数は実態より多い",
+    note: "ESLint 層を入れる前。両条件とも画面を複数ファイルに分割した run で、評価器は import で辿れる全ファイルを検査している",
     baseline: { summary: prelint01Baseline.summary },
     harness: { summary: prelint01Harness.summary },
   },

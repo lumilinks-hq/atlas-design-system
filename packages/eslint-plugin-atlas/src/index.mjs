@@ -13,6 +13,8 @@ import actionConfirmation from "./rules/action-confirmation.mjs";
 import focusManagement from "./rules/focus-management.mjs";
 import noRawColor from "./rules/no-raw-color.mjs";
 import componentThemeImport from "./rules/component-theme-import.mjs";
+import { dirname } from "node:path";
+import { collectScreenSourcesSync } from "./screen-sources.mjs";
 
 export const rules = {
   "component-approved": componentApproved,
@@ -60,7 +62,33 @@ export const entryFileRules = [
 ];
 export const entryStylesRules = ["component-theme-import"];
 
-const plugin = { meta: { name: "eslint-plugin-atlas", version: "0.1.0" }, rules };
+/** processor が作る仮想ファイル。App.tsx から import で辿れる画面全体を 1 本に連結したもの */
+export const screenBlockGlob = "**/App.tsx/*_screen.tsx";
+const isEntryRuleId = (ruleId) => entryFileRules.includes(ruleId?.replace(/^atlas\//, ""));
+
+/**
+ * src/App.tsx を lint するとき、import で辿れる .tsx を連結した「画面」ブロックを足す processor。
+ * 存在判定系(entryFileRules)はこのブロックにだけ適用し、App.tsx 単体には適用しない。
+ * これで生成物を複数ファイルに分けても workspace の pnpm lint が誤検知しない
+ */
+const screenProcessor = {
+  meta: { name: "atlas/screen", version: "0.1.0" },
+  preprocess(text, filename) {
+    const sources = collectScreenSourcesSync(dirname(filename), { entryText: text });
+    // 本文が App.tsx と同一だと ESLint がブロックの設定を再解決しないので、末尾に印を足して必ず別内容にする
+    return [text, { text: `${sources.app}\n// atlas:screen\n`, filename: "screen.tsx" }];
+  },
+  postprocess([own = [], screen = []], filename) {
+    void filename;
+    // 画面ブロック側は存在判定だけを採用し、行番号は App.tsx の範囲外なら 1:1 に寄せる
+    const entryMessages = screen
+      .filter((message) => isEntryRuleId(message.ruleId))
+      .map((message) => ({ ...message, line: 1, column: 1, endLine: undefined, endColumn: undefined, fix: undefined }));
+    return [...own.filter((message) => !isEntryRuleId(message.ruleId)), ...entryMessages];
+  },
+};
+
+const plugin = { meta: { name: "eslint-plugin-atlas", version: "0.1.0" }, rules, processors: { screen: screenProcessor } };
 
 function ruleEntries(names, options) {
   return Object.fromEntries(
@@ -94,32 +122,51 @@ function ruleOptions(name, options) {
  * Atlas ルールの flat config ブロック。parser は含めない(TSX の parser は利用側の
  * typescript-eslint 設定が担う)。CSS ブロックは @eslint/css の language を使う
  */
-export function atlasConfigs({ options, tsxFiles = ["**/*.tsx"], entryFile = "src/App.tsx", cssFiles = ["**/*.css"], entryStyles = "src/styles.css" }) {
+export function atlasConfigs({ options, tsxFiles = ["**/*.tsx"], entryFile = "src/App.tsx", cssFiles = ["**/*.css"], entryStyles = "src/styles.css", screen = false }) {
   const tsxRuleNames = Object.keys(rules).filter((name) => !cssRules.includes(name) && !entryFileRules.includes(name));
   const cssRuleNames = cssRules.filter((name) => !entryStylesRules.includes(name));
+  // screen: true では App.tsx を processor に通し、存在判定は連結した画面ブロックにだけ適用する
+  const entryFiles = screen ? [screenBlockGlob] : [entryFile];
   return [
-    { name: "atlas/tsx", files: tsxFiles, plugins: { atlas: plugin }, rules: ruleEntries(tsxRuleNames, options) },
-    { name: "atlas/tsx-entry", files: [entryFile], plugins: { atlas: plugin }, rules: ruleEntries(entryFileRules, options) },
+    ...(screen ? [{ name: "atlas/screen", files: ["**/App.tsx"], ignores: [screenBlockGlob], processor: screenProcessor }] : []),
+    { name: "atlas/tsx", files: tsxFiles, ...(screen ? { ignores: [screenBlockGlob] } : {}), plugins: { atlas: plugin }, rules: ruleEntries(tsxRuleNames, options) },
+    { name: "atlas/tsx-entry", files: entryFiles, plugins: { atlas: plugin }, rules: ruleEntries(entryFileRules, options) },
     { name: "atlas/css", files: cssFiles, plugins: { css, atlas: plugin }, language: "css/css", rules: ruleEntries(cssRuleNames, options) },
     { name: "atlas/css-entry", files: [entryStyles], plugins: { css, atlas: plugin }, language: "css/css", rules: ruleEntries(entryStylesRules, options) },
   ];
 }
 
 /**
- * App.tsx と styles.css の文字列を同期で lint し、plugin rule 名ごとの messages を返す。
+ * 画面ソースを同期で lint し、plugin rule 名ごとの messages を返す。
  * 構文エラーなど rule に属さないメッセージは fatal に分けて返す。
  * 評価器(scripts/evaluate-experiment.mjs)がこれを使う
+ *
+ * - app: 画面を構成する .tsx を App.tsx を先頭に連結した文字列。存在判定系(entryFileRules)は
+ *   画面を複数ファイルに分けても誤検知しないよう、この連結全体を src/App.tsx として検査する
+ * - tsxFiles: 省略可。渡すとファイル内で完結するルールは各ファイルを実名で検査し、
+ *   message.filename に由来ファイルを付ける(単一ファイルなら省略時と同じ結果)
  */
-export function lintAtlasSources({ app, styles, options }) {
+export function lintAtlasSources({ app, styles, options, tsxFiles }) {
   const linter = new Linter();
   const config = [
     { files: ["**/*.tsx"], languageOptions: { parser: tseslint.parser, parserOptions: { ecmaFeatures: { jsx: true } } } },
     ...atlasConfigs({ options }),
   ];
-  const messages = [
-    ...linter.verify(app, config, { filename: "src/App.tsx" }),
-    ...linter.verify(styles, config, { filename: "src/styles.css" }),
-  ];
+  const isEntryRule = (message) => entryFileRules.includes(message.ruleId?.replace(/^atlas\//, ""));
+  const withFilename = (messages, filename) => messages.map((message) => ({ ...message, filename }));
+  const files = tsxFiles ?? [{ filename: "src/App.tsx", text: app }];
+  const singleEntry = files.length === 1 && files[0].filename === "src/App.tsx" && files[0].text === app;
+  const messages = singleEntry
+    ? withFilename(linter.verify(app, config, { filename: "src/App.tsx" }), "src/App.tsx")
+    : [
+        // 存在判定は連結した画面全体で 1 回
+        ...withFilename(linter.verify(app, config, { filename: "src/App.tsx" }).filter((message) => isEntryRule(message) || !message.ruleId), "src/App.tsx"),
+        // ファイル内ルールは各ファイルを実名で
+        ...files.flatMap((file) =>
+          withFilename(linter.verify(file.text, config, { filename: file.filename }).filter((message) => message.ruleId && !isEntryRule(message)), file.filename),
+        ),
+      ];
+  messages.push(...withFilename(linter.verify(styles, config, { filename: "src/styles.css" }), "src/styles.css"));
   const messagesByRule = new Map(Object.keys(rules).map((name) => [name, []]));
   const fatal = [];
   for (const message of messages) {

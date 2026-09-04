@@ -49,6 +49,7 @@ describe("syncHarnessContext", () => {
     const eslintConfig = await readFile(join(workspaceDir, "eslint.config.js"), "utf8");
     expect(eslintConfig).toContain("eslint-plugin-atlas");
     expect(eslintConfig).toContain("HARNESS_LINT.json");
+    expect(eslintConfig).toContain("screen: true");
     const lintOptions = JSON.parse(await readFile(join(workspaceDir, "HARNESS_LINT.json"), "utf8"));
     expect(lintOptions.tableVariant).toBe("primary");
     expect(lintOptions.approvedImports).toContain("Button");
