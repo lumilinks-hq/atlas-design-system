@@ -1,3 +1,5 @@
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { resolveMaskedUsername, sanitizeEventRecord, sanitizeText } from "./sanitize-run-artifacts.mjs";
 
@@ -7,6 +9,23 @@ describe("run artifact sanitizer", () => {
     expect(sanitizeText(text)).not.toContain("/Users/example");
     expect(sanitizeText(text)).not.toContain("sk-abcdefghijklmnopqrstuvwxyz");
     expect(sanitizeText(text)).not.toContain("secret.token");
+  });
+
+  it("workspaceのパスを<home>より先に<workspace>へ置き換える", () => {
+    const runs = join(homedir(), ".cache", "design-harness", "runs");
+    const text = `cd ${runs}/account-management/iso-check/harness && pnpm lint`;
+
+    expect(sanitizeText(text, { env: {}, username: "testuser" })).toBe(
+      "cd <workspace>/account-management/iso-check/harness && pnpm lint",
+    );
+  });
+
+  it("DESIGN_HARNESS_RUNS_DIRで上書きしたworkspaceも置き換える", () => {
+    const options = { env: { DESIGN_HARNESS_RUNS_DIR: "/srv/isolated/runs" }, username: "testuser" };
+
+    expect(sanitizeText("/srv/isolated/runs/account-management/p/baseline", options)).toBe(
+      "<workspace>/account-management/p/baseline",
+    );
   });
 
   it("ローカルSkillの本文をイベントから除く", () => {

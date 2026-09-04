@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "files": [
+    "src"
+  ],
   "description": "Atlas Design System の機械検査可能なルールを ESLint で検査する",
   "exports": {
     ".": "./src/index.mjs",
@@ -10,7 +13,8 @@
     "./screen-sources": "./src/screen-sources.mjs"
   },
   "peerDependencies": {
-    "eslint": ">=9"
+    "eslint": ">=9",
+    "typescript-eslint": ">=8"
   },
   "dependencies": {
     "@eslint/css": "^1.4.0"

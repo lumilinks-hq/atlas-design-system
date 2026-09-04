@@ -65,7 +65,7 @@
 - [x] **Phase 6: デモ配線と仕上げ（編集・自動検証完了、実機確認のみ残）**
   - **theme:check 実装（TDD）**: theme.mjs へ `findStaleThemeFiles(theme, files)`（content undefined = stale扱い）、theme.test.mjs 3テスト、generate-theme.mjs を `--check` 分岐へ書き換え（targets = src/generated/theme.css と design/theme.css の2枚）。package.json へ `theme:check` を追加し demo:check チェーンの design:check 直後へ組み込み
   - **mvp-11 配線完了**: src/play/atlas.tsx / baseline.tsx の import、DemoPage.tsx（import 5件 + 画像src + Issue場面へ削除要件追記 + 「8状態」+ 違反件数・CLI/Model を JSON から自動参照）、check-design-conformance.mjs、preview-experiment.mjs 既定 pair、audit-public-data.mjs requiredArtifacts 7エントリ、verify-site.mjs、README.md 数値段落
-  - **conformance の measurements 対応**: 保存済み rules は幾何計測込みで算出されるため、run ディレクトリの measurements.json を読み `evaluateSource({..., measurements})` へ渡す改修。実行結果「Design conformance OK: 25 passed / 2 review」（.runs/ workspace と source/ の一致は diff -rq で事前確認済み）
+  - **conformance の measurements 対応**: 保存済み rules は幾何計測込みで算出されるため、run ディレクトリの measurements.json を読み `evaluateSource({..., measurements})` へ渡す改修。実行結果「Design conformance OK: 25 passed / 2 review」（当時のリポジトリ内 workspace と source/ の一致は diff -rq で事前確認済み。workspace は 2026-09-04 にリポジトリ外へ移した）
   - **verify-site.mjs の2文言修正**: ①Drawer 閉じるボタン name は「編集画面を閉じる」②invalid-email の表示エラーは **FieldError の「メールアドレスの形式を確認してください。」**（App.tsx L678 の「一般的なメール形式で入力してください。」は Description スロットで invalid 時 hidden → getByText がタイムアウトした。Description と FieldError は別スロット）
   - ドキュメント同期: README（シナリオ削除追記・mvp-11 数値・delete-confirm・spacing-layout/layout.css 正本・パイプライン順序と evaluate/review 注意）、MVP.md 正本ツリー実構成化、TASKS.md DH-242 2項目消化
   - 検証パス: `pnpm test:run` 12 files / 98 tests、`pnpm demo:check` 全チェーン（bundle 9 assets / 16 MiB）、`pnpm test:e2e`「Site browser check OK」

@@ -111,6 +111,9 @@ importers:
       eslint:
         specifier: '>=9'
         version: 10.9.1(jiti@2.7.0)
+      typescript-eslint:
+        specifier: '>=8'
+        version: 8.68.0(eslint@10.9.1(jiti@2.7.0))(typescript@6.0.3)
 
 packages:
 

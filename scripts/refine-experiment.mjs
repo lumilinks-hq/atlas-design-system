@@ -7,13 +7,14 @@ import { hashHarnessContext, syncHarnessContext } from "./harness-context.mjs";
 import { measureRun } from "./measure-experiment.mjs";
 import { parseArgs, rootDir, runCommand, runCommandToFiles } from "./lib.mjs";
 import { sanitizeRunArtifacts } from "./sanitize-run-artifacts.mjs";
+import { workspaceDir as resolveWorkspaceDir } from "./workspace-paths.mjs";
 
 const args = parseArgs(process.argv.slice(2));
 if (typeof args.pair !== "string") throw new Error("--pairを指定してください");
 
 const pairId = args.pair;
 const mode = "harness-corrected";
-const workspaceDir = resolve(rootDir, ".runs", "account-management", pairId, mode);
+const workspaceDir = resolveWorkspaceDir(pairId, mode);
 const outputDir = resolve(rootDir, "experiments", "account-management", "runs", pairId, mode);
 const runPath = resolve(outputDir, "run.json");
 const run = JSON.parse(await readFile(runPath, "utf8"));

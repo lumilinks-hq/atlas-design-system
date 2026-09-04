@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveManifest } from "./design-catalog.mjs";
 import { parseArgs, rootDir } from "./lib.mjs";
+import { workspaceDir as resolveWorkspaceDir } from "./workspace-paths.mjs";
 
 const manifestPath = "experiments/account-management/manifest.json";
 
@@ -118,7 +119,7 @@ function collectScreenMeasurements({ anchorClasses, searchLabel, backLinkText })
 }
 
 export async function measureRun({ pairId, mode, outDir }) {
-  const workspaceDir = resolve(rootDir, ".runs", "account-management", pairId, mode);
+  const workspaceDir = resolveWorkspaceDir(pairId, mode);
   const outputDir = outDir ? resolve(outDir) : resolve(rootDir, "experiments", "account-management", "runs", pairId, mode);
   const contract = resolveManifest(manifestPath);
   const manifest = JSON.parse(await readFile(resolve(rootDir, manifestPath), "utf8"));
@@ -212,7 +213,7 @@ if (isMain) {
   if (typeof args.pair !== "string") throw new Error("--pairを指定してください");
   const modes = typeof args.mode === "string" ? [args.mode] : ["baseline", "harness", "harness-corrected"];
   for (const mode of modes) {
-    const workspaceDir = resolve(rootDir, ".runs", "account-management", args.pair, mode);
+    const workspaceDir = resolveWorkspaceDir(args.pair, mode);
     if (!existsSync(workspaceDir)) {
       if (typeof args.mode === "string") throw new Error(`workspaceがありません: ${workspaceDir}`);
       console.log(`${mode}: workspaceなし、スキップ`);

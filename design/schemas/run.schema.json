@@ -32,7 +32,19 @@
       "additionalProperties": false
     },
     "artifacts": { "type": "array", "items": { "type": "string" } },
-    "checks": { "type": "array", "items": { "type": "object" } }
+    "checks": { "type": "array", "items": { "type": "object" } },
+    "isolation": {
+      "type": "object",
+      "required": ["repoPathMentions", "markerMentions"],
+      "properties": {
+        "repoPathMentions": { "type": "integer", "minimum": 0 },
+        "markerMentions": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "additionalProperties": false
+    }
   },
   "additionalProperties": false
 }

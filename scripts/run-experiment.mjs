@@ -1,10 +1,13 @@
-import { cp, lstat, mkdir, readFile, symlink, writeFile } from "node:fs/promises";
+import { cp, lstat, mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { defaultRunnerId, resolveRunner } from "./agent-runners/index.mjs";
 import { correctionPrompt } from "./correction-prompt.mjs";
 import { hashHarnessContext, syncHarnessContext } from "./harness-context.mjs";
 import { hashPath, parseArgs, rootDir, runCommand, runCommandToFiles } from "./lib.mjs";
 import { sanitizeRunArtifacts } from "./sanitize-run-artifacts.mjs";
+import { addHarnessLintDependency, packHarnessLintPlugin } from "./workspace-deps.mjs";
+import { scanIsolation } from "./workspace-isolation.mjs";
+import { pairWorkspaceDir as resolvePairWorkspaceDir, workspaceDir as resolveWorkspaceDir } from "./workspace-paths.mjs";
 
 const args = parseArgs(process.argv.slice(2));
 const mode = args.mode;
@@ -22,12 +25,12 @@ const model = typeof args.model === "string" ? args.model : runner.defaultModel;
 const dryRun = args["dry-run"] === true;
 const experimentDir = resolve(rootDir, "experiments", "account-management");
 const starterDir = resolve(experimentDir, "starter");
-const pairWorkspaceDir = resolve(rootDir, ".runs", "account-management", pairId);
-const workspaceDir = resolve(pairWorkspaceDir, mode);
+// workspaceはリポジトリの外に作る。中にあるとエージェントが親リポジトリと採点器を見つけられる
+const pairWorkspaceDir = resolvePairWorkspaceDir(pairId);
+const workspaceDir = resolveWorkspaceDir(pairId, mode);
 const outputDir = resolve(experimentDir, "runs", pairId, mode);
 const briefPath = resolve(experimentDir, "brief.md");
 const promptPath = resolve(experimentDir, "prompt.md");
-const nodeModulesPath = resolve(rootDir, "node_modules");
 
 async function exists(path) {
   try {
@@ -39,9 +42,8 @@ async function exists(path) {
 }
 
 if (await exists(workspaceDir)) {
-  throw new Error(`workspaceが既に存在します: .runs/account-management/${pairId}/${mode}`);
+  throw new Error(`workspaceが既に存在します: ${workspaceDir}`);
 }
-if (!(await exists(nodeModulesPath))) throw new Error("先にpnpm installを実行してください");
 
 await mkdir(pairWorkspaceDir, { recursive: true });
 await mkdir(outputDir, { recursive: true });
@@ -49,12 +51,16 @@ await mkdir(outputDir, { recursive: true });
 if (mode === "harness-corrected") {
   const harnessWorkspace = resolve(pairWorkspaceDir, "harness");
   if (!(await exists(harnessWorkspace))) throw new Error("同じ--pairで先に--mode harnessを実行してください");
+  // .gitignore を落とさないよう .git は末尾一致で判定する(cpはfalseのディレクトリを辿らない)
   await cp(harnessWorkspace, workspaceDir, {
     recursive: true,
-    filter: (source) => !source.endsWith("/node_modules") && !source.includes("/.git"),
+    filter: (source) => !source.endsWith("/node_modules") && !source.endsWith("/.git"),
   });
 } else {
-  await cp(starterDir, workspaceDir, { recursive: true });
+  await cp(starterDir, workspaceDir, {
+    recursive: true,
+    filter: (source) => !source.endsWith("/node_modules"),
+  });
   await cp(briefPath, resolve(workspaceDir, "brief.md"));
   await cp(promptPath, resolve(workspaceDir, "prompt.md"));
 }
@@ -62,10 +68,19 @@ if (mode === "harness-corrected") {
 if (mode !== "baseline") {
   await syncHarnessContext(workspaceDir, "experiments/account-management/manifest.json");
   await runner.prepareWorkspace?.(workspaceDir);
+  // 生成した eslint.config.js は eslint-plugin-atlas を読む。未公開なのでpackしたtarballを
+  // file:で入れる。baselineには入れない(対照群にAtlas層を混ぜない)
+  const tarballPath = await packHarnessLintPlugin(workspaceDir);
+  await addHarnessLintDependency(workspaceDir, tarballPath);
 }
 
-if (!(await exists(resolve(workspaceDir, "node_modules")))) {
-  await symlink(nodeModulesPath, resolve(workspaceDir, "node_modules"), "dir");
+// 親のnode_modulesへのsymlinkをやめ、workspaceごとに実インストールする。
+// 初回は30秒を超えるのでtimeoutMsは付けない
+const installResult = await runCommand("pnpm", ["install", "--prefer-offline", "--ignore-workspace"], {
+  cwd: workspaceDir,
+});
+if (installResult.code !== 0) {
+  throw new Error(`workspaceのpnpm installが失敗しました: ${installResult.stderr || installResult.stdout}`);
 }
 
 const briefSha256 = await hashPath(briefPath);
@@ -94,7 +109,7 @@ let run = {
 await writeFile(resolve(outputDir, "run.json"), `${JSON.stringify(run, null, 2)}\n`);
 
 if (dryRun) {
-  console.log(`Prepared ${mode}: .runs/account-management/${pairId}/${mode}`);
+  console.log(`Prepared ${mode}: ${workspaceDir}`);
   process.exit(0);
 }
 
@@ -130,15 +145,22 @@ for (const [name, commandArgs] of checkCommands) {
   checks.push({ name, status: result.code === 0 ? "passed" : "failed", exitCode: result.code });
 }
 
+// 隔離できていたかの証拠。sanitizeがリポジトリのパスを<repo>へ畳む前に数える
+const isolation = scanIsolation(await readFile(eventsPath, "utf8"), { rootDir });
+
 run = {
   ...run,
   status: agentResult.code === 0 ? "completed" : "failed",
   artifacts: ["events.jsonl", "agent-stderr.log", "changes.diff", "source", "typecheck.log", "lint.log", "test.log", "build.log"],
   checks,
+  isolation,
 };
 await writeFile(resolve(outputDir, "run.json"), `${JSON.stringify(run, null, 2)}\n`);
 await sanitizeRunArtifacts(outputDir);
 
 console.log(`${mode}: ${run.status}`);
+if (isolation.repoPathMentions > 0 || Object.values(isolation.markerMentions).some((count) => count > 0)) {
+  console.log(`Isolation: repoPathMentions=${isolation.repoPathMentions} ${JSON.stringify(isolation.markerMentions)}`);
+}
 console.log(`Run: experiments/account-management/runs/${pairId}/${mode}/run.json`);
 if (agentResult.code !== 0) process.exitCode = agentResult.code;

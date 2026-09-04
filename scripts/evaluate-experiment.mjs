@@ -9,6 +9,7 @@ import { buildAtlasLintOptions } from "eslint-plugin-atlas/options";
 import { resolveManifest } from "./design-catalog.mjs";
 import { parseArgs, rootDir } from "./lib.mjs";
 import { collectScreenSources } from "./screen-sources.mjs";
+import { workspaceDir as resolveWorkspaceDir } from "./workspace-paths.mjs";
 
 const manifestPath = "experiments/account-management/manifest.json";
 const designContract = resolveManifest(manifestPath);
@@ -910,7 +911,7 @@ function toMarkdown(evaluation, rulesById) {
 }
 
 export async function evaluateRun({ pairId, mode, outDir }) {
-  const workspaceDir = resolve(rootDir, ".runs", "account-management", pairId, mode);
+  const workspaceDir = resolveWorkspaceDir(pairId, mode);
   const outputDir = outDir ? resolve(outDir) : resolve(rootDir, "experiments", "account-management", "runs", pairId, mode);
   // App.tsx から import で辿れる画面ファイルをまとめて評価する(単一ファイル前提を置かない)
   const [{ app, fixtures, styles, tsxFiles }, componentTheme, rulesDocument] = await Promise.all([

@@ -10,7 +10,7 @@ Atlasの比較デモは、結果だけでなく生成条件と修正過程を検
 - 一覧、詳細、モバイル、エラー状態のスクリーンショット
 - sanitize済みのイベントログと標準エラーログ
 
-イベントログは生成過程の根拠として残す。ただし`.runs/`にある未加工データは公開せず、`experiments/`へ保存したsanitize済み成果物だけを対象にする。
+イベントログは生成過程の根拠として残す。ただしworkspace（既定は`~/.cache/design-harness/runs/`、`DESIGN_HARNESS_RUNS_DIR`で変更可）にある未加工データは公開せず、`experiments/`へ保存したsanitize済み成果物だけを対象にする。sanitizeはworkspaceの絶対パスを`<workspace>`へ畳む。
 
 ## 公開しないもの
 

@@ -99,7 +99,7 @@ claude mcp get atlas-design-system
 
 ## 比較を再実行する
 
-再実行には認証済みのAIエージェントCLIが必要です。既定は`codex`で、`--runner claude`（または環境変数`AGENT_RUNNER`）でClaude Codeへ切り替えられます。CLI固有のフラグは`scripts/agent-runners/`のadapterに閉じています。`PAIR_ID`は新しい値へ変えてください。生成先の`.runs/`は隔離された作業ディレクトリで、公開対象には含まれません。
+再実行には認証済みのAIエージェントCLIが必要です。既定は`codex`で、`--runner claude`（または環境変数`AGENT_RUNNER`）でClaude Codeへ切り替えられます。CLI固有のフラグは`scripts/agent-runners/`のadapterに閉じています。`PAIR_ID`は新しい値へ変えてください。workspaceはリポジトリの外の`~/.cache/design-harness/runs/`に作られ、環境変数`DESIGN_HARNESS_RUNS_DIR`で場所を変えられます（リポジトリ内を指すと実行を止めます）。依存はworkspaceごとに`pnpm install`します。生成物は公開対象には含まれません。
 
 Harness実行ではmanifestから`HARNESS.json`と`HARNESS_RESOLVED.json`を生成し、指定したAgent Skillsを隔離workspaceの`.agents/skills/`へ配置します。AIは`DESIGN.md`を入口に、一覧用の`pattern.page-layout#collection-table`、詳細用の`pattern.page-layout#single-one-column`、`example.account-management`、関連するHeroUIコンポーネントと検証ルールをIDで解決します。Baselineには設計契約もAgent Skillsも渡しません。
 

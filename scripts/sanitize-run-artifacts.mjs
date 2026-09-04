@@ -3,6 +3,7 @@ import { userInfo } from "node:os";
 import { extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs, rootDir, usernamePattern } from "./lib.mjs";
+import { runsRootDir } from "./workspace-paths.mjs";
 
 const textExtensions = new Set([".diff", ".json", ".jsonl", ".log", ".md", ".tsx", ".ts", ".css"]);
 
@@ -26,8 +27,10 @@ export function resolveMaskedUsername(options = {}) {
  * @returns {string}
  */
 export function sanitizeText(value, options = {}) {
+  // workspaceはホーム配下にあるので、<home>より先に<workspace>へ畳む
   const output = value
     .replaceAll(rootDir, "<repo>")
+    .replaceAll(runsRootDir(options.env), "<workspace>")
     .replace(/\/Users\/[A-Za-z0-9._-]+/g, "<home>")
     .replace(/\/(?:private\/)?var\/folders\/[A-Za-z0-9/_-]+/g, "<tmp>")
     .replace(/sk-[A-Za-z0-9_-]{20,}/g, "<redacted-openai-key>")

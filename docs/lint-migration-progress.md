@@ -60,3 +60,28 @@ JSX 内 raw color、jsx-a11y、manifest 駆動ルール(customer-routes / custom
 - prelint-01 を再評価: baseline 6→12 pass / 17→11 fail、harness 12→18 pass / 11→4 fail。harness の残り 4 件(Spinner・cn・buttonVariants の import、HeroUI Link の欠落、link-semantics、AlertDialog.Trigger の欠落)は実物の違反。prelint-01 harness のコピーで新旧設定の eslint を比べると 18→7 problems で、残りは評価器の fail と同じ内容。
 - 未対応: workspace 脱出(`.runs` がリポジトリ内、`node_modules` が親への symlink)。直すには `.runs` をリポジトリ外へ出して workspace ごとに依存を実インストールする必要があり、run の再取得も伴うので今回は見送り。
 - 未対応: processor `atlas/screen` の `postprocess` は仮想ブロックの ruleId なしメッセージ(構文エラー)を捨てる。連結ソースが parse に失敗すると存在判定 7 ルールが何も報告せず黙って通る。評価器側は構文エラーとして扱うので不一致。直すなら fatal メッセージがあるとき 1:1 に error を 1 件出す。
+
+## 2026-09-04 workspace をリポジトリ外へ隔離
+
+### 変えたこと
+- workspace の場所を `<repo>/.runs/account-management/<pair>/<mode>` から `~/.cache/design-harness/runs/account-management/<pair>/<mode>` へ移した。`scripts/workspace-paths.mjs` の `runsRootDir` / `pairWorkspaceDir` / `workspaceDir` が正本で、`DESIGN_HARNESS_RUNS_DIR` で上書きできる。リポジトリ内を指すと throw する。
+- 親の `node_modules` への symlink を廃止。workspace ごとに `pnpm install --prefer-offline --ignore-workspace` を実行する。失敗すれば run を止める。
+- starter に eslint 系 devDeps(eslint 10.9.1 / @eslint/js 10.0.1 / globals 17.11.0 / typescript-eslint 8.68.0)と `.gitignore`(node_modules, dist, .harness)を追加。starter のコピー時に `node_modules` を除外する。
+- harness / harness-corrected では `packages/eslint-plugin-atlas` を `pnpm pack` して `<workspace>/.harness/` に置き、`file:./.harness/eslint-plugin-atlas-0.1.0.tgz` を devDependency として入れる(`scripts/workspace-deps.mjs`)。baseline には入れない。
+- プラグインに `files: ["src"]` を追加して tarball から `test/` を外した。`test/mvp-11.test.mjs` には保存 run の期待合否が書いてあり、workspace の node_modules に置くと採点の手がかりになる。
+- プラグインの `peerDependencies` に `typescript-eslint >=8` を追加。`src/index.mjs` が import しているが未宣言で、symlink 構成では root から解決できていた。tarball 構成では解決できない。
+- `scripts/workspace-isolation.mjs` の `scanIsolation` が sanitize 前の `events.jsonl` を走査し、リポジトリ絶対パスと `evaluate-experiment` の出現回数を `run.isolation` に記録する。`run.schema.json` に optional で追加した。
+- `sanitizeText` が workspace の絶対パスを `<workspace>` へ畳む(`<home>` より先)。
+
+### 検証方法(お金をかけない)
+- `pnpm exec vitest run scripts packages` → 27 files / 236 tests 緑。
+- `pnpm experiment:run -- --mode <baseline|harness|harness-corrected> --pair iso-check --dry-run` の 3 条件。各 workspace で `node_modules` が実ディレクトリであること、`node_modules/react` の realpath が workspace 内であること、`grep -rl <repo の絶対パス>` が 0 件であることを確認。
+- baseline: lint / test:run / build 緑、`eslint-plugin-atlas` は入っていない。harness: typecheck / test:run / build 緑、lint は Atlas ルールで 13 件報告(starter 素の状態なので期待どおり。プラグインと typescript-eslint が tarball 経由で解決できている証拠)。
+- workspace で `git add -n .` して `node_modules` / `.harness` / `dist` が入らないことを確認(57 ファイル)。
+
+### 残る限界
+- 壁ではなくポインタの除去。`--dangerously-skip-permissions` のエージェントが絶対パスを推測して読みに行くのは防げない。防ぐには sandbox かコンテナが要る。
+- workspace の `node_modules/.modules.yaml` に pnpm store の絶対パス(`~/Library/pnpm/store`)が残る。ホームは見えるがリポジトリは見えない。
+- `run.isolation` は run-experiment だけが記録する。`refine-experiment.mjs` もエージェントを走らせるが今回は対象外。
+- 保存済み run(mvp-11 / lint-01 / prelint-01)は隔離前のもので、`isolation` を持たない。比較数字の再取得は 1 本約 11 ドルなので別途判断。
+- 再現性が下がった。以前は全 run が root の `pnpm-lock.yaml` で固定された同じ `node_modules` を共有していた。今は workspace ごとに lockfile を作るので、直接依存は starter の固定バージョンどおりでも、推移的依存は install した日で変わり得る。同じ pair の baseline と harness は数分差なので対の比較には影響しないが、pair をまたぐ比較や日を置いた再現では前提が弱い。root の pnpm 設定(`minimumReleaseAge` など)も workspace には効かない。直すなら starter に `pnpm-lock.yaml` を置く。
