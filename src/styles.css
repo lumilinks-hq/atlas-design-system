@@ -222,7 +222,7 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .layout-preview { display: grid; height: 190px; gap: 6px; border-block-end: 1px solid var(--dh-border); background: var(--dh-surface-muted); padding: var(--dh-space-6); grid-template: 18px 30px 1fr / 1fr 1fr 1fr; }
 .layout-preview i { display: block; border-radius: var(--dh-radius-base); background: color-mix(in oklch, var(--dh-text-muted) 18%, var(--dh-surface)); }
 .layout-preview .preview-header { grid-column: 1 / -1; }
-.layout-preview .preview-heading { background: color-mix(in oklch, var(--dh-accent) 18%, var(--dh-surface)); grid-column: 1 / -1; }
+.layout-preview .preview-heading { background: color-mix(in srgb, var(--dh-accent) 18%, var(--dh-surface)); grid-column: 1 / -1; }
 .layout-preview .preview-main { grid-column: 1 / -1; }
 .layout-preview .preview-side, .layout-preview .preview-detail { display: none; }
 .layout-preview[data-variant="collection-table"] .preview-main { background: repeating-linear-gradient(to bottom, var(--dh-surface) 0 20px, var(--dh-border) 20px 21px); }
@@ -462,7 +462,7 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
   .nav-item { transition: background-color 120ms ease, color 120ms ease; }
   .nav-item:hover { background: var(--dh-surface-muted); color: var(--dh-text); }
   .flow-card-link { transition: background-color 120ms ease; }
-  .flow-card-link:hover { background: color-mix(in oklch, var(--dh-accent-soft) 32%, var(--dh-surface)); }
+  .flow-card-link:hover { background: color-mix(in srgb, var(--dh-accent-soft) 32%, var(--dh-surface)); }
   .component-copy-button { transition: background-color 120ms ease, color 120ms ease; }
   .component-copy-button:hover { background: var(--dh-surface-muted); color: var(--dh-text); }
 }
