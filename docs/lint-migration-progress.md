@@ -59,3 +59,4 @@ JSX 内 raw color、jsx-a11y、manifest 駆動ルール(customer-routes / custom
 - workspace の `pnpm lint` 用に ESLint processor `atlas/screen` を追加。`atlasConfigs({ screen: true })` で App.tsx を lint するとき import で辿れる画面全体を仮想ブロック `App.tsx/1_screen.tsx` として存在判定にかける。`harness-context.mjs` の生成設定はこれを使う。ESLint は仮想ブロックの本文が元と同一だと設定を再解決しないので、末尾に `// atlas:screen` を足している。
 - prelint-01 を再評価: baseline 6→12 pass / 17→11 fail、harness 12→18 pass / 11→4 fail。harness の残り 4 件(Spinner・cn・buttonVariants の import、HeroUI Link の欠落、link-semantics、AlertDialog.Trigger の欠落)は実物の違反。prelint-01 harness のコピーで新旧設定の eslint を比べると 18→7 problems で、残りは評価器の fail と同じ内容。
 - 未対応: workspace 脱出(`.runs` がリポジトリ内、`node_modules` が親への symlink)。直すには `.runs` をリポジトリ外へ出して workspace ごとに依存を実インストールする必要があり、run の再取得も伴うので今回は見送り。
+- 未対応: processor `atlas/screen` の `postprocess` は仮想ブロックの ruleId なしメッセージ(構文エラー)を捨てる。連結ソースが parse に失敗すると存在判定 7 ルールが何も報告せず黙って通る。評価器側は構文エラーとして扱うので不一致。直すなら fatal メッセージがあるとき 1:1 に error を 1 件出す。
