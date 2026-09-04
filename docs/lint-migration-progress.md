@@ -72,6 +72,7 @@ JSX 内 raw color、jsx-a11y、manifest 駆動ルール(customer-routes / custom
 - プラグインの `peerDependencies` に `typescript-eslint >=8` を追加。`src/index.mjs` が import しているが未宣言で、symlink 構成では root から解決できていた。tarball 構成では解決できない。
 - `scripts/workspace-isolation.mjs` の `scanIsolation` が sanitize 前の `events.jsonl` を走査し、リポジトリ絶対パスと `evaluate-experiment` の出現回数を `run.isolation` に記録する。`run.schema.json` に optional で追加した。
 - `sanitizeText` が workspace の絶対パスを `<workspace>` へ畳む(`<home>` より先)。
+- リポジトリ内に残っていた旧 workspace(`.runs/`、14 pair 分、114MB)は同日削除した。旧 pair の再計測が必要なら新しい場所で workspace を作り直す。
 
 ### 検証方法(お金をかけない)
 - `pnpm exec vitest run scripts packages` → 27 files / 236 tests 緑。
