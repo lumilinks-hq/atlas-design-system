@@ -403,6 +403,7 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .check-skip { color: var(--dh-text-muted); }
 .result-review, .status-review { color: var(--dh-warning, var(--dh-text-muted)); }
 .harness-cta { display: inline-flex; align-items: center; gap: 4px; margin-top: var(--dh-space-6); color: var(--dh-accent); font-weight: 600; text-decoration: none; }
+.harness-cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--dh-space-6); }
 .check-list { display: flex; flex-wrap: wrap; gap: var(--dh-space-2) var(--dh-space-3); margin: 0; padding: 0; list-style: none; font-size: .8125rem; font-weight: 600; }
 .check-list li { display: inline-flex; align-items: center; gap: 4px; }
 
@@ -480,6 +481,8 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
   .sidebar-scrim { position: fixed; inset: 0; z-index: 20; display: block; width: 100%; max-width: none; height: 100%; border: 0; border-radius: 0; background: color-mix(in oklch, var(--dh-text) 28%, transparent); }
   .docs-main { margin-inline-start: 0; }
   .doc-page { padding: 56px var(--dh-space-6) 88px; }
+  /* ハッシュ付きリンクの着地点が、sticky なモバイルヘッダー(54px)へ潜らないようにする */
+  .doc-page h2[id] { scroll-margin-top: 62px; }
   .flow-list { grid-template-columns: 1fr 1fr; }
   .source-section { gap: var(--dh-space-8); grid-template-columns: 1fr; }
   .setup-grid { grid-template-columns: 1fr; }

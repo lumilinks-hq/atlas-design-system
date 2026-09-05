@@ -68,7 +68,7 @@ export function PlayPage() {
   return (
     <main className="play-shell">
       <header className="play-header">
-        <Button aria-label="利用例へ戻る" isIconOnly size="sm" variant="ghost" onPress={() => navigate("/examples/account-management")}>
+        <Button aria-label="サンプルへ戻る" isIconOnly size="sm" variant="ghost" onPress={() => navigate("/examples/account-management")}>
           <ArrowLeft size={18} />
         </Button>
         <div className="play-title">
@@ -92,7 +92,7 @@ export function PlayPage() {
           ))}
         </div>
         <div className="play-description" aria-live="polite">
-          <Chip size="sm" variant="soft">{mode === "atlas" ? "Design Harnessあり" : "Design Harnessなし"}</Chip>
+          <Chip size="sm" variant="soft">{mode === "atlas" ? "ハーネスあり" : "ハーネスなし"}</Chip>
           <p>{current.description}</p>
         </div>
         <Select

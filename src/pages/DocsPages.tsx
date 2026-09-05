@@ -84,14 +84,14 @@ export function HomePage() {
     <article className="doc-page home-page">
       <PageHeader
         title="Atlas Design System"
-        description="Design Harnessを用いて設計・検証する、デモ用のデザインシステムです。"
+        description="デザインハーネスを用いて設計・検証する、デモ用のデザインシステムです。"
       />
       <div className="hero-actions">
         <Button variant="primary" size="lg" onPress={() => navigate("/getting-started")}>
           導入方法を見る <ArrowRight size={16} />
         </Button>
         <Button variant="secondary" size="lg" onPress={() => navigate("/harness")}>
-          Design Harnessの仕組みを見る
+          デザインハーネスの仕組みを見る
         </Button>
       </div>
 
@@ -102,7 +102,7 @@ export function HomePage() {
           <h2 id="flow-title">画面を作るための判断を定義する</h2>
         </div>
         <ol className="flow-list">
-          <li><Link className="site-card flow-card-link" to="/foundations"><span>01</span><div><h3>基礎</h3><p>色、文字、余白、角丸、影のセマンティックトークン。</p></div><ArrowRight size={18} /></Link></li>
+          <li><Link className="site-card flow-card-link" to="/foundations"><span>01</span><div><h3>デザイントークン</h3><p>色、文字、余白、角丸、影のセマンティックトークン。</p></div><ArrowRight size={18} /></Link></li>
           <li><Link className="site-card flow-card-link" to="/components"><span>02</span><div><h3>コンポーネント</h3><p>採用するHeroUI部品と、使い方の契約。</p></div><ArrowRight size={18} /></Link></li>
           <li><Link className="site-card flow-card-link" to="/patterns/page-layout"><span>03</span><div><h3>パターン</h3><p>業務オブジェクトの関係から選ぶ、再利用可能なページ構造。</p></div><ArrowRight size={18} /></Link></li>
           <li><Link className="site-card flow-card-link" to="/rules"><span>04</span><div><h3>検証ルール</h3><p>実装後に自動検査する設計ルール。</p></div><ArrowRight size={18} /></Link></li>
@@ -268,7 +268,7 @@ const implementationStack = [
 ] as const;
 
 const designContractStack = [
-  { name: "設計データ", value: "JSON", description: "トークン、コンポーネント、パターン、利用例、検証ルールを機械可読な形式で管理します。" },
+  { name: "設計データ", value: "JSON", description: "トークン、コンポーネント、パターン、サンプル、検証ルールを機械可読な形式で管理します。" },
   { name: "データ検証", value: "JSON Schema / Ajv 8.20.0", description: "設計データの構造と参照先をビルド前に検査します。" },
   { name: "AIからの参照", value: "Agent Skill / MCP", description: "AIが必要な設計契約を検索し、実装時の入力として使えるようにします。" },
   { name: "品質確認", value: "Vitest / Testing Library / Playwright / ESLint", description: "型、振る舞い、画面、設計ルールを別々に確認します。" },
@@ -333,7 +333,7 @@ const breakpointTokenLabels: Record<string, string> = {
 export function FoundationsPage() {
   return (
     <article className="doc-page">
-      <PageHeader title="基礎" description="HeroUIのテーマへ対応付ける、プロジェクト固有のセマンティックトークンです。" />
+      <PageHeader title="デザイントークン" description="HeroUIのテーマへ対応付ける、プロジェクト固有のセマンティックトークンです。" />
       <section className="token-section">
         <h2>色</h2>
         <div className="swatch-grid">
@@ -1120,7 +1120,7 @@ export function PatternPage() {
 
       <section className="pattern-section example-callout" aria-labelledby="example-title">
         <div><h2 id="example-title">顧客管理</h2><p>一覧（テーブル）と詳細（1カラム）を別画面として組み合わせた構成を確認できます。</p></div>
-        <Button variant="secondary" onPress={() => navigate("/examples/account-management")}>利用例を見る <ArrowRight size={16} /></Button>
+        <Button variant="secondary" onPress={() => navigate("/examples/account-management")}>サンプルを見る <ArrowRight size={16} /></Button>
       </section>
     </article>
   );
@@ -1217,7 +1217,7 @@ export function SpacingPatternPage() {
       </section>
 
       <section className="pattern-section spacing-contract" aria-labelledby="spacing-contract-title">
-        <div><h2 id="spacing-contract-title">Design Harnessから参照する</h2><p>余白の判断を生成時に適用する場合は、このパターンIDとトークンを設計契約へ含めます。</p></div>
+        <div><h2 id="spacing-contract-title">デザインハーネスから参照する</h2><p>余白の判断を生成時に適用する場合は、このパターンIDとトークンを設計契約へ含めます。</p></div>
         <div><code>pattern.spacing-layout</code><code>design/patterns/spacing-layout.json</code></div>
       </section>
     </article>
@@ -1269,8 +1269,8 @@ export function ExamplePage() {
       </section>
 
       <section className="pattern-section harness-contract" aria-labelledby="harness-contract-title">
-        <div><h2 id="harness-contract-title">AIへ参照IDを渡す</h2><p>Issueそのものは変えず、Design Harnessを適用した場合だけパターン、利用例、コンポーネント、検証ルールを追加で読みます。</p></div>
-        <div className="reference-code"><span>一覧</span><code>{example.pattern}#{example.variant}</code><span>詳細</span><code>{example.pattern}#single-one-column</code><span>利用例</span><code>{example.id}</code></div>
+        <div><h2 id="harness-contract-title">AIへ参照IDを渡す</h2><p>Issueそのものは変えず、デザインハーネスを適用した場合だけパターン、サンプル、コンポーネント、検証ルールを追加で読みます。</p></div>
+        <div className="reference-code"><span>一覧</span><code>{example.pattern}#{example.variant}</code><span>詳細</span><code>{example.pattern}#single-one-column</code><span>サンプル</span><code>{example.id}</code></div>
       </section>
 
       <Button variant="primary" onPress={() => navigate("/play/account-management?mode=atlas")}>生成された画面を操作する <ArrowRight size={16} /></Button>

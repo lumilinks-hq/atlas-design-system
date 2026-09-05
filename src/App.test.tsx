@@ -6,7 +6,15 @@ import { App } from "./App";
 import { designData } from "./data/design";
 import { ruleMethodLabels } from "./pages/DocsPages";
 import { ChecksList } from "./pages/HarnessPages";
-import { baselineEvaluation, comparison, correctedEvaluation, harnessEvaluation, runEnvironment, sameModelRuns } from "./data/runs";
+import {
+  baselineEvaluation,
+  comparison,
+  harnessEvaluation,
+  mvp11CorrectedEvaluation,
+  mvp11HarnessEvaluation,
+  runEnvironment,
+  sameModelRuns,
+} from "./data/runs";
 
 const statusLabels: Record<string, string> = { passed: "合格", failed: "違反", review: "要確認" };
 
@@ -18,7 +26,7 @@ describe("Atlas Design System demo", () => {
     render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
     expect(screen.getByRole("heading", { name: "Atlas Design System" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: "Atlas Design System" })).toHaveLength(2);
-    expect(screen.getByText("Design Harnessを用いて設計・検証する、デモ用のデザインシステムです。")).toBeInTheDocument();
+    expect(screen.getByText("デザインハーネスを用いて設計・検証する、デモ用のデザインシステムです。")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "導入方法を見る" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "導入方法を見る" })).toHaveClass("button--lg");
     expect(screen.queryByRole("button", { name: "実装比較デモを見る" })).not.toBeInTheDocument();
@@ -182,11 +190,15 @@ describe("Atlas Design System demo", () => {
 
   it("explains the Design Harness cycle with four layers and data-driven counts", async () => {
     const user = userEvent.setup();
+    const lint = designData.rules.filter((rule) => rule.method === "lint").length;
+    const automatic = designData.rules.filter((rule) => rule.method === "automatic").length;
+    const aiReview = designData.rules.filter((rule) => rule.method === "ai-review").length;
+    const human = designData.rules.filter((rule) => rule.method === "human").length;
     render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
-    await user.click(screen.getByRole("button", { name: "Design Harnessの仕組みを見る" }));
+    await user.click(screen.getByRole("button", { name: "デザインハーネスの仕組みを見る" }));
 
-    expect(screen.getByRole("heading", { level: 1, name: "Design Harness" })).toBeInTheDocument();
-    const diagram = screen.getByRole("figure", { name: "Design Harnessのループ図" });
+    expect(screen.getByRole("heading", { level: 1, name: "デザインハーネス" })).toBeInTheDocument();
+    const diagram = screen.getByRole("figure", { name: "デザインハーネスのループ図" });
     const layerNames = ["制約する層", "コンテキストを渡す層", "検証する層", "フィードバックする層"];
     for (const [index, layer] of layerNames.entries()) {
       expect(await within(diagram).findByRole("button", { name: `0${index + 1} ${layer}` })).toBeInTheDocument();
@@ -197,6 +209,9 @@ describe("Atlas Design System demo", () => {
     expect(constrainTable.closest("[data-slot='table']")).toHaveClass("table-root--primary");
     expect(within(constrainTable).getByRole("columnheader", { name: "ファイル" })).toBeInTheDocument();
     expect(within(constrainTable).getByRole("rowheader", { name: "design/tokens.json" })).toBeInTheDocument();
+    expect(within(constrainTable).getByRole("rowheader", { name: "design/rules.json" })).toBeInTheDocument();
+    expect(constrain).toHaveTextContent(`ルール${designData.rules.length}件（Lint ${lint}、自動検証 ${automatic}、AIレビュー ${aiReview}）`);
+    expect(constrain).not.toHaveTextContent("禁則");
 
     await user.click(within(diagram).getByRole("button", { name: "02 コンテキストを渡す層" }));
     expect(within(diagram).getByRole("button", { name: "02 コンテキストを渡す層" })).toHaveAttribute("aria-pressed", "true");
@@ -211,10 +226,6 @@ describe("Atlas Design System demo", () => {
     await user.keyboard("{Enter}");
     expect(within(diagram).getByRole("button", { name: "03 検証する層" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("region", { name: "検証する層" })).toHaveTextContent("scripts/evaluate-experiment.mjs");
-    const lint = designData.rules.filter((rule) => rule.method === "lint").length;
-    const automatic = designData.rules.filter((rule) => rule.method === "automatic").length;
-    const aiReview = designData.rules.filter((rule) => rule.method === "ai-review").length;
-    const human = designData.rules.filter((rule) => rule.method === "human").length;
     const methods = screen.getByRole("region", { name: "妥当性を、誰がどう担保するか" });
     expect(within(methods).queryByRole("list")).not.toBeInTheDocument();
     expect(within(methods).getAllByRole("paragraph").length).toBeGreaterThanOrEqual(3);
@@ -222,8 +233,8 @@ describe("Atlas Design System demo", () => {
     expect(methods).toHaveTextContent(`${aiReview}件をレビュー`);
     expect(methods).toHaveTextContent(`人に任せているルールは${human}件`);
 
-    const loop = screen.getByRole("region", { name: "顧客管理での1周" });
-    const loopDiagram = within(loop).getByRole("figure", { name: "顧客管理での1周の図" });
+    const loop = screen.getByRole("region", { name: "デモ画面の生成サイクル" });
+    const loopDiagram = within(loop).getByRole("figure", { name: "デモ画面の生成サイクルの図" });
     const loopTitles = [
       "Issueを渡す",
       "制約とコンテキストを渡す",
@@ -235,13 +246,22 @@ describe("Atlas Design System demo", () => {
     for (const title of loopTitles) {
       expect(await within(loopDiagram).findByText(title)).toBeInTheDocument();
     }
-    expect(await within(loopDiagram).findByText(`違反 ${harnessEvaluation.summary.failed}件`)).toBeInTheDocument();
-    expect(await within(loopDiagram).findByText(`違反 ${correctedEvaluation.summary.failed}件`)).toBeInTheDocument();
+    expect(await within(loopDiagram).findByText(`違反 ${mvp11HarnessEvaluation.summary.failed}件`)).toBeInTheDocument();
+    expect(await within(loopDiagram).findByText(`違反 ${mvp11CorrectedEvaluation.summary.failed}件`)).toBeInTheDocument();
     expect(within(loop).queryByRole("list")).not.toBeInTheDocument();
     expect(screen.queryByText(/Figma|Storybook/)).not.toBeInTheDocument();
     expect(screen.queryByText("Agent-ready")).not.toBeInTheDocument();
     expect(screen.queryByRole("list", { name: /の実行検査$/ })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "生成結果の比較を見る" })).toHaveAttribute("href", "/examples/account-management/results");
+  });
+
+  it("links from the demo cycle section to the technical specifications", () => {
+    render(<MemoryRouter initialEntries={["/harness"]}><App /></MemoryRouter>);
+    const loop = screen.getByRole("region", { name: "デモ画面の生成サイクル" });
+    expect(within(loop).getByRole("link", { name: "技術仕様（設計契約と検証）を見る" })).toHaveAttribute(
+      "href",
+      "/technical-specifications#design-contract-stack-title",
+    );
   });
 
   it("shows the baseline lint check as Atlas-not-applied instead of passed", () => {
@@ -273,37 +293,37 @@ describe("Atlas Design System demo", () => {
     expect(screen.getByText(`Run ${comparison.pairId}`)).toBeInTheDocument();
     expect(screen.getByText(`Model ${runEnvironment.model}`)).toBeInTheDocument();
 
-    const baseline = screen.getByRole("article", { name: "Design Harnessなし" });
+    const baseline = screen.getByRole("article", { name: "ハーネスなし" });
     expect(baseline).toHaveTextContent(`${baselineEvaluation.summary.passed} 合格`);
     expect(baseline).toHaveTextContent(`${baselineEvaluation.summary.failed} 違反`);
     expect(baseline).toHaveTextContent(`${baselineEvaluation.summary.review} 要確認`);
-    const harness = screen.getByRole("article", { name: "Design Harnessあり" });
-    expect(harness).toHaveTextContent(`${correctedEvaluation.summary.passed} 合格`);
-    expect(harness).toHaveTextContent(`${correctedEvaluation.summary.failed} 違反`);
-    expect(harness).toHaveTextContent(`${correctedEvaluation.summary.review} 要確認`);
+    const harness = screen.getByRole("article", { name: "ハーネスあり" });
+    expect(harness).toHaveTextContent(`${harnessEvaluation.summary.passed} 合格`);
+    expect(harness).toHaveTextContent(`${harnessEvaluation.summary.failed} 違反`);
+    expect(harness).toHaveTextContent(`${harnessEvaluation.summary.review} 要確認`);
 
-    expect(screen.getByAltText("Design Harnessなしで生成した顧客管理画面（一覧）")).toHaveAttribute(
+    expect(screen.getByAltText("ハーネスなしで生成した顧客管理画面（一覧）")).toHaveAttribute(
       "src",
-      "/experiments/account-management/runs/mvp-11/baseline.png",
+      "/experiments/account-management/runs/lint-01/baseline.png",
     );
     await user.click(screen.getByRole("button", { name: "詳細（モバイル）" }));
-    expect(screen.getByAltText("Design Harnessなしで生成した顧客管理画面（詳細（モバイル））")).toHaveAttribute(
+    expect(screen.getByAltText("ハーネスなしで生成した顧客管理画面（詳細（モバイル））")).toHaveAttribute(
       "src",
-      "/experiments/account-management/runs/mvp-11/baseline-detail-mobile.png",
+      "/experiments/account-management/runs/lint-01/baseline-detail-mobile.png",
     );
-    expect(screen.getByAltText("Design Harnessありで生成した顧客管理画面（詳細（モバイル））")).toHaveAttribute(
+    expect(screen.getByAltText("ハーネスありで生成した顧客管理画面（詳細（モバイル））")).toHaveAttribute(
       "src",
-      "/experiments/account-management/runs/mvp-11/harness-corrected-detail-mobile.png",
+      "/experiments/account-management/runs/lint-01/harness-detail-mobile.png",
     );
 
     const table = screen.getByRole("table", { name: "ルールごとの検査結果" });
     expect(within(table).getAllByRole("row")).toHaveLength(designData.rules.length + 1);
     const firstRule = designData.rules[0]!;
     const baselineStatus = baselineEvaluation.rules.find((rule) => rule.id === firstRule.id)!.status;
-    const correctedStatus = correctedEvaluation.rules.find((rule) => rule.id === firstRule.id)!.status;
+    const harnessStatus = harnessEvaluation.rules.find((rule) => rule.id === firstRule.id)!.status;
     const firstRow = within(table).getByRole("row", { name: new RegExp(firstRule.title) });
     expect(firstRow).toHaveTextContent(statusLabels[baselineStatus]!);
-    expect(firstRow).toHaveTextContent(statusLabels[correctedStatus]!);
+    expect(firstRow).toHaveTextContent(statusLabels[harnessStatus]!);
     expect(firstRow).toHaveTextContent(ruleMethodLabels[firstRule.method]!);
 
 

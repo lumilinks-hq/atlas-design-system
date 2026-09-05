@@ -8,7 +8,7 @@ const navigation = [
     label: "はじめに",
     items: [
       { label: "概要", to: "/" },
-      { label: "Design Harness", to: "/harness" },
+      { label: "デザインハーネス", to: "/harness" },
       { label: "導入方法", to: "/getting-started" },
       { label: "技術仕様", to: "/technical-specifications" },
     ],
@@ -16,7 +16,7 @@ const navigation = [
   {
     label: "設計の基礎",
     items: [
-      { label: "基礎", to: "/foundations" },
+      { label: "デザイントークン", to: "/foundations" },
       { label: "コンポーネント", to: "/components" },
       { label: "検証ルール", to: "/rules" },
     ],
@@ -29,9 +29,9 @@ const navigation = [
     ],
   },
   {
-    label: "利用例",
+    label: "サンプル",
     items: [
-      { label: "顧客管理", to: "/examples/account-management" },
+      { label: "例：顧客管理", to: "/examples/account-management" },
       { label: "生成結果の比較", to: "/examples/account-management/results" },
     ],
   },
@@ -55,14 +55,14 @@ export function DocsShell() {
   useEffect(() => {
     const titles: Record<string, string> = {
       "/": "Atlas Design System",
-      "/harness": "Design Harness — Atlas Design System",
+      "/harness": "デザインハーネス — Atlas Design System",
       "/getting-started": "導入方法 — Atlas Design System",
       "/technical-specifications": "技術仕様 — Atlas Design System",
-      "/foundations": "基礎 — Atlas Design System",
+      "/foundations": "デザイントークン — Atlas Design System",
       "/components": "コンポーネント — Atlas Design System",
       "/patterns/page-layout": "ページレイアウト — Atlas Design System",
       "/patterns/spacing-layout": "余白の取り方 — Atlas Design System",
-      "/examples/account-management": "顧客管理 — Atlas Design System",
+      "/examples/account-management": "例：顧客管理 — Atlas Design System",
       "/examples/account-management/results": "生成結果の比較 — Atlas Design System",
       "/rules": "検証ルール — Atlas Design System",
     };
@@ -72,6 +72,12 @@ export function DocsShell() {
       previousPathRef.current = location.pathname;
     }
   }, [location.pathname]);
+
+  // BrowserRouter はハッシュ付きリンクで自動スクロールしないので、遷移後に該当見出しへ寄せる
+  useEffect(() => {
+    const target = location.hash ? document.getElementById(location.hash.slice(1)) : null;
+    target?.scrollIntoView({ block: "start" });
+  }, [location.pathname, location.hash]);
 
   return (
     <div className="docs-layout">

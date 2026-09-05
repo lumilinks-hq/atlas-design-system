@@ -207,7 +207,7 @@ export function HarnessCycle({ layers, selectedId, onSelect }: HarnessCycleProps
   });
 
   return (
-    <figure className={`harness-flow ${narrow ? "harness-flow-narrow" : "harness-flow-wide"}`} aria-label="Design Harnessのループ図">
+    <figure className={`harness-flow ${narrow ? "harness-flow-narrow" : "harness-flow-wide"}`} aria-label="デザインハーネスのループ図">
       <div className="harness-flow-canvas">
         <ReactFlow
           key={narrow ? "narrow" : "wide"}

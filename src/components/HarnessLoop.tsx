@@ -170,7 +170,7 @@ export function HarnessLoop({ steps }: HarnessLoopProps) {
   });
 
   return (
-    <figure className={`harness-loop ${narrow ? "harness-loop-narrow" : "harness-loop-wide"}`} aria-label="顧客管理での1周の図">
+    <figure className={`harness-loop ${narrow ? "harness-loop-narrow" : "harness-loop-wide"}`} aria-label="デモ画面の生成サイクルの図">
       <div className="harness-loop-canvas">
         <ReactFlow
           id="harness-loop"

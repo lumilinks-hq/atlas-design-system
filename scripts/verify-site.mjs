@@ -49,20 +49,20 @@ try {
 
   for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
     const { page, errors } = await openCheckedPage("/harness", viewport);
-    await page.getByRole("heading", { name: "Design Harness", level: 1 }).waitFor();
+    await page.getByRole("heading", { name: "デザインハーネス", level: 1 }).waitFor();
     const cycleFigure = page.locator(".harness-flow");
-    assert(await cycleFigure.locator(".react-flow__node-layer").count() === 4, "Design Harnessの4層ノードが表示されていません");
+    assert(await cycleFigure.locator(".react-flow__node-layer").count() === 4, "デザインハーネスの4層ノードが表示されていません");
     await cycleFigure.locator(".react-flow__edge").nth(3).waitFor({ state: "attached" });
-    assert(await cycleFigure.locator(".react-flow__edge").count() === 4, "Design Harnessのループの矢印が4本表示されていません");
+    assert(await cycleFigure.locator(".react-flow__edge").count() === 4, "デザインハーネスのループの矢印が4本表示されていません");
     const loopFigure = page.locator(".harness-loop");
-    assert(await loopFigure.locator(".react-flow__node-step").count() === 6, "顧客管理での1周の6ノードが表示されていません");
+    assert(await loopFigure.locator(".react-flow__node-step").count() === 6, "デモ画面の生成サイクルの6ノードが表示されていません");
     await loopFigure.locator(".react-flow__edge").nth(4).waitFor({ state: "attached" });
-    assert(await loopFigure.locator(".react-flow__edge").count() === 5, "顧客管理での1周の矢印が5本表示されていません");
+    assert(await loopFigure.locator(".react-flow__edge").count() === 5, "デモ画面の生成サイクルの矢印が5本表示されていません");
     await page.getByRole("button", { name: "02 コンテキストを渡す層" }).click();
     await page.getByRole("region", { name: "コンテキストを渡す層" }).getByText("DESIGN.md", { exact: true }).waitFor();
     const hasHorizontalOverflow = await page.evaluate(() => globalThis.document.documentElement.scrollWidth > globalThis.innerWidth);
-    assert(!hasHorizontalOverflow, `Design Harnessの説明に横スクロールがあります: ${viewport.width}px`);
-    assert(errors.length === 0, `Design Harnessの説明のブラウザエラー:\n${errors.join("\n")}`);
+    assert(!hasHorizontalOverflow, `デザインハーネスの説明に横スクロールがあります: ${viewport.width}px`);
+    assert(errors.length === 0, `デザインハーネスの説明のブラウザエラー:\n${errors.join("\n")}`);
     await page.close();
   }
 
@@ -93,7 +93,7 @@ try {
   {
     const { page, errors } = await openCheckedPage("/play/account-management?mode=atlas&state=invalid-email", { width: 1440, height: 900 });
     const frame = page.frameLocator("iframe[title='Atlas適用後の顧客管理画面']");
-    const closeTrigger = frame.getByRole("button", { name: "編集画面を閉じる" });
+    const closeTrigger = frame.getByRole("button", { name: "編集を閉じる" });
     await closeTrigger.waitFor();
     const closeBox = await closeTrigger.boundingBox();
     const closeText = (await closeTrigger.textContent())?.trim() ?? "";
@@ -111,7 +111,7 @@ try {
     await page.close();
   }
 
-  console.log("Site browser check OK: Overview, Getting started, Design Harness, Results, Play");
+  console.log("Site browser check OK: Overview, Getting started, デザインハーネス, Results, Play");
 } finally {
   await browser.close();
   await server.close();

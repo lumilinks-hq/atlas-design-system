@@ -1,24 +1,25 @@
-import baselineEvaluation from "../../experiments/account-management/runs/mvp-11/baseline/design-evaluation.json";
-import comparison from "../../experiments/account-management/runs/mvp-11/comparison.json";
-import correctedEvaluation from "../../experiments/account-management/runs/mvp-11/harness-corrected/design-evaluation.json";
-import correctedRun from "../../experiments/account-management/runs/mvp-11/harness-corrected/run.json";
-import harnessEvaluation from "../../experiments/account-management/runs/mvp-11/harness/design-evaluation.json";
-import lint01Baseline from "../../experiments/account-management/runs/lint-01/baseline/design-evaluation.json";
-import lint01Harness from "../../experiments/account-management/runs/lint-01/harness/design-evaluation.json";
-import lint01Run from "../../experiments/account-management/runs/lint-01/harness/run.json";
+import baselineEvaluation from "../../experiments/account-management/runs/lint-01/baseline/design-evaluation.json";
+import comparison from "../../experiments/account-management/runs/lint-01/comparison.json";
+import harnessEvaluation from "../../experiments/account-management/runs/lint-01/harness/design-evaluation.json";
+import harnessRun from "../../experiments/account-management/runs/lint-01/harness/run.json";
+import mvp11CorrectedEvaluation from "../../experiments/account-management/runs/mvp-11/harness-corrected/design-evaluation.json";
+import mvp11HarnessEvaluation from "../../experiments/account-management/runs/mvp-11/harness/design-evaluation.json";
 import prelint01Baseline from "../../experiments/account-management/runs/prelint-01/baseline/design-evaluation.json";
 import prelint01Harness from "../../experiments/account-management/runs/prelint-01/harness/design-evaluation.json";
 import prelint01Run from "../../experiments/account-management/runs/prelint-01/harness/run.json";
 
-export { baselineEvaluation, comparison, correctedEvaluation, correctedRun, harnessEvaluation };
+export { baselineEvaluation, comparison, harnessEvaluation };
 
-export const runEnvironment = correctedRun["environment"];
+// /harness の「デモ画面の生成サイクル」は、修正ループを1周まわした mvp-11 の数字で説明する
+export { mvp11CorrectedEvaluation, mvp11HarnessEvaluation };
+
+export const runEnvironment = harnessRun["environment"];
 
 export type RunEvaluation = typeof baselineEvaluation;
 export type RunCheck = (typeof comparison)["checks"]["baseline"][number];
 
 // 同じモデル（claude-opus-5）で lint 層あり/なしを比べた run。
-// 画面は mvp-11 の物語を使い、この 2 組は数字だけを載せる
+// 上の比較で見せている lint-01 を、ESLint 層を入れる前の prelint-01 と並べる
 
 type RunSummary = { summary: RunEvaluation["summary"] };
 
@@ -42,10 +43,10 @@ export const sameModelRuns: SameModelRun[] = [
   },
   {
     pairId: "lint-01",
-    model: lint01Run["environment"].model,
+    model: harnessRun["environment"].model,
     lintLayer: true,
     note: "ESLint 層を入れた後。harness は生成中に pnpm lint を回して自分で直した",
-    baseline: { summary: lint01Baseline.summary },
-    harness: { summary: lint01Harness.summary },
+    baseline: { summary: baselineEvaluation.summary },
+    harness: { summary: harnessEvaluation.summary },
   },
 ];

@@ -19,8 +19,9 @@ import { designData } from "../data/design";
 import {
   baselineEvaluation,
   comparison,
-  correctedEvaluation,
   harnessEvaluation,
+  mvp11CorrectedEvaluation,
+  mvp11HarnessEvaluation,
   runEnvironment,
   sameModelRuns,
   type RunCheck,
@@ -33,6 +34,20 @@ const cliLabel = runEnvironment.cliVersion;
 const screenshotBase = `/experiments/account-management/runs/${runId}`;
 const resultsPath = "/examples/account-management/results";
 const rules = designData.rules;
+const methodCounts = rules.reduce<Record<string, number>>((counts, rule) => {
+  counts[rule.method] = (counts[rule.method] ?? 0) + 1;
+  return counts;
+}, {});
+const lintCount = methodCounts["lint"] ?? 0;
+const automaticCount = methodCounts["automatic"] ?? 0;
+const aiReviewCount = methodCounts["ai-review"] ?? 0;
+const humanCount = methodCounts["human"] ?? 0;
+// 「Lint 12、自動検証 11」のような内訳を design/rules.json から組み立てる。0件の手段は出さない
+const ruleMethodOrder = ["lint", "automatic", "ai-review", "human"];
+const rulesNote = `ルール${rules.length}件（${ruleMethodOrder
+  .filter((method) => (methodCounts[method] ?? 0) > 0)
+  .map((method) => `${ruleMethodLabels[method] ?? method} ${methodCounts[method]}`)
+  .join("、")}）`;
 
 const statusLabels: Record<string, string> = { passed: "合格", failed: "違反", review: "要確認" };
 const verdictLabels: Record<string, string> = { pass: "問題なし", concern: "懸念あり" };
@@ -94,10 +109,10 @@ const layers = [
     artifacts: [
       { path: "design/tokens.json", note: "色、文字、余白、角丸、影の値" },
       { path: "design/components/*.json", note: "採用部品とvariant・sizeの契約" },
-      { path: "design/rules.json", note: "禁則を含む検証ルール" },
+      { path: "design/rules.json", note: rulesNote },
     ],
     links: [
-      { to: "/foundations", label: "基礎" },
+      { to: "/foundations", label: "デザイントークン" },
       { to: "/components", label: "コンポーネント" },
     ],
     arrow: "設計データを束ねる",
@@ -111,12 +126,12 @@ const layers = [
     artifacts: [
       { path: "DESIGN.md", note: "参照の入口" },
       { path: "design/patterns/*.json", note: "ページレイアウト、余白の取り方" },
-      { path: "design/examples/account-management.json", note: "顧客管理をパターンへ写した利用例" },
+      { path: "design/examples/account-management.json", note: "顧客管理をパターンへ写したサンプル" },
       { path: "skills/atlas-design-system/", note: "AIエージェントが読むSkill。MCPは scripts/mcp/" },
     ],
     links: [
       { to: "/patterns/page-layout", label: "ページレイアウト" },
-      { to: "/examples/account-management", label: "顧客管理" },
+      { to: "/examples/account-management", label: "例：顧客管理" },
       { to: "/getting-started", label: "導入方法" },
     ],
     arrow: "AIが生成する",
@@ -162,27 +177,19 @@ export function HarnessPage() {
   const [selectedLayerId, setSelectedLayerId] = useState<string>(layers[0].id);
   const selectedLayer = layers.find((layer) => layer.id === selectedLayerId) ?? layers[0];
   const selectedArtifacts: readonly LayerArtifact[] = selectedLayer.artifacts;
-  const methodCounts = rules.reduce<Record<string, number>>((counts, rule) => {
-    counts[rule.method] = (counts[rule.method] ?? 0) + 1;
-    return counts;
-  }, {});
-  const lintCount = methodCounts["lint"] ?? 0;
-  const automaticCount = methodCounts["automatic"] ?? 0;
-  const aiReviewCount = methodCounts["ai-review"] ?? 0;
-  const humanCount = methodCounts["human"] ?? 0;
   const loopSteps: LoopStep[] = [
     { id: "issue", number: "01", title: "Issueを渡す" },
     { id: "context", number: "02", title: "制約とコンテキストを渡す" },
     { id: "generate", number: "03", title: "AIが生成する" },
-    { id: "verify", number: "04", title: "検査する", failed: harnessEvaluation.summary.failed },
+    { id: "verify", number: "04", title: "検査する", failed: mvp11HarnessEvaluation.summary.failed },
     { id: "feedback", number: "05", title: "検査結果をVALIDATION.mdとして返す" },
-    { id: "reverify", number: "06", title: "修正版を再検査する", failed: correctedEvaluation.summary.failed },
+    { id: "reverify", number: "06", title: "修正版を再検査する", failed: mvp11CorrectedEvaluation.summary.failed },
   ];
 
   return (
     <article className="doc-page harness-page">
       <PageHeader
-        title="Design Harness"
+        title="デザインハーネス"
         description="AIに渡す制約とコンテキスト、生成後の検証、結果の書き戻しを1つのループにします。"
       />
 
@@ -251,11 +258,19 @@ export function HarnessPage() {
       </section>
 
       <section aria-labelledby="loop-title" className="harness-section">
-        <h2 id="loop-title">顧客管理での1周</h2>
+        <h2 id="loop-title">デモ画面の生成サイクル</h2>
+        <p>
+          修正ループを1周まわした run（mvp-11、GPT-5.4）の違反数で流れを示します。下のリンク先の比較ページは、ESLint 層を入れた後の run（lint-01、Claude Opus 5）を表示します。
+        </p>
         <HarnessLoop steps={loopSteps} />
-        <Link className="harness-cta" to={resultsPath}>
-          生成結果の比較を見る <ArrowRight size={16} aria-hidden="true" />
-        </Link>
+        <div className="harness-cta-row">
+          <Link className="harness-cta" to={resultsPath}>
+            生成結果の比較を見る <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+          <Link className="harness-cta" to="/technical-specifications#design-contract-stack-title">
+            技術仕様（設計契約と検証）を見る <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </div>
       </section>
     </article>
   );
@@ -275,7 +290,7 @@ const conditions = [
   {
     id: "baseline",
     folder: "baseline",
-    title: "Design Harnessなし",
+    title: "ハーネスなし",
     caption: "Issueだけを渡して生成",
     evaluation: baselineEvaluation,
     checks: comparison.checks.baseline,
@@ -285,14 +300,14 @@ const conditions = [
   },
   {
     id: "harness",
-    folder: "harness-corrected",
-    title: "Design Harnessあり",
-    caption: "設計データを渡して生成し、検査結果で修正",
-    evaluation: correctedEvaluation,
-    checks: comparison.checks.corrected,
+    folder: "harness",
+    title: "ハーネスあり",
+    caption: "設計データを渡して生成",
+    evaluation: harnessEvaluation,
+    checks: comparison.checks.harness,
     playMode: "atlas",
     playLabel: "Atlas適用後の画面を操作する",
-    note: `初回生成の検査は ${harnessEvaluation.summary.failed} 違反、${harnessEvaluation.summary.review} 要確認でした。検査結果をVALIDATION.mdとして返し、AIが修正した版（harness-corrected）を表示しています。`,
+    note: "ESLint 層を含む設計データを渡し、生成中に pnpm lint で自分で直した初回生成です。人もAIも、あとから修正ループは回していません。",
   },
 ];
 
@@ -306,7 +321,7 @@ export function ResultsPage() {
     <article className="doc-page results-page">
       <PageHeader
         title="生成結果の比較"
-        description="同じIssueから、Design Harnessなし／ありでAIが生成した顧客管理画面です。保存済みRunの画面と検査結果だけを表示し、閲覧時にAIは動きません。"
+        description="同じIssueから、ハーネスなし／ありでAIが生成した顧客管理画面です。保存済みRunの画面と検査結果だけを表示し、閲覧時にAIは動きません。"
       />
 
       <ul className="run-strip" aria-label="Runの情報">
@@ -407,15 +422,15 @@ export function ResultsPage() {
               <tr>
                 <th scope="col">ルール</th>
                 <th scope="col">確認方法</th>
-                <th scope="col">Design Harnessなし</th>
-                <th scope="col">Design Harnessあり</th>
+                <th scope="col">ハーネスなし</th>
+                <th scope="col">ハーネスあり</th>
               </tr>
             </thead>
             <tbody>
               {rules.map((rule) => {
                 const cells = [
                   { evaluation: baselineEvaluation, key: "baseline" },
-                  { evaluation: correctedEvaluation, key: "harness" },
+                  { evaluation: harnessEvaluation, key: "harness" },
                 ];
                 return (
                   <tr key={rule.id}>
@@ -487,8 +502,8 @@ export function ResultsPage() {
         <div className="section-heading">
           <h2 id="same-model-title">同じモデルでの比較</h2>
           <p>
-            上の比較は生成 CLI と修正ループを含みます。ここでは同じモデル（{sameModelRuns[0]?.model}）で、ESLint 層を入れる前と後に 1 回ずつ生成した結果を、
-            修正なしの初回のまま並べます。各条件 1 run なので傾向を見るための数字で、統計的な差ではありません。
+            上の比較で見せている lint-01 の初回生成を、ESLint 層を入れる前の prelint-01 と並べます。同じモデル（{sameModelRuns[0]?.model}）で、
+            ESLint 層を入れる前と後に 1 回ずつ生成した結果です。各条件 1 run なので傾向を見るための数字で、統計的な差ではありません。
             評価器は App.tsx から import で辿れるファイルをまとめて検査するので、画面を複数ファイルに分けた run も同じ基準で数えています。
           </p>
         </div>
@@ -512,7 +527,7 @@ export function ResultsPage() {
                       <span className="compare-rule-title">{run.pairId}</span>
                       <code>{run.model}</code>
                     </th>
-                    <td>{condition === "baseline" ? "Design Harnessなし" : "Design Harnessあり"}</td>
+                    <td>{condition === "baseline" ? "ハーネスなし" : "ハーネスあり"}</td>
                     <td>{condition === "harness" && run.lintLayer ? "あり" : "なし"}</td>
                     <td>{run[condition].summary.passed}</td>
                     <td>{run[condition].summary.failed}</td>
@@ -532,7 +547,7 @@ export function ResultsPage() {
 
       <p className="compare-back">
         <Link to="/harness">
-          Design Harnessの仕組みへ戻る <ArrowRight size={14} aria-hidden="true" />
+          デザインハーネスの仕組みへ戻る <ArrowRight size={14} aria-hidden="true" />
         </Link>
       </p>
     </article>
