@@ -42,7 +42,7 @@ try {
     const { page, errors } = await openCheckedPage("/getting-started", { width: 1440, height: 900 });
     await page.getByRole("heading", { name: "導入方法", level: 1 }).waitFor();
     assert(await page.getByRole("button", { name: /導入コマンドをコピー/ }).count() === 5, "導入コマンドのコピー操作が5件揃っていません");
-    assert(await page.locator(".setup-card").count() === 3, "導入方法が縦3件で表示されていません");
+    assert(await page.locator(".setup-grid .setup-card").count() === 3, "導入方法が縦3件で表示されていません");
     assert(errors.length === 0, `導入方法のブラウザエラー:\n${errors.join("\n")}`);
     await page.close();
   }
@@ -95,6 +95,45 @@ try {
     await page.close();
   }
 
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    const { page, errors } = await openCheckedPage("/examples/invoice-management/results", viewport);
+    await page.getByRole("heading", { name: "生成結果の比較", level: 1 }).waitFor();
+    await page.getByRole("button", { name: "詳細（モバイル）" }).click();
+    await page.waitForFunction(() => {
+      const images = Array.from(globalThis.document.querySelectorAll(".compare-figure img"));
+      return (
+        images.length === 2 &&
+        images.every(
+          (image) =>
+            image.complete &&
+            image.naturalWidth > 0 &&
+            (image.getAttribute("src") ?? "").startsWith("/experiments/invoice-management/") &&
+            (image.getAttribute("src") ?? "").endsWith("-detail-mobile.png"),
+        )
+      );
+    });
+    const hasHorizontalOverflow = await page.evaluate(() => globalThis.document.documentElement.scrollWidth > globalThis.innerWidth);
+    assert(!hasHorizontalOverflow, `請求書管理の比較に横スクロールがあります: ${viewport.width}px`);
+    assert(errors.length === 0, `請求書管理の比較のブラウザエラー:\n${errors.join("\n")}`);
+    await page.close();
+  }
+
+  {
+    const { page, errors } = await openCheckedPage("/examples/account-management/results", { width: 1440, height: 900 });
+    const subjects = page.getByRole("group", { name: "比較する題材" });
+    await subjects.getByRole("button", { name: "請求書管理" }).click();
+    await page.waitForURL(/\/examples\/invoice-management\/results$/);
+    await page.waitForFunction(() => {
+      const image = globalThis.document.querySelector(".compare-figure img");
+      return Boolean(image) && (image.getAttribute("src") ?? "").startsWith("/experiments/invoice-management/");
+    });
+    const activeItems = page.locator(".nav-item-active");
+    assert(await activeItems.count() === 1, "比較ページで選択中のナビ項目が1件になっていません");
+    assert((await activeItems.first().textContent())?.trim() === "生成結果の比較", "比較ページで選択中のナビ項目が違います");
+    assert(errors.length === 0, `題材の切り替えのブラウザエラー:\n${errors.join("\n")}`);
+    await page.close();
+  }
+
   {
     const { page } = await openCheckedPage("/demo/runs/account-management?scene=issue", { width: 1440, height: 900 });
     await page.waitForURL(/\/examples\/account-management\/results$/);
@@ -119,6 +158,27 @@ try {
     assert(
       baselineFrameSrc === "/play-baseline.html#/customers/customer_northstar?state=invalid-email",
       `比較条件の切替で状態が維持されていません: ${baselineFrameSrc}`,
+    );
+    await page.close();
+  }
+
+  {
+    const { page, errors } = await openCheckedPage("/play/invoice-management?mode=atlas&state=invalid-due-date", { width: 1440, height: 900 });
+    const frame = page.frameLocator("iframe[title='Atlas適用後の請求書管理画面']");
+    const closeTrigger = frame.getByRole("button", { name: "編集を閉じる" });
+    await closeTrigger.waitFor();
+    const closeBox = await closeTrigger.boundingBox();
+    const closeText = (await closeTrigger.textContent())?.trim() ?? "";
+    assert(Boolean(closeBox) && closeText === "" && closeBox.width >= 24 && closeBox.width <= 48, "請求書Drawerの閉じる操作が崩れています");
+    await frame.getByText("支払期限を入力してください。").waitFor();
+    assert(errors.length === 0, `Atlas請求書操作画面のブラウザエラー:\n${errors.join("\n")}`);
+    await page.getByRole("button", { name: "設計指示なし" }).click();
+    await page.waitForURL(/mode=baseline&state=invalid-due-date/);
+    await page.locator("iframe[title='設計指示なしの請求書管理画面']").waitFor();
+    const baselineFrameSrc = await page.locator("iframe").getAttribute("src");
+    assert(
+      baselineFrameSrc === "/play-invoice-baseline.html#/invoices/invoice_2026_0142?state=invalid-due-date",
+      `請求書の比較条件の切替で状態が維持されていません: ${baselineFrameSrc}`,
     );
     await page.close();
   }

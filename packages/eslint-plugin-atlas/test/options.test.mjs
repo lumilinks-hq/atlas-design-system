@@ -17,10 +17,13 @@ const invoiceLinkSemantics = {
   navigationTextPattern: "invoice\\.invoiceNumber|請求書を確認",
 };
 
+// 判定語以外の必須キーは各テストの関心外なので、明示しない限り請求書側の値で埋める
+const invoiceLintDefaults = { requiredInputType: "date", irreversibleActionPattern: "無効化|voidInvoice" };
+
 function optionsForLint(lint) {
   const example = { ...accountExample };
   if (lint === undefined) delete example.lint;
-  else example.lint = lint;
+  else example.lint = { ...invoiceLintDefaults, ...lint };
   const path = resolve(mkdtempSync(resolve(tmpdir(), "atlas-options-")), "example.json");
   writeFileSync(path, `${JSON.stringify(example, null, 2)}\n`);
   return buildAtlasLintOptions({ componentsDir, examplePath: path });
@@ -66,6 +69,23 @@ describe("buildAtlasLintOptions", () => {
     expect(() => optionsForLint({ linkSemantics: { objectNameExpression: "invoice.id" } })).toThrow("backLinkPattern");
   });
 
+  it("requiredInputTypeとirreversibleActionPatternをexampleのlintから読む", () => {
+    const options = optionsForLint({
+      linkSemantics: invoiceLinkSemantics,
+      requiredInputType: "date",
+      irreversibleActionPattern: "無効化|voidInvoice",
+    });
+
+    expect(options.requiredInputType).toBe("date");
+    expect(options.irreversibleActionPattern).toBe("無効化|voidInvoice");
+  });
+
+  it("requiredInputTypeとirreversibleActionPatternが欠けたらthrowする", () => {
+    const base = { linkSemantics: invoiceLinkSemantics, ...invoiceLintDefaults };
+    expect(() => optionsForLint({ ...base, requiredInputType: undefined })).toThrow("lint.requiredInputType");
+    expect(() => optionsForLint({ ...base, irreversibleActionPattern: undefined })).toThrow("lint.irreversibleActionPattern");
+  });
+
   it("顧客管理のexampleから現行と同じoptionsを組む", () => {
     const options = buildAtlasLintOptions({ componentsDir, examplePath: accountExamplePath });
 
@@ -84,5 +104,7 @@ describe("buildAtlasLintOptions", () => {
       mobileListClass: "collection-list-mobile",
       navigationTextPattern: "customer\\.companyName|顧客を確認|顧客一覧(?:へ|に)戻る",
     });
+    expect(options.requiredInputType).toBe("email");
+    expect(options.irreversibleActionPattern).toBe("削除|delete|remove");
   });
 });

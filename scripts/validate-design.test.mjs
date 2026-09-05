@@ -81,10 +81,12 @@ describe("契約のversion", () => {
 
   it("既存のpatternとexampleの契約がversionを持つ", async () => {
     const patterns = (await readdir(resolve(designDir, "patterns"))).filter((file) => file.endsWith(".json"));
+    const examples = (await readdir(resolve(designDir, "examples"))).filter((file) => file.endsWith(".json"));
     expect(patterns.length).toBeGreaterThan(0);
+    expect(examples.length).toBeGreaterThan(0);
     const files = [
       ...patterns.map((file) => `design/patterns/${file}`),
-      "design/examples/account-management.json",
+      ...examples.map((file) => `design/examples/${file}`),
     ];
     for (const file of files) {
       expect((await readJson(file)).version, file).toMatch(semver);

@@ -125,8 +125,9 @@ function buildEvaluationContext(experiment) {
     layoutAnchors,
     expectedTableUsage: tableUsage,
     expectedBackNavigationUsage: backNavigationUsage,
-    // 必須入力にする列は Table 契約の行見出し列
-    requiredFieldName: rowHeaderColumn.id,
+    // 必須入力にするフィールド。既定は Table 契約の行見出し列だが、
+    // 行見出しが編集対象でない題材は example の evaluation で上書きする
+    requiredFieldName: hints.requiredFieldName ?? rowHeaderColumn.id,
     // 証跡に出す業務上の呼び名。列見出しラベルとは別の語になりうるので example から取る
     requiredFieldLabel: hints.requiredFieldLabel,
     searchAriaLabel: toolbarUsage.search.ariaLabel,

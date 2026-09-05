@@ -286,7 +286,7 @@ TableはHeroUIの`primary` variantを標準とする。背景、角丸、影はT
 
 検索、並び替え、絞り込みなど同じ一覧へ作用する操作は、Tableと同じCollectionRegionのToolbarへまとめる。検索にはTextFieldではなくHeroUI SearchFieldを使い、`SearchField.Group`内にSearchIcon、Input、ClearButtonを置く。Issueにない操作は見た目だけ追加しない。
 
-デスクトップではToolbarルートを`width: 100%; display: flex; justify-content: flex-end`としてSearchFieldを末尾側へ置き、顧客一覧の標準幅は16remとする。子要素の`margin-inline-start: auto`だけで末尾揃えを代用しない。狭幅ではSearchFieldも100%幅へ積み替える。ToolbarとTableの間は`space.3`、ページ見出しからCollectionRegionまでは`space.6`を使う。
+デスクトップではToolbarルートを`width: 100%; display: flex; justify-content: flex-end`としてSearchFieldを末尾側へ置き、一覧の標準幅は16remとする。子要素の`margin-inline-start: auto`だけで末尾揃えを代用しない。狭幅ではSearchFieldも100%幅へ積み替える。ToolbarとTableの間は`space.3`、ページ見出しからCollectionRegionまでは`space.6`を使う。
 
 #### 複合部品 Rule
 

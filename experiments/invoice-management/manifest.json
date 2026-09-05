@@ -1,0 +1,47 @@
+{
+  "$schema": "../../design/schemas/experiment.schema.json",
+  "id": "experiment.invoice-management",
+  "title": "請求書管理",
+  "brief": "./brief.md",
+  "starter": "./starter",
+  "conditions": {
+    "baseline": {
+      "includesDesignContract": false,
+      "agentSkills": []
+    },
+    "harness": {
+      "includesDesignContract": true,
+      "agentSkills": ["atlas-design-system", "heroui-react", "ui-writing"]
+    }
+  },
+  "designRefs": {
+    "patterns": [
+      "pattern.page-layout#collection-table",
+      "pattern.page-layout#single-one-column",
+      "pattern.spacing-layout#page-content",
+      "pattern.spacing-layout#dialog-content",
+      "pattern.visual-grouping#surface-group",
+      "pattern.mobile-layout#responsive-collection"
+    ],
+    "examples": ["example.invoice-management"]
+  },
+  "screens": [
+    {
+      "id": "collection",
+      "route": "/invoices",
+      "pattern": "pattern.page-layout#collection-table"
+    },
+    {
+      "id": "detail",
+      "route": "/invoices/:invoiceId",
+      "pattern": "pattern.page-layout#single-one-column",
+      "sampleParams": { "invoiceId": "invoice_2026_0142" },
+      "overlays": [
+        { "id": "edit-drawer", "component": "component.drawer", "pattern": "pattern.spacing-layout#dialog-content" },
+        { "id": "void-confirm", "component": "component.alert-dialog", "pattern": "pattern.spacing-layout#dialog-content" }
+      ]
+    }
+  ],
+  "requiredStates": ["default", "empty", "drawer-open", "invalid-due-date", "loading", "success", "failure", "void-confirm"],
+  "checks": ["build", "typecheck", "test", "design-rules", "accessibility", "responsive"]
+}

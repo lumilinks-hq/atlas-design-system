@@ -22,6 +22,8 @@ export default defineConfig({
         main: fileURLToPath(new URL("./index.html", import.meta.url)),
         "play-atlas": fileURLToPath(new URL("./play-atlas.html", import.meta.url)),
         "play-baseline": fileURLToPath(new URL("./play-baseline.html", import.meta.url)),
+        "play-invoice-atlas": fileURLToPath(new URL("./play-invoice-atlas.html", import.meta.url)),
+        "play-invoice-baseline": fileURLToPath(new URL("./play-invoice-baseline.html", import.meta.url)),
       },
       output: {
         // React本体を共有チャンクから外さないと、HeroUIと同居した1チャンクが単体予算(gzip 150KiB)を超える

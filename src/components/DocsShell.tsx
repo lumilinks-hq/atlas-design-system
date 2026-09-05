@@ -4,7 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { repositoryUrl } from "../data/repository";
 
-const navigation = [
+/** alsoActiveOn: そのパスでも同じ項目を選択中として扱う。比較ページは題材を切り替えても1項目のまま */
+type NavItem = { label: string; to: string; alsoActiveOn?: string[] };
+
+const navigation: Array<{ label: string; items: NavItem[] }> = [
   {
     label: "はじめに",
     items: [
@@ -35,7 +38,12 @@ const navigation = [
     label: "サンプル",
     items: [
       { label: "例：顧客管理", to: "/examples/account-management" },
-      { label: "生成結果の比較", to: "/examples/account-management/results" },
+      { label: "例：請求書管理", to: "/examples/invoice-management" },
+      {
+        label: "生成結果の比較",
+        to: "/examples/account-management/results",
+        alsoActiveOn: ["/examples/invoice-management/results"],
+      },
     ],
   },
 ];
@@ -69,6 +77,8 @@ export function DocsShell() {
       "/patterns/mobile-layout": "モバイルレイアウト — Atlas Design System",
       "/examples/account-management": "例：顧客管理 — Atlas Design System",
       "/examples/account-management/results": "生成結果の比較 — Atlas Design System",
+      "/examples/invoice-management": "例：請求書管理 — Atlas Design System",
+      "/examples/invoice-management/results": "生成結果の比較 — Atlas Design System",
       "/rules": "検証ルール — Atlas Design System",
     };
     document.title = titles[location.pathname] ?? "Atlas Design System";
@@ -114,7 +124,9 @@ export function DocsShell() {
               <p className="nav-label">{group.label}</p>
               {group.items.map((item) => (
                 <NavLink
-                  className={({ isActive }) => (isActive ? "nav-item nav-item-active" : "nav-item")}
+                  className={({ isActive }) =>
+                    isActive || item.alsoActiveOn?.includes(location.pathname) ? "nav-item nav-item-active" : "nav-item"
+                  }
                   end
                   key={item.to}
                   onClick={() => setMenuOpen(false)}

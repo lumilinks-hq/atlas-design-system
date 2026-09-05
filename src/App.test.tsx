@@ -15,6 +15,7 @@ import { mainFiles } from "./pages/DocsPages";
 import {
   baselineEvaluation,
   comparison,
+  experimentRuns,
   harnessEvaluation,
   runEnvironment,
   sameModelRuns,
@@ -530,5 +531,80 @@ describe("Atlas Design System demo", () => {
     const active = document.querySelectorAll(".nav-item-active");
     expect(active).toHaveLength(1);
     expect(active[0]).toHaveTextContent("生成結果の比較");
+  });
+  it("publishes the invoice example as its own design contract page", () => {
+    render(<MemoryRouter initialEntries={["/examples/invoice-management"]}><App /></MemoryRouter>);
+
+    expect(screen.getByRole("heading", { level: 1, name: "請求書管理" })).toBeInTheDocument();
+    const data = screen.getByRole("region", { name: "参照する設計データ" });
+    expect(within(data).getByRole("link", { name: "design/examples/invoice-management.json" })).toHaveAttribute(
+      "href",
+      `${repositoryUrl}/blob/main/design/examples/invoice-management.json`,
+    );
+    expect(screen.getByRole("button", { name: "生成された画面を操作する" })).toBeInTheDocument();
+  });
+
+  it("links both examples from the sidebar", () => {
+    render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
+
+    expect(screen.getByRole("link", { name: "例：顧客管理" })).toHaveAttribute("href", "/examples/account-management");
+    expect(screen.getByRole("link", { name: "例：請求書管理" })).toHaveAttribute("href", "/examples/invoice-management");
+    expect(screen.getAllByRole("link", { name: "生成結果の比較" })).toHaveLength(1);
+  });
+
+  it("compares the invoice run on its own results route", () => {
+    const invoice = experimentRuns["invoice-management"];
+    render(<MemoryRouter initialEntries={["/examples/invoice-management/results"]}><App /></MemoryRouter>);
+
+    expect(screen.getByRole("heading", { level: 1, name: "生成結果の比較" })).toBeInTheDocument();
+    expect(screen.getByText(`Run ${invoice.pairId}`)).toBeInTheDocument();
+    expect(screen.getByRole("article", { name: "ハーネスあり" })).toHaveTextContent(
+      `${invoice.harnessEvaluation.summary.passed} 合格`,
+    );
+    expect(screen.getByAltText("ハーネスなしで生成した請求書管理画面（一覧）")).toHaveAttribute(
+      "src",
+      "/experiments/invoice-management/runs/invoice-01/baseline.png",
+    );
+    expect(screen.getByAltText("ハーネスありで生成した請求書管理画面（一覧）")).toHaveAttribute(
+      "src",
+      "/experiments/invoice-management/runs/invoice-01/harness.png",
+    );
+    // 同じモデルでの比較は account-management だけが持つ。題材ごとに出し分ける
+    expect(screen.queryByRole("table", { name: "同じモデルでの比較" })).not.toBeInTheDocument();
+  });
+
+  it("switches the compared subject between the saved experiments", async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter initialEntries={["/examples/account-management/results"]}><App /></MemoryRouter>);
+
+    const subjects = screen.getByRole("group", { name: "比較する題材" });
+    expect(within(subjects).getByRole("button", { name: "顧客管理" })).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(within(subjects).getByRole("button", { name: "請求書管理" }));
+
+    expect(screen.getByAltText("ハーネスなしで生成した請求書管理画面（一覧）")).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "比較する題材" })).toBeInTheDocument();
+  });
+
+  it("keeps one sidebar item active on the invoice results route", () => {
+    render(<MemoryRouter initialEntries={["/examples/invoice-management/results"]}><App /></MemoryRouter>);
+    const active = document.querySelectorAll(".nav-item-active");
+    expect(active).toHaveLength(1);
+    expect(active[0]).toHaveTextContent("生成結果の比較");
+  });
+
+  it("switches the interactive invoice implementation between Atlas and baseline", async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter initialEntries={["/play/invoice-management?mode=atlas&state=invalid-due-date"]}><App /></MemoryRouter>);
+
+    expect(screen.getByTitle("Atlas適用後の請求書管理画面")).toHaveAttribute(
+      "src",
+      "/play-invoice-atlas.html#/invoices/invoice_2026_0142?state=invalid-due-date",
+    );
+    await user.click(screen.getByRole("button", { name: "設計指示なし" }));
+    expect(screen.getByTitle("設計指示なしの請求書管理画面")).toHaveAttribute(
+      "src",
+      "/play-invoice-baseline.html#/invoices/invoice_2026_0142?state=invalid-due-date",
+    );
   });
 });

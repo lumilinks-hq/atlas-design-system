@@ -31,8 +31,10 @@ import {
   createAccountManagementTableCodeExample,
   designData,
   type AccountManagementTableColumnId,
+  type ExampleSlug,
   type PatternSlug,
 } from "../data/design";
+import { experimentRuns } from "../data/runs";
 
 const docsToastQueue = new Toast.Queue({
   // HeroUI's default queue starts a document-wide View Transition. Keep the
@@ -1430,11 +1432,14 @@ function ruleContractTitle(ruleId: string) {
   return designData.rules.find((rule) => rule.id === ruleId)?.title ?? ruleId;
 }
 
-// 顧客管理サンプルが参照する設計データ。GitHub の原本へリンクする
-const exampleDataFiles = ["design/examples/account-management.json", "design/patterns/page-layout.json", "design/rules.json"] as const;
+// サンプルが参照する設計データ。GitHub の原本へリンクする
+function exampleDataFiles(slug: ExampleSlug) {
+  return [`design/examples/${slug}.json`, "design/patterns/page-layout.json", "design/rules.json"];
+}
 
-export function ExamplePage() {
-  const { example, pattern } = designData;
+export function ExamplePage({ slug }: { slug: ExampleSlug }) {
+  const { pattern } = designData;
+  const example = designData.examples[slug];
   const navigate = useNavigate();
   const variant = pattern.variants.find((item) => item.id === example.variant);
   const detailVariant = pattern.variants.find((item) => item.id === "single-one-column");
@@ -1471,7 +1476,7 @@ export function ExamplePage() {
           <section className="site-card contract-card" aria-labelledby="example-data-title">
             <h3 id="example-data-title">参照する設計データ</h3>
             <ul className="example-data-list">
-              {exampleDataFiles.map((path) => (
+              {exampleDataFiles(slug).map((path) => (
                 <li key={path}>
                   <a className="artifact-source" href={artifactSourceHref(path)} target="_blank" rel="noreferrer">
                     <code>{path}</code>
@@ -1494,7 +1499,7 @@ export function ExamplePage() {
               <tr><th scope="row">サンプル</th><td><code>{example.id}</code></td></tr>
             </tbody>
           </table>
-          <Button variant="primary" onPress={() => navigate("/play/account-management?mode=atlas")}>生成された画面を操作する <ArrowRight size={16} /></Button>
+          <Button variant="primary" onPress={() => navigate(`${experimentRuns[slug].playPath}?mode=atlas`)}>生成された画面を操作する <ArrowRight size={16} /></Button>
         </div>
       </section>
     </article>

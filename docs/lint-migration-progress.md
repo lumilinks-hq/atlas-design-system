@@ -129,3 +129,46 @@ JSX 内 raw color、jsx-a11y、manifest 駆動ルール(customer-routes / custom
 - `--dry-run` でも `experiments/<name>/runs/<pair>/<mode>/run.json` は書かれる（Phase 2 以前からの挙動）。検証で作った pair は消すこと
 - Table の列ラベルは「企業名」、brief と rules は「会社名」で以前から食い違っている。今回は触っていない
 - 保存済み Run（mvp-11 / lint-01 / prelint-01）は experiment 階層が無い頃のもので、workspace の形が今と違う
+
+## 2026-09-05 請求書管理の実験と公開（Phase 3）
+
+2 題材目として `invoice-management` を追加し、保存済み Run と公開ページまで通した。設計データと評価器は Phase 2 で題材非依存にしてあるので、コードの分岐は増やさず契約とサイトの登録簿だけで足りた。
+
+### 追加した契約と実験定義
+- `design/examples/invoice-management.json`（一覧 5 列、状態 8 件、`lint` と `evaluation` を含む）と `experiments/invoice-management/{manifest.json, brief.md, prompt.md, starter/}`
+- 一覧の列は 請求書番号（`isRowHeader`）/ 顧客名 / 発行日 / 金額 / ステータス。ステータスは 下書き・送付済み・入金済み・期限超過
+- 顧客名と会社名はすべて架空。実在する企業名・人名は使っていない
+- ルート は `/invoices` と `/invoices/:invoiceId`（HashRouter）。`sampleParams` の請求書 ID は架空の `invoice_2026_0142`
+
+### invoice-01 の結果（2026-09-05、claude-opus-5、Claude Code 2.1.261）
+
+| | baseline | harness |
+| --- | --- | --- |
+| status | completed | completed |
+| typecheck / lint / test / build | すべて passed | すべて passed |
+| 設計ルール | 合格 11 / 違反 12 / 要確認 5 | 合格 22 / 違反 1 / 要確認 5 |
+| 費用 (USD) | 5.69 | 10.21 |
+| 所要 (ms) | 1031164 | 1753682 |
+| ターン数 | 60 | 105 |
+
+- 費用は `events.jsonl` 末尾の `result` イベントの `total_cost_usd`。`run.json` に usage 欄は無い。`experiment:review` の AI レビュー呼び出しの費用はどこにも記録されない
+- harness の唯一の違反は `component.table.columns`。account-management の mvp-11 harness も同じルールを同じ形の証跡で落としており、Phase 3 の退行ではなく評価器側の限界
+- 隔離チェックは baseline / harness とも `repoPathMentions` 0。harness の `markerMentions.evaluate-experiment` 4 は `packages/eslint-plugin-atlas/src/index.mjs` のコメント（「評価器(scripts/evaluate-experiment.mjs)がこれを使う」）が plugin の tgz ごと workspace へ入るためで、評価器そのものは渡っていない
+- パイプラインは `docs/EXPERIMENTS.md` の順で measure → evaluate → capture → review → compare → sanitize。`harness-corrected` と `refine` は 3 本目の有料 run になるので回していない
+
+### サイト統合
+- `src/data/runs.ts` を題材ごとの登録簿 `experimentRuns` に作り替えた。表示名・パス・スクリーンショット置き場・評価・比較を 1 エントリにまとめ、比較ページ / サンプルページ / Play ページはすべてここから引く。既存の名前（`comparison` など）は account-management のエイリアスとして残した
+- 比較ページ（`/examples/<slug>/results`）に「比較する題材」の切り替えを追加。「同じモデルでの比較」は `sameModelRuns` を持つ題材だけに出す
+- サンプルナビに「例：請求書管理」を追加。「生成結果の比較」は 1 項目のままにして、`alsoActiveOn` で請求書の結果ページでも選択中として扱う
+- `play-invoice-atlas.html` / `play-invoice-baseline.html` と `src/play/invoice-{atlas,baseline}.tsx` を追加し、vite の入力に登録。`PlayPage` は題材ごとに状態一覧と HTML 入口を持つ
+- `bundle:check` は 17 assets / 16 MiB で通った。請求書 baseline の CSS は account baseline と内容が同じでハッシュが重なり、1 ファイルに畳まれている
+
+### 検証
+- `pnpm demo:check` 緑（design:check / theme:check / design:conformance / runs:check / skills:check / public:audit / links:check / typecheck / lint / test:run / build / bundle:check）
+- `pnpm test:run` → 31 files / 350 tests 緑
+- `pnpm test:e2e` 緑。請求書の比較ページ、題材の切り替え、`/play/invoice-management` の Drawer とエラー表示を追加した
+
+### 残る限界
+- `pnpm public:audit --experiment invoice-management --pair invoice-01` は落ちる。`listRequiredArtifacts` が `harness-corrected/design-evaluation.json` を必須にしているが、invoice-01 は harness-corrected を回していない。`demo:check` が呼ぶ既定の `public:audit` は通る
+- `design:conformance` の既定は account-management / mvp-11 のままで、請求書は対象外
+- `scripts/verify-site.mjs` の「導入方法が縦3件」の判定が `.setup-card` を全ページから数えており、MCP クライアントのカード 2 枚を足した時点から 5 件になって落ちていた（Phase 3 以前からの壊れ）。`.setup-grid .setup-card` に絞って直した

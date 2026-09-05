@@ -35,6 +35,11 @@
       "type": "object",
       "required": ["requiredFieldLabel", "statusValues", "toolbarAriaLabel", "screenComponents", "readModels"],
       "properties": {
+        "requiredFieldName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "必須入力にするフィールドの識別子。省略するとTable契約の行見出し列を使う。行見出し列が編集対象でない題材ではここで指定する"
+        },
         "requiredFieldLabel": {
           "type": "string",
           "minLength": 1,
@@ -67,9 +72,19 @@
     },
     "lintOptions": {
       "type": "object",
-      "required": ["linkSemantics"],
+      "required": ["linkSemantics", "requiredInputType", "irreversibleActionPattern"],
       "properties": {
         "forbiddenText": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "requiredInputType": {
+          "type": "string",
+          "minLength": 1,
+          "description": "必須入力に求めるinputのtype属性。ブラウザに形式検証させる項目が題材ごとに違うのでexampleが持つ"
+        },
+        "irreversibleActionPattern": {
+          "type": "string",
+          "minLength": 1,
+          "description": "取り消せない操作を画面ソースから見つける正規表現。この語が無い画面には確認ダイアログを求めない"
+        },
         "linkSemantics": {
           "type": "object",
           "required": ["objectNameExpression", "backLinkPattern"],
@@ -122,8 +137,8 @@
       "type": "object",
       "required": ["purpose", "state", "trigger", "confirm", "cancel", "content", "onSuccess", "onFailure"],
       "properties": {
-        "purpose": { "const": "delete-confirmation" },
-        "state": { "const": "delete-confirm" },
+        "purpose": { "type": "string", "minLength": 1, "description": "確認ダイアログが守る操作の種類。取り消せない操作の呼び名は題材ごとに変わる" },
+        "state": { "type": "string", "minLength": 1, "description": "確認ダイアログを開いた状態の名前。manifestのrequiredStatesと揃える" },
         "trigger": {
           "type": "object",
           "required": ["component", "variant", "label", "placement"],

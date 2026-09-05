@@ -1,0 +1,133 @@
+{
+  "pairId": "invoice-01",
+  "experimentId": "experiment.invoice-management",
+  "conditionsMatch": true,
+  "blindOrder": {
+    "A": "harness",
+    "B": "baseline"
+  },
+  "reveal": {
+    "baseline": "invoice-01-baseline",
+    "harness": "invoice-01-harness"
+  },
+  "checks": {
+    "baseline": [
+      {
+        "name": "typecheck",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "lint",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "test",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "build",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "design-rules",
+        "status": "failed",
+        "exitCode": 1
+      }
+    ],
+    "harness": [
+      {
+        "name": "typecheck",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "lint",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "test",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "build",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "design-rules",
+        "status": "failed",
+        "exitCode": 1
+      }
+    ]
+  },
+  "review": {
+    "baseline": {
+      "reviewedAt": "2026-09-05T04:31:59.093Z",
+      "model": "claude-opus-5",
+      "findings": [
+        {
+          "ruleId": "a11y.control-name",
+          "verdict": "pass",
+          "note": "詳細画面の操作は「請求書一覧へ戻る」「編集」「無効化」といずれも文字ラベルを持ち、一覧の行も請求書番号のテキストが操作対象になっている。アイコンだけの操作要素は4枚のいずれにも見当たらない。"
+        },
+        {
+          "ruleId": "a11y.error-recovery",
+          "verdict": "concern",
+          "note": "一覧・詳細ともエラー表示の領域が見当たらず、「期限超過」バッジも状態表示だけで何が起きたかや次の操作の案内がない。失敗時に何をすればよいかが画面上から読み取れない。"
+        },
+        {
+          "ruleId": "a11y.color-only",
+          "verdict": "concern",
+          "note": "デスクトップでは「送付済み」「入金済み」「期限超過」「下書き」と状態名が文字で併記されているが、モバイル一覧ではステータス列が右端で見切れて色の帯だけが残り、文字が読めない状態になっている。"
+        },
+        {
+          "ruleId": "state.failure",
+          "verdict": "concern",
+          "note": "「編集」「無効化」の実行後に失敗を表示する領域や再試行の導線が画面上に確認できず、失敗情報が画面に残る作りになっているか判断できない。"
+        },
+        {
+          "ruleId": "color.semantic",
+          "verdict": "pass",
+          "note": "危険色（赤系）が使われているのは詳細画面の「無効化」ボタンのみで、「編集」や「請求書一覧へ戻る」といった通常操作は通常色のままになっている。"
+        }
+      ]
+    },
+    "harness": {
+      "reviewedAt": "2026-09-05T04:32:27.002Z",
+      "model": "claude-opus-5",
+      "findings": [
+        {
+          "ruleId": "a11y.control-name",
+          "verdict": "pass",
+          "note": "詳細の「請求書を編集」「請求書を無効化」「請求書一覧へ戻る」、一覧の「請求書を確認」はいずれも可視テキストを持ち、アイコン単独の操作要素は見当たりません。検索欄の虫眼鏡は装飾で、入力欄には「請求書番号で検索」のプレースホルダが表示されています。"
+        },
+        {
+          "ruleId": "a11y.color-only",
+          "verdict": "pass",
+          "note": "ステータスは「送付済み」「入金済み」「期限超過」「下書き」と文字ラベル付きのバッジで示され、色は補助的に使われています。デスクトップ・モバイルの一覧と詳細のいずれでも文字が併記されています。"
+        },
+        {
+          "ruleId": "color.semantic",
+          "verdict": "pass",
+          "note": "危険色は破壊的操作である「請求書を無効化」だけに使われ、通常操作の「請求書を編集」は紺のプライマリ、「請求書を確認」は無色のテキストボタンです。"
+        },
+        {
+          "ruleId": "a11y.error-recovery",
+          "verdict": "concern",
+          "note": "4枚のいずれにもエラー表示の領域がなく、検索が0件のときや無効化・編集が失敗したときに何が起きたかと次の操作を示す場所を画面上で確認できません。"
+        },
+        {
+          "ruleId": "state.failure",
+          "verdict": "concern",
+          "note": "「請求書を無効化」「請求書を編集」の失敗後に再試行できる導線が画面内に見当たらず、失敗情報が消えるToastのみで扱われていないかを画面から確かめられません。"
+        }
+      ]
+    }
+  }
+}

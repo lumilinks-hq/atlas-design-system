@@ -4,7 +4,8 @@ import pattern from "../../design/patterns/page-layout.json";
 import spacingPattern from "../../design/patterns/spacing-layout.json";
 import visualGroupingPattern from "../../design/patterns/visual-grouping.json";
 import mobileLayoutPattern from "../../design/patterns/mobile-layout.json";
-import example from "../../design/examples/account-management.json";
+import accountExample from "../../design/examples/account-management.json";
+import invoiceExample from "../../design/examples/invoice-management.json";
 import button from "../../design/components/button.json";
 import link from "../../design/components/link.json";
 import table from "../../design/components/table.json";
@@ -63,12 +64,21 @@ export const patternsBySlug: Record<PatternSlug, PatternDocument> = {
   "mobile-layout": mobileLayoutPattern,
 };
 
+/** 題材ごとのサンプル契約。サンプルページは slug で1件を引く */
+export const examplesBySlug = {
+  "account-management": accountExample,
+  "invoice-management": invoiceExample,
+};
+
+export type ExampleSlug = keyof typeof examplesBySlug;
+
 export const designData = {
   tokens,
   rules: rules.rules,
   pattern,
   spacingPattern,
   patterns: patternsBySlug,
-  example,
+  example: accountExample,
+  examples: examplesBySlug,
   components: [button, link, table, toolbar, searchField, card, textField, select, form, chip, surface, drawer, alertDialog, alert, toast],
 };

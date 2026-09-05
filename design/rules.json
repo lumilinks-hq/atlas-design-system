@@ -18,7 +18,7 @@
       "severity": "error",
       "method": "lint",
       "description": "ExampleのcomponentUsageが指定した部品を、importだけで終わらせず画面に実装する",
-      "fix": "design/examples/account-management.jsonのcomponentUsageを確認し、未使用の部品を該当箇所へ実装する（lint: atlas/component-usage）"
+      "fix": "実験のexample契約のcomponentUsageを確認し、未使用の部品を該当箇所へ実装する（lint: atlas/component-usage）"
     },
     {
       "id": "component.variants",
@@ -45,7 +45,7 @@
       "severity": "error",
       "method": "automatic",
       "description": "列順、見出し、幅、最小幅、揃え、row header、等幅数字をExampleの定義から変えない",
-      "fix": "design/examples/account-management.jsonのcomponent.table列定義を参照してHeaderとRowで共有する"
+      "fix": "実験のexample契約のcomponent.table列定義を参照してHeaderとRowで共有する"
     },
     {
       "id": "component.table.surface",
@@ -130,12 +130,12 @@
     },
     {
       "id": "business.contact-email",
-      "title": "連絡先メールアドレスの形式を検証する",
+      "title": "形式が決まった入力を検証する",
       "category": "business",
       "severity": "error",
       "method": "lint",
-      "description": "連絡先として利用できない形式を保存しない",
-      "fix": "TextFieldへtype=emailを指定し、送信前にも形式を検証する（lint: atlas/contact-email）"
+      "description": "想定した形式で読み取れない値を保存しない",
+      "fix": "入力へexample契約のlint.requiredInputTypeが示すtypeを指定し、送信前にも形式を検証する（lint: atlas/contact-email）"
     },
     {
       "id": "navigation.customer-routes",
@@ -242,7 +242,7 @@
       "category": "interaction",
       "severity": "error",
       "method": "lint",
-      "description": "削除など取り消せない操作の対象と結果を、AlertDialog.Triggerから開いた確認画面で確認する",
+      "description": "取り消せない操作の対象と結果を、AlertDialog.Triggerから開いた確認画面で確認する",
       "fix": "取り消せない操作だけにAlertDialogを使い、対象と結果を表示する（lint: atlas/action-confirmation）"
     },
     {

@@ -18,20 +18,18 @@ import { HarnessLoop, type LoopStep } from "../components/HarnessLoop";
 import { designData } from "../data/design";
 import { artifactSourceHref } from "../data/repository";
 import {
-  baselineEvaluation,
-  comparison,
+  experimentRunList,
+  experimentRuns,
   harnessEvaluation,
-  runEnvironment,
-  sameModelRuns,
+  type ExperimentId,
+  type ExperimentRun,
   type RunCheck,
   type RunEvaluation,
 } from "../data/runs";
 import { PageHeader, ruleMethodLabels } from "./DocsPages";
 
-const runId = comparison.pairId;
-const cliLabel = runEnvironment.cliVersion;
-const screenshotBase = `/experiments/account-management/runs/${runId}`;
-const resultsPath = "/examples/account-management/results";
+// デザインハーネスの説明は顧客管理のRunを例に書いている。比較ページだけが題材を切り替える
+const resultsPath = experimentRuns["account-management"].resultsPath;
 const rules = designData.rules;
 const methodCounts = rules.reduce<Record<string, number>>((counts, rule) => {
   counts[rule.method] = (counts[rule.method] ?? 0) + 1;
@@ -305,51 +303,75 @@ const screens: Screen[] = [
   { id: "detail-mobile", label: "詳細（モバイル）", suffix: "-detail-mobile", kind: "mobile" },
 ];
 
-const conditions = [
-  {
-    id: "baseline",
-    folder: "baseline",
-    title: "ハーネスなし",
-    caption: "Issueだけを渡して生成",
-    evaluation: baselineEvaluation,
-    checks: comparison.checks.baseline,
-    playMode: "baseline",
-    playLabel: "設計指示なしの画面を操作する",
-    note: null,
-  },
-  {
-    id: "harness",
-    folder: "harness",
-    title: "ハーネスあり",
-    caption: "設計データを渡して生成",
-    evaluation: harnessEvaluation,
-    checks: comparison.checks.harness,
-    playMode: "atlas",
-    playLabel: "Atlas適用後の画面を操作する",
-    note: "ESLint 層を含む設計データを渡し、生成中に pnpm lint で自分で直した初回生成です。人もAIも、あとから修正ループは回していません。",
-  },
-];
+/** 比較ページの左右2枚。保存済みRunの条件をそのまま並べる */
+function buildConditions(run: ExperimentRun) {
+  return [
+    {
+      id: "baseline",
+      folder: "baseline",
+      title: "ハーネスなし",
+      caption: "Issueだけを渡して生成",
+      evaluation: run.baselineEvaluation,
+      checks: run.comparison.checks.baseline,
+      playMode: "baseline",
+      playLabel: "設計指示なしの画面を操作する",
+      note: null as string | null,
+    },
+    {
+      id: "harness",
+      folder: "harness",
+      title: "ハーネスあり",
+      caption: "設計データを渡して生成",
+      evaluation: run.harnessEvaluation,
+      checks: run.comparison.checks.harness,
+      playMode: "atlas",
+      playLabel: "Atlas適用後の画面を操作する",
+      note: run.harnessNote,
+    },
+  ];
+}
 
-export function ResultsPage() {
+export function ResultsPage({ experiment }: { experiment: ExperimentId }) {
   const navigate = useNavigate();
   const [screenId, setScreenId] = useState(defaultScreen.id);
   const screen = screens.find((item) => item.id === screenId) ?? defaultScreen;
   const aiRules = rules.filter((rule) => rule.method === "ai-review");
+  const run = experimentRuns[experiment];
+  const conditions = buildConditions(run);
+  // 同じモデルでlint層あり/なしを比べたRunは顧客管理だけが持つ。無い題材ではこの節ごと出さない
+  const sameModel = run.sameModelRuns;
 
   return (
     <article className="doc-page results-page">
       <PageHeader
         title="生成結果の比較"
-        description="同じIssueから、ハーネスなし／ありでAIが生成した顧客管理画面です。保存済みRunの画面と検査結果だけを表示し、閲覧時にAIは動きません。"
+        description={`同じIssueから、ハーネスなし／ありでAIが生成した${run.subject}です。保存済みRunの画面と検査結果だけを表示し、閲覧時にAIは動きません。`}
       />
+
+      <div className="compare-toolbar">
+        <span className="meta-label">比較する題材</span>
+        <div className="compare-screens" role="group" aria-label="比較する題材">
+          {experimentRunList.map((item) => (
+            <Button
+              key={item.id}
+              size="sm"
+              aria-pressed={item.id === run.id}
+              variant={item.id === run.id ? "primary" : "secondary"}
+              onPress={() => navigate(item.resultsPath)}
+            >
+              {item.label}
+            </Button>
+          ))}
+        </div>
+      </div>
 
       <ul className="run-strip" aria-label="Runの情報">
         <li>
-          <strong>Run {runId}</strong>
+          <strong>Run {run.pairId}</strong>
         </li>
-        <li>{cliLabel}</li>
-        <li>Model {runEnvironment.model}</li>
-        {comparison.conditionsMatch && <li>同じIssue・同じ環境で生成</li>}
+        <li>{run.environment.cliVersion}</li>
+        <li>Model {run.environment.model}</li>
+        {run.comparison.conditionsMatch && <li>同じIssue・同じ環境で生成</li>}
         <li>人は生成コードを直接修正していない</li>
       </ul>
 
@@ -372,8 +394,8 @@ export function ResultsPage() {
 
       <div className="compare-grid">
         {conditions.map((condition) => {
-          const src = `${screenshotBase}/${condition.folder}${screen.suffix}.png`;
-          const alt = `${condition.title}で生成した顧客管理画面（${screen.label}）`;
+          const src = `${run.screenshotBase}/${condition.folder}${screen.suffix}.png`;
+          const alt = `${condition.title}で生成した${run.subject}（${screen.label}）`;
           return (
             <article
               key={condition.id}
@@ -418,7 +440,7 @@ export function ResultsPage() {
                 {condition.note && <p className="compare-note">{condition.note}</p>}
                 <Button
                   variant={condition.id === "harness" ? "primary" : "secondary"}
-                  onPress={() => navigate(`/play/account-management?mode=${condition.playMode}`)}
+                  onPress={() => navigate(`${run.playPath}?mode=${condition.playMode}`)}
                 >
                   {condition.playLabel}
                 </Button>
@@ -448,8 +470,8 @@ export function ResultsPage() {
             <tbody>
               {rules.map((rule) => {
                 const cells = [
-                  { evaluation: baselineEvaluation, key: "baseline" },
-                  { evaluation: harnessEvaluation, key: "harness" },
+                  { evaluation: run.baselineEvaluation, key: "baseline" },
+                  { evaluation: run.harnessEvaluation, key: "harness" },
                 ];
                 return (
                   <tr key={rule.id}>
@@ -487,7 +509,7 @@ export function ResultsPage() {
         <div className="section-heading">
           <h2 id="review-title">AIレビューの所見</h2>
           <p>
-            {runEnvironment.model} が画面画像を見て残した所見です。合否ではなく、人が判断するための材料として保存しています。
+            {run.environment.model} が画面画像を見て残した所見です。合否ではなく、人が判断するための材料として保存しています。
           </p>
         </div>
         <div className="review-grid">
@@ -517,11 +539,12 @@ export function ResultsPage() {
         </div>
       </section>
 
+      {sameModel && (
       <section aria-labelledby="same-model-title" className="compare-section">
         <div className="section-heading">
           <h2 id="same-model-title">同じモデルでの比較</h2>
           <p>
-            上の比較で見せている lint-01 の初回生成を、ESLint 層を入れる前の prelint-01 と並べます。同じモデル（{sameModelRuns[0]?.model}）で、
+            上の比較で見せている lint-01 の初回生成を、ESLint 層を入れる前の prelint-01 と並べます。同じモデル（{sameModel[0]?.model}）で、
             ESLint 層を入れる前と後に 1 回ずつ生成した結果です。各条件 1 run なので傾向を見るための数字で、統計的な差ではありません。
             評価器は App.tsx から import で辿れるファイルをまとめて検査するので、画面を複数ファイルに分けた run も同じ基準で数えています。
           </p>
@@ -539,30 +562,31 @@ export function ResultsPage() {
               </tr>
             </thead>
             <tbody>
-              {sameModelRuns.flatMap((run) =>
+              {sameModel.flatMap((item) =>
                 (["baseline", "harness"] as const).map((condition) => (
-                  <tr key={`${run.pairId}-${condition}`}>
+                  <tr key={`${item.pairId}-${condition}`}>
                     <th scope="row">
-                      <span className="compare-rule-title">{run.pairId}</span>
-                      <code>{run.model}</code>
+                      <span className="compare-rule-title">{item.pairId}</span>
+                      <code>{item.model}</code>
                     </th>
                     <td>{condition === "baseline" ? "ハーネスなし" : "ハーネスあり"}</td>
-                    <td>{condition === "harness" && run.lintLayer ? "あり" : "なし"}</td>
-                    <td>{run[condition].summary.passed}</td>
-                    <td>{run[condition].summary.failed}</td>
-                    <td>{run[condition].summary.review}</td>
+                    <td>{condition === "harness" && item.lintLayer ? "あり" : "なし"}</td>
+                    <td>{item[condition].summary.passed}</td>
+                    <td>{item[condition].summary.failed}</td>
+                    <td>{item[condition].summary.review}</td>
                   </tr>
                 )),
               )}
             </tbody>
           </table>
         </div>
-        {sameModelRuns.map((run) => (
-          <p key={run.pairId} className="compare-note">
-            <strong>{run.pairId}</strong>: {run.note}
+        {sameModel.map((item) => (
+          <p key={item.pairId} className="compare-note">
+            <strong>{item.pairId}</strong>: {item.note}
           </p>
         ))}
       </section>
+      )}
 
       <p className="compare-back">
         <Link to="/harness">

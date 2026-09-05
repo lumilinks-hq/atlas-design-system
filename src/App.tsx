@@ -15,7 +15,7 @@ import {
 import { HarnessPage, ResultsPage } from "./pages/HarnessPages";
 import { PlayPage } from "./pages/PlayPage";
 
-const resultsPath = "/examples/account-management/results";
+const accountResultsPath = "/examples/account-management/results";
 
 export function App() {
   return (
@@ -32,13 +32,16 @@ export function App() {
         <Route path="/patterns/visual-grouping" element={<PatternDocPage slug="visual-grouping" />} />
         <Route path="/patterns/mobile-layout" element={<PatternDocPage slug="mobile-layout" />} />
         <Route path="/patterns/account-management" element={<Navigate to="/patterns/page-layout" replace />} />
-        <Route path="/examples/account-management" element={<ExamplePage />} />
-        <Route path={resultsPath} element={<ResultsPage />} />
+        <Route path="/examples/account-management" element={<ExamplePage slug="account-management" />} />
+        <Route path={accountResultsPath} element={<ResultsPage experiment="account-management" />} />
+        <Route path="/examples/invoice-management" element={<ExamplePage slug="invoice-management" />} />
+        <Route path="/examples/invoice-management/results" element={<ResultsPage experiment="invoice-management" />} />
         <Route path="/rules" element={<RulesPage />} />
       </Route>
-      <Route path="/demo" element={<Navigate to={resultsPath} replace />} />
-      <Route path="/demo/runs/account-management" element={<Navigate to={resultsPath} replace />} />
-      <Route path="/play/account-management" element={<PlayPage />} />
+      <Route path="/demo" element={<Navigate to={accountResultsPath} replace />} />
+      <Route path="/demo/runs/account-management" element={<Navigate to={accountResultsPath} replace />} />
+      <Route path="/play/account-management" element={<PlayPage experiment="account-management" />} />
+      <Route path="/play/invoice-management" element={<PlayPage experiment="invoice-management" />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

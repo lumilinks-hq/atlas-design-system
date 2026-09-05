@@ -1,0 +1,167 @@
+{
+  "$schema": "../schemas/example.schema.json",
+  "version": "1.0.0",
+  "id": "example.invoice-management",
+  "name": "請求書管理",
+  "purpose": "経理担当者が一覧から請求書を探し、独立した詳細画面で内容を確認・更新する",
+  "pattern": "pattern.page-layout",
+  "variant": "collection-table",
+  "composition": [
+    "請求書一覧は/invoicesで集合を扱う独立した画面とし、請求書番号、顧客名、発行日、金額、ステータスをHeroUI Tableの列定義から表示する",
+    "請求書番号をrow header、発行日と金額を末尾揃えの等幅数字とし、列幅と最小幅を列定義へ持たせる",
+    "請求書番号から詳細画面への移動にはLinkを使い、Buttonを使わない",
+    "一覧操作とTableは一つのCollectionRegionにまとめ、Table直前のToolbarをflexの末尾揃えにしてSearchFieldを置く",
+    "SearchFieldはデスクトップで16rem、狭幅で100%とし、検索アイコン、入力、クリア操作を表示する",
+    "請求書詳細は一件の請求書を扱う独立した画面とし、一覧から/invoices/:invoiceIdへ遷移する",
+    "請求書一覧に戻るLinkはPageHeadingの前に置き、LinkとPageHeadingをspace.4、PageHeadingと詳細コンテンツをspace.8で分ける",
+    "一覧ではInvoiceSummary、詳細ではInvoiceDetailの読み取りモデルを使用し、取得はlistInvoiceSummariesとgetInvoiceDetailに分ける",
+    "詳細画面に一覧へ戻る経路を置き、請求書情報の編集はHeader、Body、Footerを持つDrawerへ分離する",
+    "詳細の情報群はCard.HeaderとCard.Contentを使い、HeroUI標準のspace.4の内側余白を保つ",
+    "請求書の無効化はPageHeadingの操作領域に置き、主要操作は「請求書を編集」1つを維持して無効化はdanger-softの副次操作とする",
+    "無効化の確定前にAlertDialogで対象の請求書番号と取り消せないことを確認し、確定はdangerのButton、キャンセルを併置する",
+    "無効化成功はToastで通知して請求書一覧へ戻り、無効化失敗は理由を表示して再試行できるようにする",
+    "ページ見出しにはIssueにない追加操作やデモ用説明を設けない"
+  ],
+  "componentUsage": {
+    "component.link": {
+      "purpose": "back-navigation",
+      "placement": "before-page-heading",
+      "target": "/invoices",
+      "gapToPageHeading": "space.4",
+      "gapAfterPageHeading": "space.8"
+    },
+    "component.toolbar": {
+      "placement": "before-table",
+      "gapBeforeTable": "space.3",
+      "search": {
+        "component": "component.search-field",
+        "ariaLabel": "請求書番号で検索",
+        "placeholder": "請求書番号で検索",
+        "desktopWidth": "16rem",
+        "narrowWidth": "100%",
+        "align": "end"
+      }
+    },
+    "component.alert-dialog": {
+      "purpose": "void-confirmation",
+      "state": "void-confirm",
+      "trigger": {
+        "component": "component.button",
+        "variant": "danger-soft",
+        "label": "請求書を無効化",
+        "placement": "page-heading-actions"
+      },
+      "confirm": { "component": "component.button", "variant": "danger", "label": "無効化する" },
+      "cancel": { "component": "component.button", "variant": "tertiary", "label": "キャンセル" },
+      "content": ["対象の請求書番号", "無効化は取り消せないことの説明"],
+      "onSuccess": { "toast": "請求書を無効化しました", "navigateTo": "/invoices" },
+      "onFailure": "AlertDialog内に理由を表示し再試行できる"
+    },
+    "component.table": {
+      "variant": "primary",
+      "narrowVariant": "collection-list",
+      "columns": [
+        {
+          "id": "invoiceNumber",
+          "label": "請求書番号",
+          "isRowHeader": true,
+          "width": "24%",
+          "minWidth": 176,
+          "align": "start"
+        },
+        {
+          "id": "customerName",
+          "label": "顧客名",
+          "width": "26%",
+          "minWidth": 192,
+          "align": "start"
+        },
+        {
+          "id": "issuedOn",
+          "label": "発行日",
+          "width": "16%",
+          "minWidth": 128,
+          "align": "end",
+          "tabular": true
+        },
+        {
+          "id": "amount",
+          "label": "金額",
+          "width": "16%",
+          "minWidth": 128,
+          "align": "end",
+          "tabular": true
+        },
+        {
+          "id": "status",
+          "label": "ステータス",
+          "width": "18%",
+          "minWidth": 128,
+          "align": "start"
+        }
+      ]
+    }
+  },
+  "states": ["default", "empty", "drawer-open", "invalid-due-date", "loading", "success", "failure", "void-confirm"],
+  "components": [
+    "component.button",
+    "component.link",
+    "component.table",
+    "component.toolbar",
+    "component.search-field",
+    "component.card",
+    "component.form",
+    "component.text-field",
+    "component.select",
+    "component.chip",
+    "component.surface",
+    "component.drawer",
+    "component.alert-dialog",
+    "component.alert",
+    "component.toast"
+  ],
+  "lint": {
+    "forbiddenText": ["Atlas Billing", "ワークスペース", "請求書を作成", "入金消込", "帳票出力", "メール送付", "月次レポート"],
+    "requiredInputType": "date",
+    "irreversibleActionPattern": "無効化|voidInvoice",
+    "linkSemantics": {
+      "objectNameExpression": "invoice.invoiceNumber",
+      "backLinkPattern": "請求書一覧(?:へ|に)戻る",
+      "mobileListClass": "collection-list-mobile",
+      "navigationTextPattern": "invoice\\.invoiceNumber|請求書を確認|請求書一覧(?:へ|に)戻る"
+    }
+  },
+  "evaluation": {
+    "requiredFieldName": "dueDate",
+    "requiredFieldLabel": "支払期限",
+    "statusValues": ["下書き", "送付済み", "入金済み", "期限超過"],
+    "toolbarAriaLabel": "請求書一覧の操作",
+    "screenComponents": {
+      "collection": ["InvoiceListPage", "InvoicesPage"],
+      "detail": ["InvoiceDetailPage", "InvoicePage"]
+    },
+    "readModels": {
+      "summaryType": ["InvoiceSummary"],
+      "detailType": ["InvoiceDetail"],
+      "listFunction": ["listInvoiceSummaries", "getInvoiceSummaries"],
+      "detailFunction": ["getInvoiceDetail"]
+    }
+  },
+  "rules": [
+    "business.customer-name",
+    "business.contact-email",
+    "state.complete",
+    "state.loading",
+    "state.failure",
+    "a11y.form-label",
+    "a11y.error-recovery",
+    "a11y.focus-management",
+    "action.confirmation",
+    "layout.collection-toolbar",
+    "layout.back-navigation",
+    "layout.narrow",
+    "navigation.customer-routes",
+    "navigation.link-semantics",
+    "architecture.customer-read-models"
+  ]
+}

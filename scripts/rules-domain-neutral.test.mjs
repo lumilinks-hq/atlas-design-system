@@ -64,3 +64,47 @@ describe("評価の証跡が参照する題材語彙の在り処", () => {
     expect(example.evaluation.requiredFieldLabel).toBe("顧客名");
   });
 });
+
+// invoice-management は 2 つ目の実験。account-management の語彙が実験の資材へ混ざると、
+// harness agent が別題材のヒントを読んだ比較になり、run の妥当性が落ちる。
+// 「顧客」単体は請求書側にも列ラベル「顧客名」として正当に出るので、語彙は複合語で見る。
+const accountManagementVocabulary =
+  /customers|Customer|customer_|deleteCustomer|account-management|顧客一覧|顧客を|顧客管理|企業名|(?<!経理)担当者|最終対応日|商談中|休眠/;
+
+describe("invoice-managementの資材にaccount-managementの語彙を混ぜない", () => {
+  const materials = [
+    "design/examples/invoice-management.json",
+    "experiments/invoice-management/manifest.json",
+    "experiments/invoice-management/brief.md",
+    "experiments/invoice-management/starter/src/App.tsx",
+    "experiments/invoice-management/starter/src/fixtures.ts",
+    "experiments/invoice-management/starter/src/App.test.tsx",
+    "experiments/invoice-management/starter/index.html",
+    "experiments/invoice-management/starter/package.json",
+  ];
+
+  it.each(materials)("%s に account-management の語彙を残さない", async (path) => {
+    const raw = await readFile(resolve(rootDir, path), "utf8");
+    const violations = raw
+      .split("\n")
+      .map((text, index) => ({ line: index + 1, text }))
+      .filter((entry) => accountManagementVocabulary.test(entry.text))
+      .map((entry) => `${entry.line}: ${entry.text.trim()}`);
+    expect(violations).toEqual([]);
+  });
+
+  it("exampleの公開本文にInvoiceSummaryとInvoiceDetailが残る", async () => {
+    const path = "design/examples/invoice-management.json";
+    const raw = await readFile(resolve(rootDir, path), "utf8");
+    const publicText = publicDesignResourceText(path, raw);
+    expect(publicText).toContain("InvoiceSummary");
+    expect(publicText).toContain("InvoiceDetail");
+  });
+
+  it("必須入力の呼び名と入力形式をexampleが持つ", async () => {
+    const example = JSON.parse(await readFile(resolve(rootDir, "design", "examples", "invoice-management.json"), "utf8"));
+    expect(example.evaluation.requiredFieldLabel).toBe("支払期限");
+    expect(example.evaluation.requiredFieldName).toBe("dueDate");
+    expect(example.lint.requiredInputType).toBe("date");
+  });
+});

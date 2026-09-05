@@ -27,6 +27,14 @@ function readJson(path) {
 // キーの並びは HARNESS_LINT.json の差分を安定させるため固定する
 const linkSemanticsKeys = ["objectNameExpression", "backLinkPattern", "mobileListClass", "navigationTextPattern"];
 
+// lint の判定語は example が持つ。既定値をプラグインに置くと、
+// 指定を忘れた実験が別題材の条件で黙って採点される
+function requireLintString(example, examplePath, key) {
+  const value = example.lint?.[key];
+  if (typeof value !== "string" || value.length === 0) throw new Error(`${examplePath}: lint.${key} がありません`);
+  return value;
+}
+
 function buildLinkSemantics(example, examplePath) {
   const source = example.lint?.linkSemantics;
   if (!source) throw new Error(`${examplePath}: lint.linkSemantics がありません`);
@@ -53,6 +61,9 @@ export function buildAtlasLintOptions({ componentsDir, examplePath }) {
       }),
   );
   const example = readJson(examplePath);
+  const linkSemantics = buildLinkSemantics(example, examplePath);
+  const requiredInputType = requireLintString(example, examplePath, "requiredInputType");
+  const irreversibleActionPattern = requireLintString(example, examplePath, "irreversibleActionPattern");
   const exampleContracts = example.components.map((componentId) => {
     const contract = contracts.get(componentId);
     if (!contract) throw new Error(`${examplePath}: ${componentId} の契約が ${componentsDir} にありません`);
@@ -82,7 +93,9 @@ export function buildAtlasLintOptions({ componentsDir, examplePath }) {
     componentUsage,
     variants,
     tableVariant: tableUsage?.variant ?? "primary",
-    linkSemantics: buildLinkSemantics(example, examplePath),
+    linkSemantics,
+    requiredInputType,
+    irreversibleActionPattern,
     componentThemeImport: "design/component-theme.css",
   };
 }

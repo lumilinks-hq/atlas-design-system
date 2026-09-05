@@ -67,12 +67,21 @@ tsxTester.run("form-label", rules["form-label"], {
   invalid: [{ code: `export const A = () => <Input placeholder="名前" />;`, errors: [{ messageId: "missing" }] }],
 });
 
+// 形式検証を求める type は example の lint.requiredInputType から渡す。
+// 題材が変われば求める type も変わるので、両方の値で判定が動くことを固定する
+const emailType = [{ type: "email" }];
+const dateType = [{ type: "date" }];
 tsxTester.run("contact-email", rules["contact-email"], {
   valid: [
-    { code: `export const A = () => <Input type="email" />;` },
-    { code: `export const A = () => <TextField type="email"><Input /></TextField>;` },
+    { code: `export const A = () => <Input type="email" />;`, options: emailType },
+    { code: `export const A = () => <TextField type="email"><Input /></TextField>;`, options: emailType },
+    { code: `export const A = () => <Input type="date" />;`, options: dateType },
   ],
-  invalid: [{ code: `export const A = () => <Input type="text" />;`, errors: [{ messageId: "missing" }] }],
+  invalid: [
+    { code: `export const A = () => <Input type="text" />;`, options: emailType, errors: [{ messageId: "missing" }] },
+    // email しか持たない画面は、date を求める題材では通さない
+    { code: `export const A = () => <Input type="email" />;`, options: dateType, errors: [{ messageId: "missing" }] },
+  ],
 });
 
 const link = {
@@ -111,14 +120,21 @@ tsxTester.run("link-semantics-no-options", rules["link-semantics"], {
   invalid: [],
 });
 
+// 取り消せない操作の語は example の lint.irreversibleActionPattern から渡す
+const deleteAction = [{ pattern: "削除|delete|remove" }];
+const voidAction = [{ pattern: "無効化|voidInvoice" }];
 tsxTester.run("action-confirmation", rules["action-confirmation"], {
   valid: [
-    { code: `export const A = () => <Button>保存</Button>;` },
-    { code: `export const A = () => <AlertDialog.Root><AlertDialog.Trigger><Button>削除</Button></AlertDialog.Trigger></AlertDialog.Root>;` },
+    { code: `export const A = () => <Button>保存</Button>;`, options: deleteAction },
+    { code: `export const A = () => <AlertDialog.Root><AlertDialog.Trigger><Button>削除</Button></AlertDialog.Trigger></AlertDialog.Root>;`, options: deleteAction },
+    // 題材の語を含まない画面には確認を求めない
+    { code: `export const A = () => <Button onPress={remove}>削除</Button>;`, options: voidAction },
+    { code: `export const A = () => <AlertDialog.Root><AlertDialog.Trigger><Button>無効化する</Button></AlertDialog.Trigger></AlertDialog.Root>;`, options: voidAction },
   ],
   invalid: [
-    { code: `export const A = () => <Button onPress={remove}>削除</Button>;`, errors: [{ messageId: "noTrigger" }] },
-    { code: `export const A = () => <AlertDialog.Root><AlertDialog.Trigger>削除</AlertDialog.Trigger></AlertDialog.Root>;`, errors: [{ messageId: "noButton" }] },
+    { code: `export const A = () => <Button onPress={remove}>削除</Button>;`, options: deleteAction, errors: [{ messageId: "noTrigger" }] },
+    { code: `export const A = () => <AlertDialog.Root><AlertDialog.Trigger>削除</AlertDialog.Trigger></AlertDialog.Root>;`, options: deleteAction, errors: [{ messageId: "noButton" }] },
+    { code: `export const A = () => <Button onPress={voidInvoice}>無効化する</Button>;`, options: voidAction, errors: [{ messageId: "noTrigger" }] },
   ],
 });
 

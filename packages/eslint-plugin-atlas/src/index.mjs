@@ -111,6 +111,10 @@ function ruleOptions(name, options) {
       return { variant: options.tableVariant };
     case "link-semantics":
       return options.linkSemantics;
+    case "contact-email":
+      return { type: options.requiredInputType };
+    case "action-confirmation":
+      return { pattern: options.irreversibleActionPattern };
     case "component-theme-import":
       return { path: options.componentThemeImport };
     default:

@@ -1,0 +1,261 @@
+{
+  "pairId": "invoice-01",
+  "mode": "baseline",
+  "summary": {
+    "passed": 11,
+    "failed": 12,
+    "review": 5
+  },
+  "rules": [
+    {
+      "id": "component.approved",
+      "status": "failed",
+      "evidence": [
+        "1:10 契約にないHeroUI import: RouterProvider",
+        "src/pages/InvoiceDetailPage.tsx 1:37 契約にないHeroUI import: Separator",
+        "src/pages/InvoiceDetailPage.tsx 1:55 契約にないHeroUI import: Typography",
+        "src/pages/InvoiceEditDrawer.tsx 10:3 契約にないHeroUI import: Spinner",
+        "src/pages/InvoiceEditDrawer.tsx 11:3 契約にないHeroUI import: TextArea",
+        "src/pages/VoidInvoiceDialog.tsx 1:38 契約にないHeroUI import: Spinner",
+        "src/pages/VoidInvoiceDialog.tsx 1:47 契約にないHeroUI import: Typography",
+        "src/pages/InvoiceListPage.tsx 1:25 契約にないHeroUI import: EmptyState",
+        "src/pages/InvoiceListPage.tsx 1:50 契約にないHeroUI import: Typography"
+      ]
+    },
+    {
+      "id": "component.usage",
+      "status": "failed",
+      "evidence": [
+        "1:1 Toolbar: componentUsageで求められていますが実装に現れません"
+      ]
+    },
+    {
+      "id": "component.variants",
+      "status": "passed",
+      "evidence": [
+        "静的に指定されたvariantはAtlas契約内"
+      ]
+    },
+    {
+      "id": "component.table.variant",
+      "status": "passed",
+      "evidence": [
+        "Table.Rootはprimary variant"
+      ]
+    },
+    {
+      "id": "component.table.columns",
+      "status": "failed",
+      "evidence": [
+        "期待する列順: invoiceNumber → customerName → issuedOn → amount → status",
+        "HeaderとRowが同じ列定義を参照していません",
+        "tabular列の適用を確認できません"
+      ]
+    },
+    {
+      "id": "component.table.surface",
+      "status": "passed",
+      "evidence": [
+        "Tableへradius.baseを適用し、外側にsurface装飾なし"
+      ]
+    },
+    {
+      "id": "token.radius",
+      "status": "failed",
+      "evidence": [
+        "design/component-theme.cssの読み込みまたはradius adapterを確認できません"
+      ]
+    },
+    {
+      "id": "token.no-raw-color",
+      "status": "passed",
+      "evidence": [
+        "raw colorなし"
+      ]
+    },
+    {
+      "id": "a11y.control-name",
+      "status": "review",
+      "evidence": [
+        "実ブラウザのaccessibility treeで確認する"
+      ]
+    },
+    {
+      "id": "a11y.collection-item-name",
+      "status": "passed",
+      "evidence": [
+        "複合表示のListBox.ItemにtextValueあり"
+      ]
+    },
+    {
+      "id": "a11y.form-label",
+      "status": "passed",
+      "evidence": [
+        "視覚ラベルまたはaria-labelあり"
+      ]
+    },
+    {
+      "id": "a11y.error-recovery",
+      "status": "review",
+      "evidence": [
+        "参考: 原因または回復方法の文言を検出",
+        "文言の実際の伝わり方はAIレビューと人の確認で判定する"
+      ]
+    },
+    {
+      "id": "a11y.color-only",
+      "status": "review",
+      "evidence": [
+        "参考: 状態名の文字表示を検出",
+        "色以外の手掛かりが実画面で読めるかはAIレビューと人の確認で判定する"
+      ]
+    },
+    {
+      "id": "business.customer-name",
+      "status": "passed",
+      "evidence": [
+        "支払期限の必須制御あり"
+      ]
+    },
+    {
+      "id": "business.contact-email",
+      "status": "failed",
+      "evidence": [
+        "1:1 type=date の入力制御を確認できません"
+      ]
+    },
+    {
+      "id": "navigation.customer-routes",
+      "status": "passed",
+      "evidence": [
+        "/invoicesと/invoices/:invoiceIdを独立した画面として実装"
+      ]
+    },
+    {
+      "id": "navigation.link-semantics",
+      "status": "failed",
+      "evidence": [
+        "1:1 モバイル一覧（.collection-list-mobile内）の詳細導線をhrefまたはtoを持つLinkにしてください"
+      ]
+    },
+    {
+      "id": "architecture.customer-read-models",
+      "status": "passed",
+      "evidence": [
+        "InvoiceSummaryとInvoiceDetailの取得経路を分離"
+      ]
+    },
+    {
+      "id": "state.complete",
+      "status": "passed",
+      "evidence": [
+        "必須8状態あり"
+      ]
+    },
+    {
+      "id": "layout.grouping",
+      "status": "failed",
+      "evidence": [
+        "契約クラス .detail-grid がDOMにありません",
+        "契約クラス .detail-content がDOMにありません",
+        "契約クラス .drawer-form がDrawer内にありません"
+      ]
+    },
+    {
+      "id": "layout.collection-toolbar",
+      "status": "failed",
+      "evidence": [
+        "契約クラス .collection-region が1440pxのDOMにありません",
+        "契約クラス .collection-toolbar が1440pxのDOMにありません",
+        "契約クラス .search-field が1440pxのDOMにありません",
+        "契約クラス .collection-toolbar / .search-field が390pxのDOMにありません"
+      ]
+    },
+    {
+      "id": "layout.back-navigation",
+      "status": "failed",
+      "evidence": [
+        "戻るLinkがページ見出しより前",
+        "契約クラス .detail-page__heading がDOMにありません"
+      ]
+    },
+    {
+      "id": "layout.narrow",
+      "status": "failed",
+      "evidence": [
+        "/invoices 320px: scrollWidth 320px",
+        "/invoices/:invoiceId 320px: scrollWidth 320px",
+        "390pxでTableが表示されたままです",
+        "契約クラス .collection-list-mobile が390pxのDOMにありません"
+      ]
+    },
+    {
+      "id": "state.loading",
+      "status": "passed",
+      "evidence": [
+        "保存中のdisabled制御あり"
+      ]
+    },
+    {
+      "id": "state.failure",
+      "status": "review",
+      "evidence": [
+        "参考: 失敗と再試行の文言を検出",
+        "失敗後に再試行できるかはAIレビューと人の確認で判定する"
+      ]
+    },
+    {
+      "id": "color.semantic",
+      "status": "review",
+      "evidence": [
+        "semantic colorの意味はblind reviewする"
+      ]
+    },
+    {
+      "id": "action.confirmation",
+      "status": "failed",
+      "evidence": [
+        "1:1 取り消せない操作にHeroUI AlertDialog.Triggerがありません"
+      ]
+    },
+    {
+      "id": "a11y.focus-management",
+      "status": "failed",
+      "evidence": [
+        "1:1 Drawer.Trigger自体にclassName（主要Buttonの視覚スタイル）を確認できません。ラベルはTriggerに直接入れます",
+        "1:1 Drawer.CloseTriggerがないか、狭い標準枠へ表示テキストを入れています"
+      ]
+    }
+  ],
+  "review": {
+    "reviewedAt": "2026-09-05T04:31:59.093Z",
+    "model": "claude-opus-5",
+    "findings": [
+      {
+        "ruleId": "a11y.control-name",
+        "verdict": "pass",
+        "note": "詳細画面の操作は「請求書一覧へ戻る」「編集」「無効化」といずれも文字ラベルを持ち、一覧の行も請求書番号のテキストが操作対象になっている。アイコンだけの操作要素は4枚のいずれにも見当たらない。"
+      },
+      {
+        "ruleId": "a11y.error-recovery",
+        "verdict": "concern",
+        "note": "一覧・詳細ともエラー表示の領域が見当たらず、「期限超過」バッジも状態表示だけで何が起きたかや次の操作の案内がない。失敗時に何をすればよいかが画面上から読み取れない。"
+      },
+      {
+        "ruleId": "a11y.color-only",
+        "verdict": "concern",
+        "note": "デスクトップでは「送付済み」「入金済み」「期限超過」「下書き」と状態名が文字で併記されているが、モバイル一覧ではステータス列が右端で見切れて色の帯だけが残り、文字が読めない状態になっている。"
+      },
+      {
+        "ruleId": "state.failure",
+        "verdict": "concern",
+        "note": "「編集」「無効化」の実行後に失敗を表示する領域や再試行の導線が画面上に確認できず、失敗情報が画面に残る作りになっているか判断できない。"
+      },
+      {
+        "ruleId": "color.semantic",
+        "verdict": "pass",
+        "note": "危険色（赤系）が使われているのは詳細画面の「無効化」ボタンのみで、「編集」や「請求書一覧へ戻る」といった通常操作は通常色のままになっている。"
+      }
+    ]
+  }
+}

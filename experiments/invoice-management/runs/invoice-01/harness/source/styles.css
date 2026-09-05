@@ -1,0 +1,149 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+/* Atlas の設計トークンとレイアウト正本。component-theme.css は theme.css を内包する */
+@import "../design/component-theme.css";
+@import "../design/layout.css";
+
+html {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--dh-background);
+  color: var(--dh-text);
+}
+
+/*
+ * ここから下は design/layout.css が扱わない機能固有の余白と並びだけを補う。
+ * 767px は design/tokens.json の breakpoint.narrow(768px) − 1。
+ */
+
+.plain-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.detail-back {
+  display: flex;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dh-space-2);
+}
+
+.detail-field {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: var(--dh-space-4);
+  align-items: baseline;
+}
+
+.detail-field__label {
+  color: var(--dh-text-muted);
+  font-size: var(--dh-type-small);
+  line-height: var(--dh-type-line-height-body);
+}
+
+.detail-field__value {
+  font-size: var(--dh-type-body);
+  line-height: var(--dh-type-line-height-body);
+  white-space: pre-wrap;
+}
+
+.line-item {
+  display: flex;
+  gap: var(--dh-space-4);
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.line-item__name {
+  font-size: var(--dh-type-body);
+  line-height: var(--dh-type-line-height-body);
+}
+
+.line-item__meta {
+  color: var(--dh-text-muted);
+  font-size: var(--dh-type-small);
+  line-height: var(--dh-type-line-height-body);
+  white-space: nowrap;
+}
+
+.collection-list-mobile__card {
+  padding: var(--dh-space-4);
+  border-radius: var(--dh-radius-base);
+  background: var(--dh-surface);
+  box-shadow: var(--dh-shadow-raised);
+}
+
+.collection-list-mobile__title {
+  font-size: var(--dh-type-body);
+  font-weight: 600;
+  line-height: var(--dh-type-line-height-body);
+  color: var(--dh-text);
+}
+
+.empty-state {
+  display: grid;
+  gap: var(--dh-space-3);
+  justify-items: center;
+  text-align: center;
+  padding: var(--dh-space-12) var(--dh-space-4);
+  border-radius: var(--dh-radius-base);
+  background: var(--dh-surface);
+  box-shadow: var(--dh-shadow-raised);
+}
+
+.empty-state__title {
+  margin: 0;
+  font-size: var(--dh-type-heading);
+  font-weight: 600;
+  line-height: var(--dh-type-line-height-heading);
+}
+
+.empty-state__description {
+  margin: 0;
+  max-width: var(--dh-reading-width);
+  color: var(--dh-text-muted);
+  font-size: var(--dh-type-small);
+  line-height: var(--dh-type-line-height-body);
+}
+
+.drawer-actions {
+  display: flex;
+  gap: var(--dh-space-3);
+  justify-content: flex-end;
+}
+
+.dialog-body {
+  display: grid;
+  gap: var(--dh-space-4);
+}
+
+.dialog-body p {
+  margin: 0;
+  font-size: var(--dh-type-body);
+  line-height: var(--dh-type-line-height-body);
+}
+
+@media (max-width: 767px) {
+  .detail-field {
+    grid-template-columns: 1fr;
+    gap: var(--dh-space-1);
+  }
+
+  .line-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .drawer-actions {
+    flex-direction: column-reverse;
+  }
+}

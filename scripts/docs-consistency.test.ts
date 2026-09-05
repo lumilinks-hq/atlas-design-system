@@ -93,4 +93,33 @@ describe("design contract coverage on the docs site", () => {
     expect(docsPage).toContain('"component.alert"');
     expect(docsPage).toContain("Alert.Title");
   });
+  it("publishes every design example as a docs page with its own results route", async () => {
+    const [designModule, appModule, shell] = await Promise.all([
+      readFile(resolve(rootDir, "src/data/design.ts"), "utf8"),
+      readFile(resolve(rootDir, "src/App.tsx"), "utf8"),
+      readFile(resolve(rootDir, "src/components/DocsShell.tsx"), "utf8"),
+    ]);
+    const exampleFiles = (await readdir(resolve(rootDir, "design/examples"))).filter((name) => name.endsWith(".json"));
+
+    expect(exampleFiles.length).toBeGreaterThan(1);
+    for (const file of exampleFiles) {
+      const slug = file.replace(/\.json$/, "");
+      expect(designModule, file).toContain(`design/examples/${file}`);
+      expect(appModule, slug).toContain(`/examples/${slug}`);
+      expect(appModule, slug).toContain(`/examples/${slug}/results`);
+      expect(shell, slug).toContain(`/examples/${slug}`);
+    }
+  });
+
+  it("registers a play entry for every saved experiment", async () => {
+    const [viteConfig, playPage] = await Promise.all([
+      readFile(resolve(rootDir, "vite.config.ts"), "utf8"),
+      readFile(resolve(rootDir, "src/pages/PlayPage.tsx"), "utf8"),
+    ]);
+
+    for (const entry of ["play-atlas", "play-baseline", "play-invoice-atlas", "play-invoice-baseline"]) {
+      expect(viteConfig, entry).toContain(`${entry}.html`);
+      expect(playPage, entry).toContain(`/${entry}.html`);
+    }
+  });
 });

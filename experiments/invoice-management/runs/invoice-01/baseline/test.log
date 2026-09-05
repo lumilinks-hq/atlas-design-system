@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 <workspace>/invoice-management/invoice-01/baseline
+
+
+ Test Files  3 passed (3)
+      Tests  26 passed (26)
+   Start at  13:14:30
+   Duration  5.79s (transform 177ms, setup 0ms, import 1.32s, tests 4.32s, environment 4.69s)
+
+$ vitest run
