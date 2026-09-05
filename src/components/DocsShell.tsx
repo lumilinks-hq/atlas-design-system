@@ -114,7 +114,7 @@ export function DocsShell() {
               {group.items.map((item) => (
                 <NavLink
                   className={({ isActive }) => (isActive ? "nav-item nav-item-active" : "nav-item")}
-                  end={item.to === "/"}
+                  end
                   key={item.to}
                   onClick={() => setMenuOpen(false)}
                   to={item.to}

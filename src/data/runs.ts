@@ -2,16 +2,11 @@ import baselineEvaluation from "../../experiments/account-management/runs/lint-0
 import comparison from "../../experiments/account-management/runs/lint-01/comparison.json";
 import harnessEvaluation from "../../experiments/account-management/runs/lint-01/harness/design-evaluation.json";
 import harnessRun from "../../experiments/account-management/runs/lint-01/harness/run.json";
-import mvp11CorrectedEvaluation from "../../experiments/account-management/runs/mvp-11/harness-corrected/design-evaluation.json";
-import mvp11HarnessEvaluation from "../../experiments/account-management/runs/mvp-11/harness/design-evaluation.json";
 import prelint01Baseline from "../../experiments/account-management/runs/prelint-01/baseline/design-evaluation.json";
 import prelint01Harness from "../../experiments/account-management/runs/prelint-01/harness/design-evaluation.json";
 import prelint01Run from "../../experiments/account-management/runs/prelint-01/harness/run.json";
 
 export { baselineEvaluation, comparison, harnessEvaluation };
-
-// /harness の「デモ画面の生成サイクル」は、修正ループを1周まわした mvp-11 の数字で説明する
-export { mvp11CorrectedEvaluation, mvp11HarnessEvaluation };
 
 export const runEnvironment = harnessRun["environment"];
 

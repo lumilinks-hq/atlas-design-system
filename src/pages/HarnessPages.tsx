@@ -20,8 +20,6 @@ import {
   baselineEvaluation,
   comparison,
   harnessEvaluation,
-  mvp11CorrectedEvaluation,
-  mvp11HarnessEvaluation,
   runEnvironment,
   sameModelRuns,
   type RunCheck,
@@ -181,9 +179,9 @@ export function HarnessPage() {
     { id: "issue", number: "01", title: "Issueを渡す" },
     { id: "context", number: "02", title: "制約とコンテキストを渡す" },
     { id: "generate", number: "03", title: "AIが生成する" },
-    { id: "verify", number: "04", title: "検査する", failed: mvp11HarnessEvaluation.summary.failed },
+    { id: "verify", number: "04", title: "検査する", failed: harnessEvaluation.summary.failed },
     { id: "feedback", number: "05", title: "検査結果をVALIDATION.mdとして返す" },
-    { id: "reverify", number: "06", title: "修正版を再検査する", failed: mvp11CorrectedEvaluation.summary.failed },
+    { id: "reverify", number: "06", title: "修正版を再検査する" },
   ];
 
   return (
@@ -260,7 +258,7 @@ export function HarnessPage() {
       <section aria-labelledby="loop-title" className="harness-section">
         <h2 id="loop-title">デモ画面の生成サイクル</h2>
         <p>
-          修正ループを1周まわした run（mvp-11、GPT-5.4）の違反数で流れを示します。下のリンク先の比較ページは、ESLint 層を入れた後の run（lint-01、Claude Opus 5）を表示します。
+          検査の違反数は、下のリンク先の比較ページと同じ run（lint-01、Claude Opus 5）の初回検査の値です。
         </p>
         <HarnessLoop steps={loopSteps} />
         <div className="harness-cta-row">

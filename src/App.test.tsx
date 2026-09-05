@@ -10,8 +10,6 @@ import {
   baselineEvaluation,
   comparison,
   harnessEvaluation,
-  mvp11CorrectedEvaluation,
-  mvp11HarnessEvaluation,
   runEnvironment,
   sameModelRuns,
 } from "./data/runs";
@@ -270,8 +268,7 @@ describe("Atlas Design System demo", () => {
     for (const title of loopTitles) {
       expect(await within(loopDiagram).findByText(title)).toBeInTheDocument();
     }
-    expect(await within(loopDiagram).findByText(`違反 ${mvp11HarnessEvaluation.summary.failed}件`)).toBeInTheDocument();
-    expect(await within(loopDiagram).findByText(`違反 ${mvp11CorrectedEvaluation.summary.failed}件`)).toBeInTheDocument();
+    expect(await within(loopDiagram).findByText(`違反 ${harnessEvaluation.summary.failed}件`)).toBeInTheDocument();
     expect(within(loop).queryByRole("list")).not.toBeInTheDocument();
     expect(screen.queryByText(/Figma|Storybook/)).not.toBeInTheDocument();
     expect(screen.queryByText("Agent-ready")).not.toBeInTheDocument();
@@ -372,5 +369,11 @@ describe("Atlas Design System demo", () => {
     render(<MemoryRouter initialEntries={["/demo/runs/account-management?scene=issue"]}><App /></MemoryRouter>);
     expect(screen.getByRole("heading", { level: 1, name: "生成結果の比較" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "次へ" })).not.toBeInTheDocument();
+  });
+  it("marks only the comparison page as active in the sidebar on the results route", () => {
+    render(<MemoryRouter initialEntries={["/examples/account-management/results"]}><App /></MemoryRouter>);
+    const active = document.querySelectorAll(".nav-item-active");
+    expect(active).toHaveLength(1);
+    expect(active[0]).toHaveTextContent("生成結果の比較");
   });
 });

@@ -8,7 +8,7 @@ Atlasは、[デザインハーネス](https://design-harness.com/)を用いて�
 
 「顧客管理」を実装します。`/customers`の一覧から会社を選び、`/customers/:customerId`の詳細で基本情報と対応状況を確認・更新し、取引が終了した顧客を確認画面付きで削除できる業務機能です。一覧は`CustomerSummary`、詳細は`CustomerDetail`を使用します。Brief、スターター、モデル、HeroUIのバージョンを揃え、プロジェクト固有の設計契約を渡すかどうかだけを変えています。
 
-保存済みの`mvp-11`では、28ルールの検査でBaselineが`7 pass / 16 fail / 5 review`、Harness初回が`19 pass / 4 fail / 5 review`でした。Harness側へ検査結果を返して修正すると、`23 pass / 0 fail / 5 review`になりました。検査には320px幅の横スクロールや余白の実測など、実ブラウザでの幾何計測を含みます。このデモが見せるのは初回生成の勝敗ではなく、設計情報を機械判定と修正へ接続できるかどうかです。
+保存済みの`lint-01`（Claude Opus 5）では、28ルールの検査でBaselineが`12 pass / 11 fail / 5 review`、Harnessが`23 pass / 0 fail / 5 review`でした。検査には320px幅の横スクロールや余白の実測など、実ブラウザでの幾何計測を含みます。このデモが見せるのは初回生成の勝敗ではなく、設計情報を機械判定と修正へ接続できるかどうかです。
 
 ## ローカルで見る
 
@@ -32,14 +32,14 @@ pnpm dev
 保存済みRunは、公開リポジトリの生成ソースからそのまま起動できます。
 
 ```bash
-# Atlas適用・補正後
-pnpm experiment:preview --pair mvp-11 --mode harness-corrected --port 4182
+# Atlas適用
+pnpm experiment:preview --pair lint-01 --mode harness --port 4182
 
 # Issueだけを渡したBaseline
-pnpm experiment:preview --pair mvp-11 --mode baseline --port 4181
+pnpm experiment:preview --pair lint-01 --mode baseline --port 4181
 ```
 
-- Atlas適用・補正後: `http://localhost:4182/`
+- Atlas適用: `http://localhost:4182/`
 - Baseline: `http://localhost:4181/`
 
 必須状態はURLの`state` queryで再現できます。`default`、`empty`、`drawer-open`、`invalid-email`、`loading`、`success`、`failure`、`delete-confirm`を指定できます。通常画面にはデモ専用の状態切り替えUIを表示しません。
