@@ -135,30 +135,24 @@ const setupMethods = [
     title: "GitHub",
     status: "初回推奨・公開準備中",
     description: "リポジトリを複製し、設計データ、検証スクリプト、デモ画面をまとめて手元で動かします。",
-    command: `git clone ${repositoryUrl}.git\ncd atlas-design-system\npnpm install --frozen-lockfile\npnpm dev`,
-    prerequisite: "公開後のGitHub URLと、Node.js 24、pnpm 11が必要です。",
-    verification: "pnpm demo:check",
-    update: "git pull --ff-only\npnpm install --frozen-lockfile\npnpm demo:check",
+    command: `git clone ${repositoryUrl}.git\ncd atlas-design-system\npnpm install --frozen-lockfile\npnpm dev\n\n# 確認\npnpm demo:check`,
+    prerequisite: "Node.js 24とpnpm 11。",
   },
   {
     icon: Sparkles,
     title: "Skill",
     status: "リポジトリ内で利用可",
     description: "Atlasの設計判断、HeroUI v3の実装仕様、日本語UI文言の基準をAIエージェントへ渡します。",
-    command: "node scripts/resolve-design-contract.mjs experiments/account-management/manifest.json",
-    prerequisite: "Atlasリポジトリのルートで実行します。",
-    verification: "pnpm skills:check",
-    update: "git pull --ff-only\npnpm skills:check",
+    command: "node scripts/resolve-design-contract.mjs experiments/account-management/manifest.json\n\n# 確認\npnpm skills:check",
+    prerequisite: "cloneしたリポジトリのルートで実行します。",
   },
   {
     icon: Plug,
     title: "MCP",
     status: "リポジトリ内で利用可",
     description: "必要な設計契約をAIエージェントが検索し、実装時に参照できる接続方法です。",
-    command: "pnpm mcp:start",
-    prerequisite: "stdio接続に対応したMCPクライアントが必要です。",
-    verification: "pnpm exec vitest run scripts/mcp/server.test.mjs",
-    update: "git pull --ff-only\npnpm install --frozen-lockfile\npnpm exec vitest run scripts/mcp/server.test.mjs",
+    command: "pnpm mcp:start\n\n# 確認\npnpm exec vitest run scripts/mcp/server.test.mjs",
+    prerequisite: "stdio接続に対応したMCPクライアント。接続手順は下にあります。",
   },
 ] as const;
 
@@ -210,7 +204,7 @@ export function GettingStartedPage() {
       />
 
       <section className="setup-grid" aria-label="導入方法の一覧">
-        {setupMethods.map(({ icon: Icon, title, status, description, command, prerequisite, verification, update }) => (
+        {setupMethods.map(({ icon: Icon, title, status, description, command, prerequisite }) => (
           <article className="site-card setup-card" key={title}>
             <div className="setup-card-heading">
               <span className="setup-icon"><Icon size={20} /></span>
@@ -218,24 +212,18 @@ export function GettingStartedPage() {
             </div>
             <h2>{title}</h2>
             <p>{description}</p>
-            <dl className="setup-details">
-              <div><dt>前提</dt><dd>{prerequisite}</dd></div>
-              <div><dt>導入</dt><dd>下のコマンドを順に実行します。</dd></div>
-              <div><dt>確認</dt><dd><pre className="setup-code"><code>{verification}</code></pre></dd></div>
-              <div><dt>更新</dt><dd><pre className="setup-code"><code>{update}</code></pre></dd></div>
-            </dl>
+            <p className="setup-prerequisite"><span>前提</span>{prerequisite}</p>
             <SetupCommand command={command} title={title} />
           </article>
         ))}
       </section>
 
-      <section className="local-setup" aria-labelledby="local-setup-title">
+      <section className="setup-update" aria-labelledby="setup-update-title">
         <div className="section-heading">
-          <h2 id="local-setup-title">このリポジトリを手元で動かす</h2>
-          <p>依存パッケージを入れて開発サーバーを起動すると、デザインシステムと比較デモを確認できます。</p>
+          <h2 id="setup-update-title">更新する</h2>
+          <p>どの方法でも、最新を取り込んだあとに各カードの確認コマンドを再実行します。</p>
         </div>
-        <pre><code>{`pnpm install\npnpm dev`}</code></pre>
-        <p className="setup-note">ブラウザで <code>http://localhost:4173</code> を開きます。</p>
+        <pre className="setup-code"><code>{`git pull --ff-only\npnpm install --frozen-lockfile`}</code></pre>
       </section>
 
       <section className="client-setup" aria-labelledby="client-setup-title">

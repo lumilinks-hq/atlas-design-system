@@ -76,9 +76,10 @@ describe("Atlas Design System demo", () => {
     expect(screen.getByRole("heading", { name: "Skill" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "MCP" })).toBeInTheDocument();
     expect(screen.getAllByText("前提")).toHaveLength(3);
-    expect(screen.getAllByText("導入")).toHaveLength(3);
-    expect(screen.getAllByText("確認")).toHaveLength(3);
-    expect(screen.getAllByText("更新")).toHaveLength(3);
+    // 確認コマンドは導入コマンドと同じブロックに入れ、更新手順はページ末尾に1回だけ置く
+    expect(screen.getAllByText(/# 確認/)).toHaveLength(3);
+    expect(screen.getByRole("heading", { name: "更新する" })).toBeInTheDocument();
+    expect(screen.queryByText("このリポジトリを手元で動かす")).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "GitHubの導入コマンドをコピー" }));
     expect(writeText).toHaveBeenCalledWith(expect.stringContaining("git clone"));
     expect(screen.getByRole("button", { name: "GitHubの導入コマンドをコピーしました" })).toBeInTheDocument();
