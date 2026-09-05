@@ -156,6 +156,19 @@ const setupMethods = [
   },
 ] as const;
 
+const mcpClients = [
+  {
+    title: "Codex",
+    description: "ユーザー単位で登録します。",
+    command: "codex mcp add atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system-demo mcp:start\ncodex mcp get atlas-design-system\n\n# 削除\ncodex mcp remove atlas-design-system",
+  },
+  {
+    title: "Claude Code",
+    description: "プロジェクト単位で登録します。",
+    command: "claude mcp add --scope project atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system-demo mcp:start\nclaude mcp get atlas-design-system\n\n# 削除\nclaude mcp remove --scope project atlas-design-system",
+  },
+] as const;
+
 function SetupCommand({ title, command }: { title: string; command: string }) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
@@ -232,18 +245,13 @@ export function GettingStartedPage() {
           <p><code>/absolute/path/to/atlas-design-system-demo</code>は、cloneしたディレクトリの絶対パスへ置き換えます。</p>
         </div>
         <div className="client-setup-grid">
-          <article>
-            <h3>Codex</h3>
-            <SetupCommand title="Codex MCP" command={'codex mcp add atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system-demo mcp:start\ncodex mcp get atlas-design-system'} />
-            <p className="setup-note">削除するとき</p>
-            <pre className="setup-code"><code>codex mcp remove atlas-design-system</code></pre>
-          </article>
-          <article>
-            <h3>Claude Code</h3>
-            <SetupCommand title="Claude Code MCP" command={'claude mcp add --scope project atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system-demo mcp:start\nclaude mcp get atlas-design-system'} />
-            <p className="setup-note">削除するとき</p>
-            <pre className="setup-code"><code>claude mcp remove --scope project atlas-design-system</code></pre>
-          </article>
+          {mcpClients.map(({ title, description, command }) => (
+            <article className="site-card setup-card" key={title}>
+              <h3>{title}</h3>
+              <p>{description}</p>
+              <SetupCommand title={`${title} MCP`} command={command} />
+            </article>
+          ))}
         </div>
       </section>
     </article>

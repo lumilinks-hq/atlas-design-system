@@ -86,16 +86,15 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .setup-prerequisite { display: flex; gap: var(--dh-space-3); margin: var(--dh-space-4) 0 var(--dh-space-6) !important; }
 .setup-prerequisite span { flex: none; color: var(--dh-text-muted); font-size: .875rem; font-weight: 600; line-height: 1.75; }
 .setup-code { margin: 0; border-radius: var(--dh-radius-base); background: var(--dh-surface-muted); color: var(--dh-text-muted); padding: var(--dh-space-3); font-size: .875rem; line-height: 1.6; overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
-.client-setup-grid .setup-note { margin: 0 0 calc(-1 * var(--dh-space-2)); color: var(--dh-text-muted); font-size: .875rem; }
 .setup-command { position: relative; margin-top: auto; border-radius: var(--dh-radius-base); background: var(--dh-surface-muted); color: var(--dh-text-muted); }
 .setup-command pre { margin: 0; padding: var(--dh-space-3) 52px var(--dh-space-3) var(--dh-space-3); font-size: .875rem; line-height: 1.6; overflow-x: auto; white-space: pre-wrap; }
 .setup-command .button { position: absolute; top: var(--dh-space-2); right: var(--dh-space-2); }
 .setup-update { display: grid; align-items: start; gap: var(--dh-space-8); margin-top: 88px; border-top: 1px solid var(--dh-border); padding-top: var(--dh-space-8); grid-template-columns: 1fr 1fr; }
 .client-setup { margin-top: 88px; border-top: 1px solid var(--dh-border); padding-top: var(--dh-space-8); }
 .client-setup-grid { display: grid; gap: var(--dh-space-6); margin-top: var(--dh-space-8); grid-template-columns: 1fr 1fr; }
-.client-setup-grid article { display: grid; gap: var(--dh-space-4); }
-.client-setup-grid h3, .client-setup-grid p { margin: 0; }
-.client-setup-grid p { color: var(--dh-text-muted); font-size: .875rem; }
+.client-setup-grid h3 { margin: 0 0 var(--dh-space-3); font-size: 18px; letter-spacing: -.02em; }
+.client-setup-grid .setup-card p { margin-bottom: var(--dh-space-6); }
+.client-setup-grid .setup-command { margin-top: 0; }
 
 .spec-section, .component-contracts { margin-top: 64px; }
 .spec-list { margin: var(--dh-space-6) 0 0; border-block-start: 1px solid var(--dh-border); }
