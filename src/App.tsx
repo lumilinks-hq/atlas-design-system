@@ -6,6 +6,7 @@ import {
   FoundationsPage,
   GettingStartedPage,
   HomePage,
+  PatternDocPage,
   PatternPage,
   RulesPage,
   SpacingPatternPage,
@@ -28,6 +29,8 @@ export function App() {
         <Route path="/components" element={<ComponentsPage />} />
         <Route path="/patterns/page-layout" element={<PatternPage />} />
         <Route path="/patterns/spacing-layout" element={<SpacingPatternPage />} />
+        <Route path="/patterns/visual-grouping" element={<PatternDocPage slug="visual-grouping" />} />
+        <Route path="/patterns/mobile-layout" element={<PatternDocPage slug="mobile-layout" />} />
         <Route path="/patterns/account-management" element={<Navigate to="/patterns/page-layout" replace />} />
         <Route path="/examples/account-management" element={<ExamplePage />} />
         <Route path={resultsPath} element={<ResultsPage />} />

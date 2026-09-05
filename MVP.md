@@ -137,6 +137,8 @@ design/
   patterns/
     page-layout.json
     spacing-layout.json
+    visual-grouping.json
+    mobile-layout.json
   examples/
     account-management.json
   rules.json

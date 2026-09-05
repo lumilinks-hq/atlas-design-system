@@ -433,6 +433,18 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .compare-summary strong { font-size: 1.25rem; }
 .compare-note { margin: 0; color: var(--dh-text-muted); font-size: .875rem; line-height: 1.7; }
 .compare-section { margin-top: 64px; }
+.doc-meta { margin: calc(var(--dh-space-4) * -1) 0 0; color: var(--dh-text-muted); font-size: .875rem; }
+.doc-section { margin-top: 56px; }
+.doc-section h2 { margin: 0; font-size: 1.125rem; }
+.doc-section > p { margin: var(--dh-space-3) 0 0; color: var(--dh-text-muted); font-size: .9375rem; line-height: 1.7; }
+.doc-table-scroll { margin-top: var(--dh-space-4); overflow-x: auto; }
+.doc-table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: .875rem; }
+.doc-table--wide { min-width: 960px; }
+.doc-table th, .doc-table td { border-top: 1px solid var(--dh-border); padding: var(--dh-space-3) var(--dh-space-2); text-align: left; vertical-align: top; line-height: 1.7; }
+.doc-table thead th { border-top: 0; color: var(--dh-text-muted); font-size: .8125rem; white-space: nowrap; }
+.doc-table tbody th { font-weight: 600; }
+.doc-inline-list { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+
 .compare-table-scroll { margin-top: var(--dh-space-6); overflow-x: auto; }
 .compare-table { width: 100%; min-width: 640px; border-collapse: collapse; font-size: .875rem; }
 .compare-table th, .compare-table td { border-top: 1px solid var(--dh-border); padding: var(--dh-space-3) var(--dh-space-2); text-align: left; vertical-align: top; }

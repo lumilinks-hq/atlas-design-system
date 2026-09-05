@@ -125,7 +125,7 @@ const layers = [
     lead: "判断の背景を、同じ形でAIに読ませる",
     artifacts: [
       { path: "DESIGN.md", note: "参照の入口" },
-      { path: "design/patterns/*.json", note: "ページレイアウト、余白の取り方" },
+      { path: "design/patterns/*.json", note: "ページレイアウト、余白、まとまり、狭い画面の組み替え" },
       { path: "design/examples/account-management.json", note: "顧客管理をパターンへ写したサンプル" },
       { path: "skills/atlas-design-system/", note: "AIエージェントが読むSkill。MCPは scripts/mcp/" },
     ],

@@ -19,7 +19,9 @@
       "pattern.page-layout#collection-table",
       "pattern.page-layout#single-one-column",
       "pattern.spacing-layout#page-content",
-      "pattern.spacing-layout#dialog-content"
+      "pattern.spacing-layout#dialog-content",
+      "pattern.visual-grouping#surface-group",
+      "pattern.mobile-layout#responsive-collection"
     ],
     "examples": ["example.account-management"]
   },

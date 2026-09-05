@@ -26,6 +26,8 @@ const navigation = [
     items: [
       { label: "ページレイアウト", to: "/patterns/page-layout" },
       { label: "余白の取り方", to: "/patterns/spacing-layout" },
+      { label: "視覚的グルーピング", to: "/patterns/visual-grouping" },
+      { label: "モバイルレイアウト", to: "/patterns/mobile-layout" },
     ],
   },
   {
@@ -62,6 +64,8 @@ export function DocsShell() {
       "/components": "コンポーネント — Atlas Design System",
       "/patterns/page-layout": "ページレイアウト — Atlas Design System",
       "/patterns/spacing-layout": "余白の取り方 — Atlas Design System",
+      "/patterns/visual-grouping": "視覚的グルーピング — Atlas Design System",
+      "/patterns/mobile-layout": "モバイルレイアウト — Atlas Design System",
       "/examples/account-management": "例：顧客管理 — Atlas Design System",
       "/examples/account-management/results": "生成結果の比較 — Atlas Design System",
       "/rules": "検証ルール — Atlas Design System",

@@ -80,9 +80,10 @@ describe("契約のversion", () => {
   });
 
   it("既存のpatternとexampleの契約がversionを持つ", async () => {
+    const patterns = (await readdir(resolve(designDir, "patterns"))).filter((file) => file.endsWith(".json"));
+    expect(patterns.length).toBeGreaterThan(0);
     const files = [
-      "design/patterns/page-layout.json",
-      "design/patterns/spacing-layout.json",
+      ...patterns.map((file) => `design/patterns/${file}`),
       "design/examples/account-management.json",
     ];
     for (const file of files) {

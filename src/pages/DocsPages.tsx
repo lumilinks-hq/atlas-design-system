@@ -30,6 +30,7 @@ import {
   createAccountManagementTableCodeExample,
   designData,
   type AccountManagementTableColumnId,
+  type PatternSlug,
 } from "../data/design";
 
 const docsToastQueue = new Toast.Queue({
@@ -1037,6 +1038,167 @@ function LayoutContractDetails({ label, layout }: { label: string; layout: Contr
         </dl>
       )}
     </div>
+  );
+}
+
+// パターンJSONをそのまま表で見せる汎用ページ。装飾は持たず、増えたパターンはslugを足すだけで並ぶ
+export function PatternDocPage({ slug }: { slug: PatternSlug }) {
+  const pattern = designData.patterns[slug];
+
+  return (
+    <article className="doc-page">
+      <PageHeader title={pattern.name} description={pattern.purpose} />
+      <p className="doc-meta"><code>{pattern.id}</code></p>
+
+      <section className="doc-section" aria-labelledby={`${slug}-principles`}>
+        <h2 id={`${slug}-principles`}>考え方</h2>
+        <div className="doc-table-scroll">
+          <table className="doc-table">
+            <thead>
+              <tr><th scope="col">方針</th><th scope="col">内容</th></tr>
+            </thead>
+            <tbody>
+              {pattern.principles.map((principle) => (
+                <tr key={principle.id}>
+                  <th scope="row">{principle.title}</th>
+                  <td>{principle.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="doc-section" aria-labelledby={`${slug}-anatomy`}>
+        <h2 id={`${slug}-anatomy`}>構造</h2>
+        <div className="doc-table-scroll">
+          <table className="doc-table">
+            <thead>
+              <tr><th scope="col">領域</th><th scope="col">扱い</th><th scope="col">内容</th></tr>
+            </thead>
+            <tbody>
+              {pattern.anatomy.map((part) => (
+                <tr key={part.id}>
+                  <th scope="row">{part.name}</th>
+                  <td>{part.required ? "必須" : "任意"}</td>
+                  <td>{part.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="doc-section" aria-labelledby={`${slug}-variants`}>
+        <h2 id={`${slug}-variants`}>使い分け</h2>
+        <div className="doc-table-scroll">
+          <table className="doc-table doc-table--wide">
+            <thead>
+              <tr>
+                <th scope="col">variant</th>
+                <th scope="col">ID</th>
+                <th scope="col">選ぶ場面</th>
+                <th scope="col">避ける場面</th>
+                <th scope="col">広い画面</th>
+                <th scope="col">狭い画面</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pattern.variants.map((variant) => (
+                <tr key={variant.id}>
+                  <th scope="row">{variant.name}</th>
+                  <td><code>{variant.id}</code></td>
+                  <td>{variant.useWhen}</td>
+                  <td>{variant.avoidWhen}</td>
+                  <td>{variant.desktop}</td>
+                  <td>{variant.narrow}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="doc-section" aria-labelledby={`${slug}-layout`}>
+        <h2 id={`${slug}-layout`}>実装で使う値</h2>
+        <p>クラスは<code>design/layout.css</code>、値は<code>design/tokens.json</code>にあります。</p>
+        <div className="doc-table-scroll">
+          <table className="doc-table doc-table--wide">
+            <thead>
+              <tr>
+                <th scope="col">variant</th>
+                <th scope="col">切り替えの基準</th>
+                <th scope="col">構成</th>
+                <th scope="col">クラス</th>
+                <th scope="col">値</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pattern.variants.map((variant) => (
+                <tr key={variant.id}>
+                  <th scope="row"><code>{variant.id}</code></th>
+                  <td>{variant.layout?.breakpoint ? <code>{variant.layout.breakpoint}</code> : "—"}</td>
+                  <td>
+                    <ul className="doc-inline-list">
+                      {variant.structure.map((item) => <li key={item}>{item}</li>)}
+                    </ul>
+                  </td>
+                  <td>
+                    <ul className="doc-inline-list">
+                      {(variant.layout?.classes ?? []).map((item) => <li key={item}><code>{item}</code></li>)}
+                    </ul>
+                  </td>
+                  <td>
+                    <ul className="doc-inline-list">
+                      {Object.entries(variant.layout?.values ?? {}).map(([name, value]) => (
+                        <li key={name}>{name} <code>{value}</code></li>
+                      ))}
+                    </ul>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="doc-section" aria-labelledby={`${slug}-contract`}>
+        <h2 id={`${slug}-contract`}>参照する契約</h2>
+        <div className="doc-table-scroll">
+          <table className="doc-table">
+            <thead>
+              <tr><th scope="col">項目</th><th scope="col">内容</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">画面状態</th>
+                <td>
+                  <ul className="doc-inline-list">
+                    {pattern.states.map((state) => <li key={state}><code>{state}</code></li>)}
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">コンポーネント</th>
+                <td>
+                  <ul className="doc-inline-list">
+                    {pattern.components.map((componentId) => <li key={componentId}><code>{componentId}</code></li>)}
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">ルール</th>
+                <td>
+                  <ul className="doc-inline-list">
+                    {pattern.rules.map((ruleId) => <li key={ruleId}><code>{ruleId}</code></li>)}
+                  </ul>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </article>
   );
 }
 

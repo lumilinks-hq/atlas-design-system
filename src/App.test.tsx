@@ -153,6 +153,30 @@ describe("Atlas Design System demo", () => {
     expect(screen.getByText("pattern.spacing-layout")).toBeInTheDocument();
   });
 
+  it("documents visual grouping as spacing, surfaces, and dividers", () => {
+    render(<MemoryRouter initialEntries={["/patterns/visual-grouping"]}><App /></MemoryRouter>);
+
+    expect(screen.getByRole("heading", { level: 1, name: "視覚的グルーピング" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "考え方" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "構造" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "使い分け" })).toBeInTheDocument();
+    expect(screen.getByText("pattern.visual-grouping")).toBeInTheDocument();
+    expect(screen.getAllByRole("table").length).toBeGreaterThanOrEqual(3);
+    expect(screen.getByRole("rowheader", { name: "矩形でまとめる" })).toBeInTheDocument();
+    expect(screen.getAllByText(".section-block").length).toBeGreaterThan(0);
+  });
+
+  it("documents mobile layout as one column, compact spacing, and touch targets", () => {
+    render(<MemoryRouter initialEntries={["/patterns/mobile-layout"]}><App /></MemoryRouter>);
+
+    expect(screen.getByRole("heading", { level: 1, name: "モバイルレイアウト" })).toBeInTheDocument();
+    expect(screen.getByText("pattern.mobile-layout")).toBeInTheDocument();
+    expect(screen.getAllByRole("table").length).toBeGreaterThanOrEqual(3);
+    expect(screen.getByRole("rowheader", { name: "タップ領域の確保" })).toBeInTheDocument();
+    expect(screen.getByText(".touch-target")).toBeInTheDocument();
+    expect(screen.getAllByText("breakpoint.narrow")).toHaveLength(4);
+  });
+
   it("separates the account management feature from reusable patterns", () => {
     render(<MemoryRouter initialEntries={["/examples/account-management"]}><App /></MemoryRouter>);
 

@@ -41,6 +41,8 @@ describe("Atlas MCP server", () => {
     const listed = await client.listResources();
     expect(listed.resources.some((resource) => resource.uri === "atlas://design/patterns/page-layout")).toBe(true);
     expect(listed.resources.some((resource) => resource.uri === "atlas://design/patterns/spacing-layout")).toBe(true);
+    expect(listed.resources.some((resource) => resource.uri === "atlas://design/patterns/visual-grouping")).toBe(true);
+    expect(listed.resources.some((resource) => resource.uri === "atlas://design/patterns/mobile-layout")).toBe(true);
 
     const result = await client.readResource({ uri: "atlas://design/examples/account-management" });
     expect(result.contents[0].text).toContain('"id": "example.account-management"');
@@ -51,7 +53,12 @@ describe("Atlas MCP server", () => {
     const result = await client.callTool({
       name: "resolve_design_contract",
       arguments: {
-        patterns: ["pattern.page-layout#collection-table", "pattern.page-layout#single-one-column"],
+        patterns: [
+          "pattern.page-layout#collection-table",
+          "pattern.page-layout#single-one-column",
+          "pattern.visual-grouping#surface-group",
+          "pattern.mobile-layout#responsive-collection",
+        ],
         examples: ["example.account-management"],
       },
     });

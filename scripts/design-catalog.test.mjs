@@ -24,6 +24,8 @@ describe("Atlas design catalog", () => {
       "pattern.page-layout#single-one-column",
       "pattern.spacing-layout#page-content",
       "pattern.spacing-layout#dialog-content",
+      "pattern.visual-grouping#surface-group",
+      "pattern.mobile-layout#responsive-collection",
     ]);
     expect(result.resources.map((resource) => resource.id)).toContain("example.account-management");
     expect(result.resources.map((resource) => resource.id)).toContain("component.drawer");

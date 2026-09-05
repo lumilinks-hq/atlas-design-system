@@ -86,3 +86,11 @@ JSX 内 raw color、jsx-a11y、manifest 駆動ルール(customer-routes / custom
 - `run.isolation` は run-experiment だけが記録する。`refine-experiment.mjs` もエージェントを走らせるが今回は対象外。
 - 保存済み run(mvp-11 / lint-01 / prelint-01)は隔離前のもので、`isolation` を持たない。比較数字の再取得は 1 本約 11 ドルなので別途判断。
 - 再現性が下がった。以前は全 run が root の `pnpm-lock.yaml` で固定された同じ `node_modules` を共有していた。今は workspace ごとに lockfile を作るので、直接依存は starter の固定バージョンどおりでも、推移的依存は install した日で変わり得る。同じ pair の baseline と harness は数分差なので対の比較には影響しないが、pair をまたぐ比較や日を置いた再現では前提が弱い。root の pnpm 設定(`minimumReleaseAge` など)も workspace には効かない。直すなら starter に `pnpm-lock.yaml` を置く。
+
+## 2026-09-05 パターン 2 件を追加（Phase 1）
+
+- `design/patterns/visual-grouping.json`（余白 / 矩形 / 罫線 / 入れ子セクション）と `mobile-layout.json`（一覧の切り替え / 詳細の 1 カラム / 余白の縮小 / タップ領域）を追加。`layout.css` に `.section-block` 系 3 クラスと `.touch-target` を追加
+- account-management の manifest から両パターンを参照（孤児チェック回避）。評価器は `#collection-table` / `#single-one-column` だけ layout を解決するので mvp-11 とのバイト一致は維持
+- サイトは汎用の `PatternDocPage` で 2 ルートを追加。既存 2 ページは専用プレビューを持つため汎用化していない
+- 未解消: 狭い画面の左右余白が `layout.css` は 12px、`spacing-layout.json` と `mobile-layout.json` は 16px と食い違う
+- 次: Phase 2（`--experiment` 汎用化）→ Phase 3（請求書）→ Phase 4（顧客追加 + 再 run）。計画は `docs/plans/patterns-invoice-create-plan.md`

@@ -66,6 +66,18 @@ try {
     await page.close();
   }
 
+  for (const [path, heading] of [["/patterns/visual-grouping", "視覚的グルーピング"], ["/patterns/mobile-layout", "モバイルレイアウト"]]) {
+    for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+      const { page, errors } = await openCheckedPage(path, viewport);
+      await page.getByRole("heading", { name: heading, level: 1 }).waitFor();
+      assert(await page.locator("table.doc-table").count() >= 3, `${heading}の表が3つ以上ありません`);
+      const hasHorizontalOverflow = await page.evaluate(() => globalThis.document.documentElement.scrollWidth > globalThis.innerWidth);
+      assert(!hasHorizontalOverflow, `${heading}に横スクロールがあります: ${viewport.width}px`);
+      assert(errors.length === 0, `${heading}のブラウザエラー:\n${errors.join("\n")}`);
+      await page.close();
+    }
+  }
+
   for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
     const { page, errors } = await openCheckedPage("/examples/account-management/results", viewport);
     await page.getByRole("heading", { name: "生成結果の比較", level: 1 }).waitFor();
@@ -111,7 +123,7 @@ try {
     await page.close();
   }
 
-  console.log("Site browser check OK: Overview, Getting started, デザインハーネス, Results, Play");
+  console.log("Site browser check OK: Overview, Getting started, デザインハーネス, デザインパターン, Results, Play");
 } finally {
   await browser.close();
   await server.close();

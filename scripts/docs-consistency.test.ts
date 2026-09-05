@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -54,6 +54,23 @@ describe("design contract coverage on the docs site", () => {
     expect(docsPage).toContain('"ai-review": "AIレビュー"');
     expect(docsPage).toContain('human: "人の判断"');
     expect(docsPage).toContain('lint: "Lint"');
+  });
+
+  it("publishes every design pattern as a docs page", async () => {
+    const [designModule, appModule, shell] = await Promise.all([
+      readFile(resolve(rootDir, "src/data/design.ts"), "utf8"),
+      readFile(resolve(rootDir, "src/App.tsx"), "utf8"),
+      readFile(resolve(rootDir, "src/components/DocsShell.tsx"), "utf8"),
+    ]);
+    const patternFiles = (await readdir(resolve(rootDir, "design/patterns"))).filter((name) => name.endsWith(".json"));
+
+    expect(patternFiles.length).toBeGreaterThan(0);
+    for (const file of patternFiles) {
+      const slug = file.replace(/\.json$/, "");
+      expect(designModule, file).toContain(`design/patterns/${file}`);
+      expect(appModule, slug).toContain(`/patterns/${slug}`);
+      expect(shell, slug).toContain(`/patterns/${slug}`);
+    }
   });
 
   it("wires the form and alert contracts into the design data and the component page", async () => {

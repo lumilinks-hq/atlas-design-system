@@ -194,6 +194,8 @@ Patternの正本は`design/patterns/page-layout.json`。Issue固有の画面名�
 | `collection-list` | 狭い領域で識別情報と状態を順に見る | 主要属性だけを1行へ置く | 水平スクロールを避ける |
 | `single-one-column` | 一つのオブジェクトを並列なセクションで見る | 重要度順の1カラムを維持する | 最も予測しやすい詳細構造 |
 
+まとまりの示し方は`pattern.visual-grouping`、`breakpoint.narrow`未満での組み替えは`pattern.mobile-layout`のvariantに従う。
+
 ### Page Anatomy
 
 1. アプリケーションヘッダー
@@ -314,6 +316,9 @@ Cardは`Card.Header`と`Card.Content`、Drawerは`Drawer.Header`、`Drawer.Body`
 - `design/layout.css` — 契約が参照するレイアウトクラスの実装正本。`breakpoint.narrow`のmediaリテラルを含む
 - `design/components/*.json` — HeroUIコンポーネントの許可variantと必須状態
 - `design/patterns/page-layout.json` — Page Layoutのanatomyとvariant
+- `design/patterns/spacing-layout.json` — 余白の段階とvariantごとの数値
+- `design/patterns/visual-grouping.json` — まとまりを示す手段（余白・矩形・罫線）とvariant
+- `design/patterns/mobile-layout.json` — `breakpoint.narrow`未満での組み替えとvariant
 - `design/examples/*.json` — Issue固有のPattern適用例
 - `design/rules.json` — lint、automatic、ai-review、humanの検査ルール。lintの分はESLint（`atlas/*`）が担い、生成側に渡すrules.jsonからは除く
 

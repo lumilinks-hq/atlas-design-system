@@ -144,6 +144,10 @@ describe("Atlas design contract references", () => {
       ".detail-page__heading",
       ".detail-grid",
       ".drawer-form",
+      ".section-block",
+      ".section-block__heading",
+      ".section-divider",
+      ".touch-target",
     ]) {
       expect(layout).toContain(className);
     }
@@ -204,12 +208,86 @@ describe("Atlas design contract references", () => {
     }
   });
 
+  it("defines visual grouping variants backed by layout.css", async () => {
+    const pattern = await readJson("design/patterns/visual-grouping.json");
+    const layout = await readFile(resolve(rootDir, "design/layout.css"), "utf8");
+    const rules = await readJson("design/rules.json");
+    const ruleIds = new Set(rules.rules.map((rule: { id: string }) => rule.id));
+
+    expect(pattern.id).toBe("pattern.visual-grouping");
+    expect(pattern.variants.map((variant: { id: string }) => variant.id)).toEqual([
+      "spacing-group",
+      "surface-group",
+      "divider-group",
+      "nested-sections",
+    ]);
+    for (const variant of pattern.variants) {
+      expect(variant.layout, `${variant.id} layout`).toBeDefined();
+      for (const className of variant.layout.classes ?? []) {
+        expect(layout, `${variant.id} ${className}`).toContain(className);
+      }
+    }
+
+    const surfaceGroup = pattern.variants.find((variant: { id: string }) => variant.id === "surface-group");
+    expect(surfaceGroup.layout.classes).toContain(".section-block");
+    expect(surfaceGroup.layout.values).toMatchObject({ padding: "space.6", blockGap: "space.6" });
+
+    const dividerGroup = pattern.variants.find((variant: { id: string }) => variant.id === "divider-group");
+    expect(dividerGroup.layout.classes).toContain(".section-divider");
+
+    expect(pattern.components).toEqual(["component.card", "component.surface", "component.toolbar"]);
+    for (const ruleId of pattern.rules) expect(ruleIds.has(ruleId), ruleId).toBe(true);
+  });
+
+  it("defines mobile layout variants that reuse the narrow breakpoint classes", async () => {
+    const pattern = await readJson("design/patterns/mobile-layout.json");
+    const layout = await readFile(resolve(rootDir, "design/layout.css"), "utf8");
+
+    expect(pattern.id).toBe("pattern.mobile-layout");
+    expect(pattern.variants.map((variant: { id: string }) => variant.id)).toEqual([
+      "responsive-collection",
+      "adaptive-detail",
+      "compact-spacing",
+      "touch-targets",
+    ]);
+    for (const variant of pattern.variants) {
+      expect(variant.layout.breakpoint, `${variant.id} breakpoint`).toBe("breakpoint.narrow");
+      for (const className of variant.layout.classes ?? []) {
+        expect(layout, `${variant.id} ${className}`).toContain(className);
+      }
+    }
+
+    const responsive = pattern.variants.find((variant: { id: string }) => variant.id === "responsive-collection");
+    expect(responsive.layout.classes).toContain(".collection-table-wrap");
+    expect(responsive.layout.classes).toContain(".collection-list-mobile");
+
+    const touchTargets = pattern.variants.find((variant: { id: string }) => variant.id === "touch-targets");
+    expect(touchTargets.layout.classes).toContain(".touch-target");
+    expect(touchTargets.layout.values).toMatchObject({ minSize: "44px", adjacentGap: "space.2" });
+
+    expect(pattern.components).toEqual([
+      "component.table",
+      "component.drawer",
+      "component.button",
+      "component.link",
+      "component.search-field",
+    ]);
+    expect(pattern.rules).toEqual([
+      "layout.narrow",
+      "layout.collection-toolbar",
+      "layout.back-navigation",
+      "a11y.control-name",
+    ]);
+  });
+
   it("wires the demo flow into the experiment manifest as machine-readable screens", async () => {
     const manifest = await readJson("experiments/account-management/manifest.json");
     const example = await readJson("design/examples/account-management.json");
 
     expect(manifest.designRefs.patterns).toContain("pattern.spacing-layout#page-content");
     expect(manifest.designRefs.patterns).toContain("pattern.spacing-layout#dialog-content");
+    expect(manifest.designRefs.patterns).toContain("pattern.visual-grouping#surface-group");
+    expect(manifest.designRefs.patterns).toContain("pattern.mobile-layout#responsive-collection");
     expect(manifest.screens.map((screen: { route: string }) => screen.route)).toEqual([
       "/customers",
       "/customers/:customerId",

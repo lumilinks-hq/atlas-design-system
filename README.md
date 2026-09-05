@@ -90,6 +90,8 @@ claude mcp get atlas-design-system
 - [`DESIGN.md`](./DESIGN.md): AIが最初に読む設計方針
 - [`design/patterns/page-layout.json`](./design/patterns/page-layout.json): 画面名に依存しないページ構造
 - [`design/patterns/spacing-layout.json`](./design/patterns/spacing-layout.json): 余白とレイアウトの数値契約
+- [`design/patterns/visual-grouping.json`](./design/patterns/visual-grouping.json): 余白・矩形・罫線でまとまりを示す手段の選び方
+- [`design/patterns/mobile-layout.json`](./design/patterns/mobile-layout.json): 狭い画面での組み替えとタップ領域の契約
 - [`design/layout.css`](./design/layout.css): レイアウト実装部品の正本CSS
 - [`design/examples/account-management.json`](./design/examples/account-management.json): 顧客管理で使う構成、状態、業務制約
 - [`design/`](./design): token、HeroUIコンポーネント契約、検証ルール、JSON Schema
