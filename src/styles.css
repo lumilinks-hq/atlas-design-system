@@ -36,12 +36,19 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .sidebar-top { display: flex; align-items: center; justify-content: space-between; padding: 0 var(--dh-space-2) var(--dh-space-8); }
 .brand { font-size: 1.125rem; font-weight: 700; letter-spacing: -.025em; }
 .sidebar-brand { display: grid; gap: 2px; }
-.sidebar-nav { display: flex; flex: 1; flex-direction: column; gap: var(--dh-space-8); }
+.sidebar-nav { display: flex; flex: 1; min-height: 0; flex-direction: column; gap: var(--dh-space-8); overflow-y: auto; }
 .nav-group { display: flex; flex-direction: column; gap: 2px; }
 .nav-label { margin: 0 0 var(--dh-space-2); padding: 0 var(--dh-space-3); color: var(--dh-text); font-size: .875rem; font-weight: 600; }
 .nav-item { border-radius: var(--dh-radius-base); color: var(--dh-text-muted); font-size: 1rem; line-height: 1.5; padding: 8px 12px; }
 .nav-item-active { background: var(--dh-accent-soft); color: var(--dh-accent); font-weight: 600; }
-.docs-main { min-height: 100vh; margin-inline-start: 280px; }
+.nav-group-external { margin-top: auto; padding-top: var(--dh-space-6); }
+.nav-item-external { display: flex; align-items: center; justify-content: space-between; gap: var(--dh-space-2); }
+.nav-item-external svg { color: var(--dh-text-muted); }
+.docs-main { display: flex; min-height: 100vh; flex-direction: column; margin-inline-start: 280px; }
+.docs-footer { width: min(100%, 1040px); margin: auto auto 0; padding: 0 64px 56px; color: var(--dh-text-muted); font-size: .8125rem; }
+.docs-footer p { margin: 0; }
+/* 概要ページだけ本文幅が広いので、フッターの左端も本文に合わせる */
+.docs-main:has(.home-page) .docs-footer { width: min(100%, 1120px); }
 .mobile-header, .sidebar-scrim { display: none; }
 
 .doc-page { width: min(100%, 1040px); margin: 0 auto; padding: 80px 64px 120px; }
@@ -229,6 +236,11 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .layout-preview[data-variant="collection-list"] .preview-main { background: repeating-linear-gradient(to bottom, var(--dh-surface) 0 32px, transparent 32px 38px); }
 .layout-preview[data-variant="single-one-column"] .preview-main { margin-inline: 12%; background: linear-gradient(to bottom, var(--dh-surface) 0 44%, transparent 44% 50%, var(--dh-surface) 50% 100%); }
 .variant-copy { padding: var(--dh-space-6); }
+.pattern-variant-card { gap: 0; border-radius: var(--dh-radius-base); background: var(--dh-surface); padding: var(--dh-space-6); box-shadow: var(--dh-shadow-raised); }
+.pattern-variant-head { display: grid; gap: 2px; }
+.pattern-variant-head code { color: var(--dh-text-muted); font-size: .8125rem; }
+.pattern-variant-card .variant-copy { padding: 0; }
+.pattern-variant-card .variant-copy > p:first-child { margin-top: var(--dh-space-4); }
 .variant-copy h3 { margin: 0; font-size: 1.25rem; letter-spacing: -.02em; }
 .variant-copy > p { min-height: 46px; margin: var(--dh-space-2) 0 0; color: var(--dh-text-muted); font-size: 1rem; line-height: 1.7; }
 .variant-copy dl { display: grid; gap: var(--dh-space-3); margin: var(--dh-space-6) 0 0; }
@@ -289,11 +301,11 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .spacing-recipe-list dd { margin: 0; color: var(--dh-text-muted); font-size: 1rem; }
 .spacing-token-row { display: flex; flex-wrap: wrap; gap: var(--dh-space-2); }
 .spacing-token-row span { border-radius: var(--dh-radius-base); background: var(--dh-surface-muted); padding: var(--dh-space-1) var(--dh-space-2); color: var(--dh-text-muted); font-size: .875rem; }
-.spacing-contract { display: grid; align-items: end; gap: var(--dh-space-8); border-block: 1px solid var(--dh-border); padding-block: var(--dh-space-8); grid-template-columns: 1fr 1fr; }
-.spacing-contract h2 { margin: 0; }
-.spacing-contract p { margin: var(--dh-space-2) 0 0; color: var(--dh-text-muted); font-size: 1rem; }
-.spacing-contract > div:last-child { display: grid; gap: var(--dh-space-2); }
-.spacing-contract code { border-radius: var(--dh-radius-base); background: var(--dh-surface-muted); padding: var(--dh-space-2) var(--dh-space-3); color: var(--dh-accent); overflow-wrap: anywhere; }
+.spacing-contract, .pattern-contract { display: grid; align-items: end; gap: var(--dh-space-8); border-block: 1px solid var(--dh-border); padding-block: var(--dh-space-8); grid-template-columns: 1fr 1fr; }
+.spacing-contract h2, .pattern-contract h2 { margin: 0; }
+.spacing-contract p, .pattern-contract p { margin: var(--dh-space-2) 0 0; color: var(--dh-text-muted); font-size: 1rem; }
+.spacing-contract > div:last-child, .pattern-contract > div:last-child { display: grid; gap: var(--dh-space-2); }
+.spacing-contract code, .pattern-contract code { border-radius: var(--dh-radius-base); background: var(--dh-surface-muted); padding: var(--dh-space-2) var(--dh-space-3); color: var(--dh-accent); overflow-wrap: anywhere; }
 
 .reference-strip { display: grid; align-items: center; gap: var(--dh-space-4); margin-top: 56px; border: 1px solid var(--dh-border); border-radius: var(--dh-radius-base); background: var(--dh-surface); padding: var(--dh-space-4) var(--dh-space-6); grid-template-columns: auto 1fr auto; }
 .reference-strip > svg { color: var(--dh-accent); }
@@ -433,10 +445,6 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .compare-summary strong { font-size: 1.25rem; }
 .compare-note { margin: 0; color: var(--dh-text-muted); font-size: .875rem; line-height: 1.7; }
 .compare-section { margin-top: 64px; }
-.doc-meta { margin: calc(var(--dh-space-4) * -1) 0 0; color: var(--dh-text-muted); font-size: .875rem; }
-.doc-section { margin-top: 56px; }
-.doc-section h2 { margin: 0; font-size: 1.125rem; }
-.doc-section > p { margin: var(--dh-space-3) 0 0; color: var(--dh-text-muted); font-size: .9375rem; line-height: 1.7; }
 .doc-table-scroll { margin-top: var(--dh-space-4); overflow-x: auto; }
 .doc-table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: .875rem; }
 .doc-table--wide { min-width: 960px; }
@@ -444,6 +452,8 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .doc-table thead th { border-top: 0; color: var(--dh-text-muted); font-size: .8125rem; white-space: nowrap; }
 .doc-table tbody th { font-weight: 600; }
 .doc-inline-list { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.artifact-source { display: inline-flex; align-items: center; gap: 4px; color: var(--dh-accent); }
+.artifact-source code { color: inherit; }
 
 .compare-table-scroll { margin-top: var(--dh-space-6); overflow-x: auto; }
 .compare-table { width: 100%; min-width: 640px; border-collapse: collapse; font-size: .875rem; }
@@ -493,6 +503,7 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
   .sidebar-scrim { position: fixed; inset: 0; z-index: 20; display: block; width: 100%; max-width: none; height: 100%; border: 0; border-radius: 0; background: color-mix(in oklch, var(--dh-text) 28%, transparent); }
   .docs-main { margin-inline-start: 0; }
   .doc-page { padding: 56px var(--dh-space-6) 88px; }
+  .docs-footer { padding: 0 var(--dh-space-6) 56px; }
   /* ハッシュ付きリンクの着地点が、sticky なモバイルヘッダー(54px)へ潜らないようにする */
   .doc-page h2[id] { scroll-margin-top: 62px; }
   .flow-list { grid-template-columns: 1fr 1fr; }
@@ -518,6 +529,7 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 
 @media (max-width: 520px) {
   .doc-page { padding-inline: var(--dh-space-4); }
+  .docs-footer { padding-inline: var(--dh-space-4); }
   .page-header h1 { font-size: 2.625rem; }
   .flow-list, .swatch-grid { grid-template-columns: 1fr; }
   .spacing-preview-list li { align-items: stretch; gap: var(--dh-space-2); grid-template-columns: 1fr; }
@@ -534,7 +546,7 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
   .variant-copy dl > div { grid-template-columns: 1fr; }
   .variant-copy > p { min-height: 0; }
   .responsive-section { padding: var(--dh-space-6); grid-template-columns: 1fr; }
-  .spacing-contract { align-items: start; grid-template-columns: 1fr; }
+  .spacing-contract, .pattern-contract { align-items: start; grid-template-columns: 1fr; }
   .spacing-recipe-list dl > div { gap: var(--dh-space-1); grid-template-columns: 1fr; }
   .example-callout { align-items: stretch; flex-direction: column; }
   .reference-strip { align-items: start; grid-template-columns: auto 1fr; }

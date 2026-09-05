@@ -1041,36 +1041,60 @@ function LayoutContractDetails({ label, layout }: { label: string; layout: Contr
   );
 }
 
-// パターンJSONをそのまま表で見せる汎用ページ。装飾は持たず、増えたパターンはslugを足すだけで並ぶ
+type PatternDocCopy = { principles: string; anatomy: string; variants: string; contract: string };
+
+// パターンごとの導入文。パターンJSONに無い「このページで何を選ぶのか」だけをここに置く
+const patternDocCopy: Partial<Record<PatternSlug, PatternDocCopy>> = {
+  "visual-grouping": {
+    principles: "まとまりを示す手段は余白、矩形、罫線の順に検討し、同じ階層では選んだ手段を最後まで揃えます。",
+    anatomy: "セクションと、その中のブロックまでの2階層で組み立てます。",
+    variants: "まとまりの数と、境界をどれだけ強く示す必要があるかで選びます。",
+    contract: "まとまりの判断を生成時に適用する場合は、このパターンIDとファイルを設計契約へ含めます。",
+  },
+  "mobile-layout": {
+    principles: "狭い画面でも情報と操作を落とさず、縦に読める形へ組み替えるための判断です。",
+    anatomy: "画面上部の現在位置、1カラムの内容、主要操作の3つを必ず置きます。",
+    variants: "積み替えで読めるか、構造ごと作り替える必要があるかで選びます。",
+    contract: "狭い画面の組み替えを生成時に適用する場合は、このパターンIDとファイルを設計契約へ含めます。",
+  },
+};
+
+const defaultPatternDocCopy: PatternDocCopy = {
+  principles: "画面を作る前に、このパターンで守る判断を決めます。",
+  anatomy: "必要な領域と、その扱いを揃えます。",
+  variants: "画面名ではなく、扱う情報と操作の性質で選びます。",
+  contract: "このパターンを生成時に適用する場合は、パターンIDとファイルを設計契約へ含めます。",
+};
+
+// パターンJSONをそのまま見せる汎用ページ。増えたパターンはslugを足すだけで並ぶ
 export function PatternDocPage({ slug }: { slug: PatternSlug }) {
   const pattern = designData.patterns[slug];
+  const copy = patternDocCopy[slug] ?? defaultPatternDocCopy;
 
   return (
-    <article className="doc-page">
+    <article className="doc-page pattern-doc-page">
       <PageHeader title={pattern.name} description={pattern.purpose} />
-      <p className="doc-meta"><code>{pattern.id}</code></p>
 
-      <section className="doc-section" aria-labelledby={`${slug}-principles`}>
-        <h2 id={`${slug}-principles`}>考え方</h2>
-        <div className="doc-table-scroll">
-          <table className="doc-table">
-            <thead>
-              <tr><th scope="col">方針</th><th scope="col">内容</th></tr>
-            </thead>
-            <tbody>
-              {pattern.principles.map((principle) => (
-                <tr key={principle.id}>
-                  <th scope="row">{principle.title}</th>
-                  <td>{principle.description}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <section className="pattern-section" aria-labelledby={`${slug}-principles`}>
+        <div className="section-heading">
+          <h2 id={`${slug}-principles`}>考え方</h2>
+          <p>{copy.principles}</p>
+        </div>
+        <div className="principle-list">
+          {pattern.principles.map((principle, index) => (
+            <div className="site-card" key={principle.id}>
+              <span>0{index + 1}</span>
+              <div><h3>{principle.title}</h3><p>{principle.description}</p></div>
+            </div>
+          ))}
         </div>
       </section>
 
-      <section className="doc-section" aria-labelledby={`${slug}-anatomy`}>
-        <h2 id={`${slug}-anatomy`}>構造</h2>
+      <section className="pattern-section" aria-labelledby={`${slug}-anatomy`}>
+        <div className="section-heading">
+          <h2 id={`${slug}-anatomy`}>構造</h2>
+          <p>{copy.anatomy}</p>
+        </div>
         <div className="doc-table-scroll">
           <table className="doc-table">
             <thead>
@@ -1089,46 +1113,43 @@ export function PatternDocPage({ slug }: { slug: PatternSlug }) {
         </div>
       </section>
 
-      <section className="doc-section" aria-labelledby={`${slug}-variants`}>
-        <h2 id={`${slug}-variants`}>使い分け</h2>
-        <div className="doc-table-scroll">
-          <table className="doc-table doc-table--wide">
-            <thead>
-              <tr>
-                <th scope="col">variant</th>
-                <th scope="col">ID</th>
-                <th scope="col">選ぶ場面</th>
-                <th scope="col">避ける場面</th>
-                <th scope="col">広い画面</th>
-                <th scope="col">狭い画面</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pattern.variants.map((variant) => (
-                <tr key={variant.id}>
-                  <th scope="row">{variant.name}</th>
-                  <td><code>{variant.id}</code></td>
-                  <td>{variant.useWhen}</td>
-                  <td>{variant.avoidWhen}</td>
-                  <td>{variant.desktop}</td>
-                  <td>{variant.narrow}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <section className="pattern-section" aria-labelledby={`${slug}-variants`}>
+        <div className="section-heading">
+          <h2 id={`${slug}-variants`}>使い分け</h2>
+          <p>{copy.variants}</p>
+        </div>
+        <div className="variant-grid">
+          {pattern.variants.map((variant) => (
+            <Card className="pattern-variant-card" key={variant.id}>
+              <Card.Header className="pattern-variant-head">
+                <Card.Title>{variant.name}</Card.Title>
+                <code>{variant.id}</code>
+              </Card.Header>
+              <Card.Content className="variant-copy">
+                <p>{variant.useWhen}</p>
+                <dl>
+                  <div><dt><Monitor size={16} />広い画面</dt><dd>{variant.desktop}</dd></div>
+                  <div><dt><Smartphone size={16} />狭い画面</dt><dd>{variant.narrow}</dd></div>
+                </dl>
+                <div className="structure-list">{variant.structure.map((item) => <span key={item}>{item}</span>)}</div>
+                <p className="avoid-copy"><strong>避ける場面</strong>{variant.avoidWhen}</p>
+              </Card.Content>
+            </Card>
+          ))}
         </div>
       </section>
 
-      <section className="doc-section" aria-labelledby={`${slug}-layout`}>
-        <h2 id={`${slug}-layout`}>実装で使う値</h2>
-        <p>クラスは<code>design/layout.css</code>、値は<code>design/tokens.json</code>にあります。</p>
+      <section className="pattern-section" aria-labelledby={`${slug}-layout`}>
+        <div className="section-heading">
+          <h2 id={`${slug}-layout`}>実装で使う値</h2>
+          <p>クラスは<code>design/layout.css</code>、値は<code>design/tokens.json</code>にあります。</p>
+        </div>
         <div className="doc-table-scroll">
           <table className="doc-table doc-table--wide">
             <thead>
               <tr>
                 <th scope="col">variant</th>
                 <th scope="col">切り替えの基準</th>
-                <th scope="col">構成</th>
                 <th scope="col">クラス</th>
                 <th scope="col">値</th>
               </tr>
@@ -1136,13 +1157,8 @@ export function PatternDocPage({ slug }: { slug: PatternSlug }) {
             <tbody>
               {pattern.variants.map((variant) => (
                 <tr key={variant.id}>
-                  <th scope="row"><code>{variant.id}</code></th>
+                  <th scope="row">{variant.name}</th>
                   <td>{variant.layout?.breakpoint ? <code>{variant.layout.breakpoint}</code> : "—"}</td>
-                  <td>
-                    <ul className="doc-inline-list">
-                      {variant.structure.map((item) => <li key={item}>{item}</li>)}
-                    </ul>
-                  </td>
                   <td>
                     <ul className="doc-inline-list">
                       {(variant.layout?.classes ?? []).map((item) => <li key={item}><code>{item}</code></li>)}
@@ -1162,8 +1178,11 @@ export function PatternDocPage({ slug }: { slug: PatternSlug }) {
         </div>
       </section>
 
-      <section className="doc-section" aria-labelledby={`${slug}-contract`}>
-        <h2 id={`${slug}-contract`}>参照する契約</h2>
+      <section className="pattern-section" aria-labelledby={`${slug}-contract`}>
+        <div className="section-heading">
+          <h2 id={`${slug}-contract`}>参照する契約</h2>
+          <p>このパターンを使う画面が満たす、画面状態、コンポーネント、検証ルールです。</p>
+        </div>
         <div className="doc-table-scroll">
           <table className="doc-table">
             <thead>
@@ -1197,6 +1216,11 @@ export function PatternDocPage({ slug }: { slug: PatternSlug }) {
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="pattern-section pattern-contract" aria-labelledby={`${slug}-source`}>
+        <div><h2 id={`${slug}-source`}>デザインハーネスから参照する</h2><p>{copy.contract}</p></div>
+        <div><code>{pattern.id}</code><code>{`design/patterns/${slug}.json`}</code></div>
       </section>
     </article>
   );

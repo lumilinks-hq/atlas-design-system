@@ -16,6 +16,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { HarnessCycle } from "../components/HarnessCycle";
 import { HarnessLoop, type LoopStep } from "../components/HarnessLoop";
 import { designData } from "../data/design";
+import { repositoryBranch, repositoryUrl } from "../data/repository";
 import {
   baselineEvaluation,
   comparison,
@@ -155,7 +156,7 @@ const layers = [
     icon: RefreshCw,
     lead: "検査結果を次の生成と、設計データへ戻す",
     artifacts: [
-      { path: "VALIDATION.md", note: "Runごとの検査結果。修正の入力になる" },
+      { path: "VALIDATION.md", note: "Runごとの検査結果。修正の入力になる", inRepository: false },
       { path: "scripts/refine-experiment.mjs", note: "pnpm experiment:refine で修正版を保存" },
       { path: "design/rules.json", note: "指摘から増やすルール（01へ戻る）" },
     ],
@@ -164,7 +165,31 @@ const layers = [
   },
 ] as const;
 
-type LayerArtifact = { path: string; note: string };
+// inRepository が false のものは Run ごとの生成物で、リポジトリには入っていない
+type LayerArtifact = { path: string; note: string; inRepository?: boolean };
+
+export const harnessArtifacts: readonly LayerArtifact[] = layers.flatMap(
+  (layer): readonly LayerArtifact[] => layer.artifacts,
+);
+
+// 表のパスを GitHub の原本へ結ぶ。* を含むものと末尾が / のものはディレクトリ、それ以外はファイルを指す
+export function artifactSourceHref(path: string) {
+  const segments = path.replace(/\/$/, "").split("/");
+  const globIndex = segments.findIndex((segment) => segment.includes("*"));
+  if (globIndex >= 0) return `${repositoryUrl}/tree/${repositoryBranch}/${segments.slice(0, globIndex).join("/")}`;
+  if (path.endsWith("/")) return `${repositoryUrl}/tree/${repositoryBranch}/${segments.join("/")}`;
+  return `${repositoryUrl}/blob/${repositoryBranch}/${segments.join("/")}`;
+}
+
+function ArtifactPath({ artifact }: { artifact: LayerArtifact }) {
+  if (artifact.inRepository === false) return <code>{artifact.path}</code>;
+  return (
+    <a className="artifact-source" href={artifactSourceHref(artifact.path)} target="_blank" rel="noreferrer">
+      <code>{artifact.path}</code>
+      <ExternalLink size={14} aria-hidden="true" />
+    </a>
+  );
+}
 
 const artifactColumns = [
   { id: "path", label: "ファイル", isRowHeader: true, width: "40%", minWidth: 144, align: "start" },
@@ -217,7 +242,7 @@ export function HarnessPage() {
                     <Table.Row id={artifact.path} columns={artifactColumns}>
                       {(column) => (
                         <Table.Cell data-align={column.align}>
-                          {column.id === "path" ? <code>{artifact.path}</code> : artifact.note}
+                          {column.id === "path" ? <ArtifactPath artifact={artifact} /> : artifact.note}
                         </Table.Cell>
                       )}
                     </Table.Row>

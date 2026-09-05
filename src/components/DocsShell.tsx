@@ -1,7 +1,8 @@
 import { Button } from "@heroui/react";
-import { Menu, X } from "lucide-react";
+import { ExternalLink, Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { repositoryUrl } from "../data/repository";
 
 const navigation = [
   {
@@ -124,6 +125,12 @@ export function DocsShell() {
               ))}
             </div>
           ))}
+          <div className="nav-group nav-group-external">
+            <a className="nav-item nav-item-external" href={repositoryUrl} rel="noreferrer" target="_blank">
+              GitHub
+              <ExternalLink size={14} aria-hidden="true" />
+            </a>
+          </div>
         </nav>
       </aside>
 
@@ -139,6 +146,9 @@ export function DocsShell() {
 
       <main className="docs-main" id="main-content" ref={mainRef} tabIndex={-1}>
         <Outlet />
+        <footer className="docs-footer">
+          <p>© 2026 Lumilinks inc.</p>
+        </footer>
       </main>
     </div>
   );

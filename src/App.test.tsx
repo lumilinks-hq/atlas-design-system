@@ -1,11 +1,16 @@
+/// <reference types="node" />
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { cwd } from "node:process";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 import { designData } from "./data/design";
+import { repositoryUrl } from "./data/repository";
 import { ruleMethodLabels } from "./pages/DocsPages";
-import { ChecksList } from "./pages/HarnessPages";
+import { ChecksList, artifactSourceHref, harnessArtifacts } from "./pages/HarnessPages";
 import {
   baselineEvaluation,
   comparison,
@@ -37,6 +42,26 @@ describe("Atlas Design System demo", () => {
 
     await user.click(screen.getByRole("button", { name: "導入方法を見る" }));
     expect(screen.getByRole("heading", { level: 1, name: "導入方法" })).toBeInTheDocument();
+  });
+
+  it("links to the GitHub repository from the sidebar", () => {
+    render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
+
+    const repository = screen.getByRole("link", { name: "GitHub" });
+    expect(repository).toHaveAttribute("href", repositoryUrl);
+    expect(repository).toHaveAttribute("target", "_blank");
+    expect(repository).toHaveAttribute("rel", "noreferrer");
+    expect(repository).toHaveClass("nav-item");
+    expect(repository.closest("nav")).toHaveClass("sidebar-nav");
+    expect(document.querySelectorAll(".nav-item-active")).toHaveLength(1);
+  });
+
+  it("shows the copyright at the end of the page", () => {
+    render(<MemoryRouter initialEntries={["/harness"]}><App /></MemoryRouter>);
+
+    const footer = screen.getByText("© 2026 Lumilinks inc.").closest("footer");
+    expect(footer).toHaveClass("docs-footer");
+    expect(footer?.closest("main")).toHaveClass("docs-main");
   });
 
   it("shows GitHub, Skill, and MCP as separate setup methods", async () => {
@@ -175,6 +200,44 @@ describe("Atlas Design System demo", () => {
     expect(screen.getAllByText("breakpoint.narrow")).toHaveLength(4);
   });
 
+  it("presents visual grouping principles and variants as cards", () => {
+    const pattern = designData.patterns["visual-grouping"];
+    render(<MemoryRouter initialEntries={["/patterns/visual-grouping"]}><App /></MemoryRouter>);
+
+    const principles = screen.getByRole("region", { name: "考え方" });
+    expect(within(principles).queryByRole("table")).not.toBeInTheDocument();
+    expect(within(principles).getAllByRole("heading", { level: 3 })).toHaveLength(pattern.principles.length);
+    expect(within(principles).getByRole("heading", { level: 3, name: "階層を深くしない" })).toBeInTheDocument();
+
+    const variants = screen.getByRole("region", { name: "使い分け" });
+    expect(within(variants).queryByRole("table")).not.toBeInTheDocument();
+    expect(variants.querySelectorAll("[data-slot='card']")).toHaveLength(pattern.variants.length);
+    const surfaceGroup = within(variants)
+      .getByRole("heading", { level: 3, name: "矩形でまとめる" })
+      .closest("[data-slot='card']");
+    expect(surfaceGroup).toHaveClass("pattern-variant-card");
+    expect(surfaceGroup).toHaveTextContent("surface-group");
+    expect(surfaceGroup).toHaveTextContent("避ける場面");
+
+    expect(screen.getByText("design/patterns/visual-grouping.json")).toBeInTheDocument();
+    expect(document.querySelector(".doc-meta")).toBeNull();
+  });
+
+  it("keeps the mobile layout implementation values in a table beside the variant cards", () => {
+    const pattern = designData.patterns["mobile-layout"];
+    render(<MemoryRouter initialEntries={["/patterns/mobile-layout"]}><App /></MemoryRouter>);
+
+    const variants = screen.getByRole("region", { name: "使い分け" });
+    expect(variants.querySelectorAll("[data-slot='card']")).toHaveLength(pattern.variants.length);
+    expect(within(variants).queryByText("breakpoint.narrow")).not.toBeInTheDocument();
+    expect(within(variants).queryByText(".touch-target")).not.toBeInTheDocument();
+
+    const layout = screen.getByRole("region", { name: "実装で使う値" });
+    expect(within(layout).getByRole("rowheader", { name: "タップ領域の確保" })).toBeInTheDocument();
+    expect(within(layout).getByText(".touch-target")).toBeInTheDocument();
+    expect(screen.getByText("design/patterns/mobile-layout.json")).toBeInTheDocument();
+  });
+
   it("separates the account management feature from reusable patterns", () => {
     render(<MemoryRouter initialEntries={["/examples/account-management"]}><App /></MemoryRouter>);
 
@@ -274,6 +337,55 @@ describe("Atlas Design System demo", () => {
     expect(screen.queryByText("Agent-ready")).not.toBeInTheDocument();
     expect(screen.queryByRole("list", { name: /の実行検査$/ })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "生成結果の比較を見る" })).toHaveAttribute("href", "/examples/account-management/results");
+  });
+
+  it("links each harness artifact path to its source on GitHub", async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter initialEntries={["/harness"]}><App /></MemoryRouter>);
+
+    const constrain = screen.getByRole("region", { name: "制約する層" });
+    const tokens = within(constrain).getByRole("link", { name: "design/tokens.json" });
+    expect(tokens).toHaveAttribute("href", `${repositoryUrl}/blob/main/design/tokens.json`);
+    expect(tokens).toHaveAttribute("target", "_blank");
+    expect(tokens).toHaveAttribute("rel", "noreferrer");
+    expect(within(constrain).getByRole("link", { name: "design/components/*.json" })).toHaveAttribute(
+      "href",
+      `${repositoryUrl}/tree/main/design/components`,
+    );
+
+    const diagram = screen.getByRole("figure", { name: "デザインハーネスのループ図" });
+    await user.click(await within(diagram).findByRole("button", { name: "02 コンテキストを渡す層" }));
+    const context = screen.getByRole("region", { name: "コンテキストを渡す層" });
+    expect(within(context).getByRole("link", { name: "skills/atlas-design-system/" })).toHaveAttribute(
+      "href",
+      `${repositoryUrl}/tree/main/skills/atlas-design-system`,
+    );
+
+    // VALIDATION.md は Run ごとの生成物でリポジトリに存在しないのでリンクにしない
+    await user.click(await within(diagram).findByRole("button", { name: "04 フィードバックする層" }));
+    const feedback = screen.getByRole("region", { name: "フィードバックする層" });
+    expect(within(feedback).getByRole("rowheader", { name: "VALIDATION.md" })).toBeInTheDocument();
+    expect(within(feedback).queryByRole("link", { name: "VALIDATION.md" })).not.toBeInTheDocument();
+    expect(within(feedback).getByRole("link", { name: "scripts/refine-experiment.mjs" })).toHaveAttribute(
+      "href",
+      `${repositoryUrl}/blob/main/scripts/refine-experiment.mjs`,
+    );
+  });
+
+  it("only links harness artifact paths that exist in the repository", () => {
+    const repositoryRoot = cwd();
+    expect(harnessArtifacts.length).toBeGreaterThan(0);
+
+    for (const artifact of harnessArtifacts) {
+      const target = artifactSourceHref(artifact.path)
+        .replace(`${repositoryUrl}/blob/main/`, "")
+        .replace(`${repositoryUrl}/tree/main/`, "");
+      expect([artifact.path, existsSync(join(repositoryRoot, target))]).toEqual([
+        artifact.path,
+        artifact.inRepository !== false,
+      ]);
+    }
+    expect(harnessArtifacts.find((artifact) => artifact.path === "VALIDATION.md")?.inRepository).toBe(false);
   });
 
   it("links from the demo cycle section to the technical specifications", () => {
