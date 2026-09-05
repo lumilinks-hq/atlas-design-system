@@ -2,21 +2,7 @@
 
 ## 保存済みRunを更新する
 
-新しい`PAIR_ID`でBaseline、Harness、Harness修正版を作成し、評価、比較、画像生成まで行う。比較条件は`MVP.md`に従い、生成コードを人が直接修正しない。
-
-```bash
-pnpm experiment:run --pair "$PAIR_ID" --mode baseline
-pnpm experiment:run --pair "$PAIR_ID" --mode harness
-pnpm experiment:evaluate --pair "$PAIR_ID" --mode baseline
-pnpm experiment:evaluate --pair "$PAIR_ID" --mode harness
-pnpm experiment:run --pair "$PAIR_ID" --mode harness-corrected
-pnpm experiment:evaluate --pair "$PAIR_ID" --mode harness-corrected
-pnpm experiment:compare --pair "$PAIR_ID"
-pnpm experiment:capture --pair "$PAIR_ID"
-pnpm runs:sanitize --pair "$PAIR_ID"
-```
-
-account-management以外の実験を回すときは各コマンドへ`--experiment <name>`を足す。省略時は`account-management`を使う。
+新しい`PAIR_ID`でBaseline、Harness、Harness修正版を作成し、計測、評価、レビュー、比較、画像生成、サニタイズまで行う。コマンドと実行順の注意は[`EXPERIMENTS.md`](./EXPERIMENTS.md)に従い、生成コードを人が直接修正しない。
 
 生成結果の比較（`src/data/runs.ts`）とPlayが参照するRunを更新し、数値、画像、環境情報が`run.json`と一致することを確認する。
 

@@ -1,145 +1,73 @@
 # Atlas Design System
 
-Atlasは、[デザインハーネス](https://design-harness.com/)を用いて設計・検証するデモ用デザインシステムです。同じB2B画面を、設計契約なしのBaselineと、Atlasを参照する条件でAIに実装させ、その差と修正過程を確認できます。UI基盤には[HeroUI](https://www.heroui.com/)を使っています。
+[デザインハーネス](https://design-harness.com/)で設計・検証するデモ用デザインシステムです。同じB2B画面（顧客管理）を、設計契約なしのBaselineと、Atlasを参照する条件でAIに実装させ、その差と修正過程を比較します。UI基盤は[HeroUI](https://www.heroui.com/)です。
 
-公開サイトはデザインシステムの参照資料です。Design Harnessの仕組みの説明と、保存済みRunの生成結果の比較も同じサイトに含みます。閲覧時にAIやAPIキーは使いません。
+公開サイト: <https://atlas-design-system.kuusai1998.workers.dev>
 
-## 現在のシナリオ
-
-「顧客管理」を実装します。`/customers`の一覧から会社を選び、`/customers/:customerId`の詳細で基本情報と対応状況を確認・更新し、取引が終了した顧客を確認画面付きで削除できる業務機能です。一覧は`CustomerSummary`、詳細は`CustomerDetail`を使用します。Brief、スターター、モデル、HeroUIのバージョンを揃え、プロジェクト固有の設計契約を渡すかどうかだけを変えています。
-
-保存済みの`lint-01`（Claude Opus 5）では、28ルールの検査でBaselineが`12 pass / 11 fail / 5 review`、Harnessが`23 pass / 0 fail / 5 review`でした。検査には320px幅の横スクロールや余白の実測など、実ブラウザでの幾何計測を含みます。このデモが見せるのは初回生成の勝敗ではなく、設計情報を機械判定と修正へ接続できるかどうかです。
+保存済みの`lint-01`（Claude Opus 5）では、28ルールの検査でBaselineが`12 pass / 11 fail / 5 review`、Harnessが`23 pass / 0 fail / 5 review`でした。見せたいのは初回生成の勝敗ではなく、設計情報を機械判定と修正へ接続できるかどうかです。
 
 ## ローカルで見る
 
-Node.js 24とpnpm 11.13.1を使います。要求バージョンは`.node-version`、`package.json`、`packageManager`で固定しています。
+Node.js 24とpnpm 11.13.1を使います（`.node-version`、`packageManager`で固定）。
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-- デザインシステム: `http://localhost:4173/`
-- 導入方法: `http://localhost:4173/getting-started`
-- 生成画面の操作: `http://localhost:4173/play/account-management?mode=atlas`
-- Design Harnessの説明: `http://localhost:4173/harness`
-- 生成結果の比較: `http://localhost:4173/examples/account-management/results`
+| URL | 内容 |
+| --- | --- |
+| `/` | デザインシステム |
+| `/getting-started` | 導入方法 |
+| `/harness` | Design Harnessの仕組み |
+| `/examples/account-management/results` | Baseline／Harnessの生成結果とルール別の検査結果 |
+| `/play/account-management?mode=atlas` | 生成画面の操作 |
 
-生成結果の比較は、同じIssueからDesign Harnessなし／ありで生成した顧客管理画面を並べ、検査結果をルールごとに表示します。Design Harnessの説明は、制約・コンテキスト・検証・フィードバックの4層をリポジトリの実物と対応づけて示します。以前の`/demo/runs/account-management`は生成結果の比較へリダイレクトします。
-
-## 生成された実装を別ポートで試す
-
-保存済みRunは、公開リポジトリの生成ソースからそのまま起動できます。
+保存済みRunの生成ソースは別ポートでそのまま起動できます。状態はURLの`state` query（`default`、`empty`、`drawer-open`、`invalid-email`、`loading`、`success`、`failure`、`delete-confirm`）で再現します。
 
 ```bash
-# Atlas適用
 pnpm experiment:preview --pair lint-01 --mode harness --port 4182
-
-# Issueだけを渡したBaseline
 pnpm experiment:preview --pair lint-01 --mode baseline --port 4181
 ```
 
-- Atlas適用: `http://localhost:4182/`
-- Baseline: `http://localhost:4181/`
+## 正本
 
-必須状態はURLの`state` queryで再現できます。`default`、`empty`、`drawer-open`、`invalid-email`、`loading`、`success`、`failure`、`delete-confirm`を指定できます。通常画面にはデモ専用の状態切り替えUIを表示しません。
+| パス | 内容 |
+| --- | --- |
+| [`DESIGN.md`](./DESIGN.md) | AIが最初に読む設計方針 |
+| [`design/patterns/`](./design/patterns) | ページ構造、余白、視覚的グルーピング、モバイルの契約 |
+| [`design/examples/account-management.json`](./design/examples/account-management.json) | 顧客管理の構成、状態、業務制約 |
+| [`design/`](./design) | token、HeroUIコンポーネント契約、検証ルール、JSON Schema |
+| [`experiments/account-management/`](./experiments/account-management) | Brief、共通スターター、保存済みRun |
+| [`MVP.md`](./MVP.md) / [`TASKS.md`](./TASKS.md) | デモの仕様と受け入れ条件、実装タスク |
 
-## UIテキストを確認する
+## AIから使う
 
-日本語のUIテキスト、CTA、説明文、エラーメッセージは、[`skills/ui-writing/`](./skills/ui-writing/)の手順で確認します。特定製品の用語やブランド規則には依存せず、Atlasで合意した判断基準を適用します。
-
-## HeroUI Skillを使う
-
-[`skills/heroui-react/`](./skills/heroui-react/)には、HeroUI公式のAgent Skillを配置しています。HeroUI v3のコンポーネントAPI、compound component、標準スタイル、テーマ変数を確認するために使います。取得元、commit、ライセンスは[`skills/skills.lock.json`](./skills/skills.lock.json)で固定しています。
-
-## Atlas Skillを使う
-
-[`skills/atlas-design-system/`](./skills/atlas-design-system/)は、IssueからAtlasに従うReact・HeroUI画面を実装し、検証結果を次の修正へ戻すためのSkillです。HeroUIとして正しい実装は`heroui-react`、Atlasで許可する選択肢は設計契約、日本語UI文言は`ui-writing`が担当します。設計データはSkill内へ複製せず、manifestから必要なファイルを解決します。
+| 手段 | 場所 | 役割 |
+| --- | --- | --- |
+| Atlas Skill | [`skills/atlas-design-system/`](./skills/atlas-design-system/) | IssueからAtlasに従う画面を実装し、検証結果を修正へ戻す。設計データは複製せずmanifestから解決 |
+| HeroUI Skill | [`skills/heroui-react/`](./skills/heroui-react/) | HeroUI v3公式のAgent Skill。取得元とcommitは`skills/skills.lock.json`で固定 |
+| UI Writing Skill | [`skills/ui-writing/`](./skills/ui-writing/) | 日本語UIテキストの確認基準 |
+| Atlas MCP | [`docs/MCP.md`](./docs/MCP.md) | `pnpm mcp:start`で起動するstdioサーバー。CodexとClaude Codeの接続手順 |
 
 ```bash
 node scripts/resolve-design-contract.mjs experiments/account-management/manifest.json
 pnpm skills:check
 ```
 
-## Atlas MCPを使う
-
-MCPはローカルstdioサーバーとして起動します。`atlas://design/`以下の固定resourceと、Pattern・Example IDを必要最小限のresourceへ解決する`resolve_design_contract`を提供します。任意ファイルの読み込み、書き込み、コマンド実行は行いません。
-
-```bash
-pnpm mcp:start
-```
-
-MCPクライアントの設定では、コマンドを`pnpm`、引数を`mcp:start`、作業ディレクトリをこのリポジトリのルートに指定します。
-
-CodexとClaude Codeでは、cloneしたディレクトリの絶対パスを指定して接続できます。
-
-```bash
-# Codex
-codex mcp add atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system-demo mcp:start
-codex mcp get atlas-design-system
-
-# Claude Code（プロジェクト単位）
-claude mcp add --scope project atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system-demo mcp:start
-claude mcp get atlas-design-system
-```
-
-更新時はリポジトリで`git pull --ff-only`と`pnpm install --frozen-lockfile`を実行し、`pnpm exec vitest run scripts/mcp/server.test.mjs`で疎通を確認します。削除は`codex mcp remove atlas-design-system`または`claude mcp remove --scope project atlas-design-system`です。
-
-## 正本
-
-- [`DESIGN.md`](./DESIGN.md): AIが最初に読む設計方針
-- [`design/patterns/page-layout.json`](./design/patterns/page-layout.json): 画面名に依存しないページ構造
-- [`design/patterns/spacing-layout.json`](./design/patterns/spacing-layout.json): 余白とレイアウトの数値契約
-- [`design/patterns/visual-grouping.json`](./design/patterns/visual-grouping.json): 余白・矩形・罫線でまとまりを示す手段の選び方
-- [`design/patterns/mobile-layout.json`](./design/patterns/mobile-layout.json): 狭い画面での組み替えとタップ領域の契約
-- [`design/layout.css`](./design/layout.css): レイアウト実装部品の正本CSS
-- [`design/examples/account-management.json`](./design/examples/account-management.json): 顧客管理で使う構成、状態、業務制約
-- [`design/`](./design): token、HeroUIコンポーネント契約、検証ルール、JSON Schema
-- [`experiments/account-management/`](./experiments/account-management): Brief、共通スターター、保存済みRun
-- [`MVP.md`](./MVP.md): デモの仕様と受け入れ条件
-- [`TASKS.md`](./TASKS.md): 公開までを含む実装タスク
-
 ## 比較を再実行する
 
-再実行には認証済みのAIエージェントCLIが必要です。既定は`codex`で、`--runner claude`（または環境変数`AGENT_RUNNER`）でClaude Codeへ切り替えられます。CLI固有のフラグは`scripts/agent-runners/`のadapterに閉じています。`PAIR_ID`は新しい値へ変えてください。workspaceはリポジトリの外の`~/.cache/design-harness/runs/`に作られ、環境変数`DESIGN_HARNESS_RUNS_DIR`で場所を変えられます（リポジトリ内を指すと実行を止めます）。依存はworkspaceごとに`pnpm install`します。生成物は公開対象には含まれません。
-
-Harness実行ではmanifestから`HARNESS.json`と`HARNESS_RESOLVED.json`を生成し、指定したAgent Skillsを隔離workspaceの`.agents/skills/`へ配置します。AIは`DESIGN.md`を入口に、一覧用の`pattern.page-layout#collection-table`、詳細用の`pattern.page-layout#single-one-column`、`example.account-management`、関連するHeroUIコンポーネントと検証ルールをIDで解決します。Baselineには設計契約もAgent Skillsも渡しません。
-
-```bash
-pnpm experiment:run --pair "$PAIR_ID" --mode baseline
-pnpm experiment:run --pair "$PAIR_ID" --mode harness
-
-# 幾何計測（measurements.json）を先に取り、評価が実測値を参照できるようにする
-pnpm experiment:measure --pair "$PAIR_ID"
-pnpm experiment:evaluate --pair "$PAIR_ID" --mode baseline
-pnpm experiment:evaluate --pair "$PAIR_ID" --mode harness
-
-pnpm experiment:run --pair "$PAIR_ID" --mode harness-corrected
-pnpm experiment:refine --pair "$PAIR_ID"
-
-pnpm experiment:capture --pair "$PAIR_ID"
-pnpm experiment:review --pair "$PAIR_ID"
-pnpm experiment:compare --pair "$PAIR_ID"
-```
-
-どのスクリプトも`--experiment <name>`で対象の実験を選べます。省略時は`account-management`です。実験の定義は`experiments/<name>/manifest.json`、保存Runは`experiments/<name>/runs/<PAIR_ID>/<mode>/`、workspaceは`DESIGN_HARNESS_RUNS_DIR/<name>/<PAIR_ID>/<mode>/`に置かれます。
-
-`experiment:refine`は検査結果を入力に修正を依頼し、実測込みの再評価まで行います。`experiment:review`はスクリーンショットをAIレビューへ渡し、所見を`design-evaluation.json`の`review`欄へ保存します。`experiment:evaluate`は`review`欄を含めて評価ファイルを作り直すため、必ずreviewより前に実行し、review後に再実行しないでください。`experiment:compare`は最後に実行し、所見を`comparison.json`へ転記します。
-
-生成コードを人が直接直すと比較条件が崩れます。修正は`VALIDATION.md`を入力にした`harness-corrected`として別Runへ保存します。公開前の確認で新しい設計違反が見つかった場合も、人が生成コードを編集せず`pnpm experiment:refine --pair "$PAIR_ID"`で追加の修正イベントとして保存します。
+認証済みのAIエージェントCLI（既定`codex`、`--runner claude`で切り替え）が必要です。手順と実行順の注意は[`docs/EXPERIMENTS.md`](./docs/EXPERIMENTS.md)にまとめています。生成コードは人が直接直さず、`harness-corrected`として別Runに保存します。
 
 ## 検証
 
 ```bash
-pnpm demo:check
+pnpm demo:check   # 設計データ、テーマ、保存Run、公開データ、型、Lint、テスト、Buildを一括検証
+pnpm test:e2e     # 実ブラウザで主要ルートと1440px/390pxの表示を確認
 ```
 
-このコマンドで、設計データ、生成テーマとtokenの一致、保存Run、公開データ、TypeScript、Lint、テスト、Buildをまとめて検証します。`review`とされた項目は自動合否にせず、画面を見て人が判断します。
-
-`pnpm design:conformance`は、Harness修正版のソースと保存済み評価結果が現在の設計契約（幾何計測の実測値を含む）とずれていないかを短時間で確認します。`pnpm theme:check`は`design/tokens.json`から生成されるテーマCSSが手編集などで乖離していないかを確認します。
-
-実ブラウザで主要ルート、Design Harnessの説明と生成結果の比較（1440pxと390px）、比較条件と状態のURL同期、Drawerの表示を確認する場合は`pnpm test:e2e`を実行します。Production build後のCSS・JavaScriptとオフライン用フォントの上限は`pnpm bundle:check`で確認できます。
+`review`とされた項目は自動合否にせず、画面を見て人が判断します。
 
 ## 公開時の注意
 
-保存Runにはプロンプト、イベントログ、差分、生成ソース、検証ログが含まれます。Run保存時にローカルパス、OSユーザー名、秘密情報らしい文字列、端末内のエージェント指示をマスクし、`pnpm public:audit`で公開対象を再検査します。既存Runには`pnpm runs:sanitize --pair <PAIR_ID>`を適用できます。公開する成果物の基準は[`docs/PUBLICATION_POLICY.md`](./docs/PUBLICATION_POLICY.md)、登壇前の確認は[`docs/PRESENTATION_CHECKLIST.md`](./docs/PRESENTATION_CHECKLIST.md)、Run更新とリリース手順は[`docs/RELEASING.md`](./docs/RELEASING.md)にまとめています。第三者ライセンスは[`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md)を参照してください。プロジェクト本体のライセンスは公開前に明示的に選択します。
+保存Runにはプロンプト、イベントログ、生成ソース、検証ログが含まれます。保存時にローカルパスやユーザー名、秘密情報らしい文字列をマスクし、`pnpm public:audit`で再検査します。基準と手順は[`docs/PUBLICATION_POLICY.md`](./docs/PUBLICATION_POLICY.md)、[`docs/RELEASING.md`](./docs/RELEASING.md)、[`docs/PRESENTATION_CHECKLIST.md`](./docs/PRESENTATION_CHECKLIST.md)を参照してください。第三者ライセンスは[`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md)にあります。
