@@ -6,20 +6,15 @@ import { fileURLToPath } from "node:url";
 import ts from "typescript";
 import { lintAtlasSources } from "eslint-plugin-atlas";
 import { buildAtlasLintOptions } from "eslint-plugin-atlas/options";
-import { resolveManifest } from "./design-catalog.mjs";
+import { primaryExampleResource, resolveManifest } from "./design-catalog.mjs";
 import { parseArgs, rootDir } from "./lib.mjs";
 import { collectScreenSources } from "./screen-sources.mjs";
-import { workspaceDir as resolveWorkspaceDir } from "./workspace-paths.mjs";
-
-const manifestPath = "experiments/account-management/manifest.json";
-const designContract = resolveManifest(manifestPath);
-const experimentManifest = JSON.parse(readFileSync(resolve(rootDir, manifestPath), "utf8"));
-const requiredStates = experimentManifest.requiredStates;
-const exampleResource = designContract.resources.find((resource) => resource.uri.includes("/examples/"));
-if (!exampleResource) throw new Error(`${manifestPath}: 契約にexampleがありません`);
-const accountManagementExample = JSON.parse(readFileSync(resolve(rootDir, exampleResource.path), "utf8"));
-const expectedTableUsage = accountManagementExample.componentUsage["component.table"];
-const expectedBackNavigationUsage = accountManagementExample.componentUsage["component.link"];
+import {
+  defaultExperimentName,
+  experimentPaths,
+  resolveExperimentName,
+  workspaceDir as resolveWorkspaceDir,
+} from "./workspace-paths.mjs";
 
 const designTokens = JSON.parse(readFileSync(resolve(rootDir, "design", "tokens.json"), "utf8"));
 const tokenRoots = new Set(Object.keys(designTokens));
@@ -42,31 +37,6 @@ function resolveContractLength(value) {
   return raw;
 }
 
-const patternDataById = new Map(
-  designContract.resources
-    .filter((resource) => resource.uri.includes("/patterns/"))
-    .map((resource) => [resource.id, JSON.parse(readFileSync(resolve(rootDir, resource.path), "utf8"))]),
-);
-
-function resolveVariantLayout(ref) {
-  const [patternId, variantId] = ref.split("#");
-  const variant = patternDataById.get(patternId)?.variants.find((item) => item.id === variantId);
-  if (!variant?.layout) return undefined;
-  return {
-    classes: variant.layout.classes ?? [],
-    values: Object.fromEntries(
-      Object.entries(variant.layout.values ?? {}).map(([key, value]) => [key, resolveContractLength(value)]),
-    ),
-  };
-}
-
-const collectionScreen = designContract.screens.find((screen) => screen.pattern.endsWith("#collection-table"));
-const detailScreen = designContract.screens.find((screen) => screen.pattern.endsWith("#single-one-column"));
-const collectionLayout = collectionScreen ? resolveVariantLayout(collectionScreen.pattern) : undefined;
-const detailLayout = detailScreen ? resolveVariantLayout(detailScreen.pattern) : undefined;
-const drawerOverlay = detailScreen?.overlays?.find((overlay) => overlay.component === "component.drawer");
-const drawerLayout = drawerOverlay ? resolveVariantLayout(drawerOverlay.pattern) : undefined;
-
 // 評価器が参照する契約クラス。契約側のリネームに気づけるようlayout.classesとの一致を起動時に検査する
 const layoutAnchors = {
   collectionRegion: ".collection-region",
@@ -78,21 +48,121 @@ const layoutAnchors = {
   detailContent: ".detail-content",
   drawerForm: ".drawer-form",
 };
-for (const [key, className] of Object.entries(layoutAnchors)) {
-  const pool =
-    key === "drawerForm" ? drawerLayout?.classes : key.startsWith("detail") ? detailLayout?.classes : collectionLayout?.classes;
-  if (pool && !pool.includes(className)) {
-    throw new Error(`評価器のanchor ${className} が契約のlayout.classesにありません`);
-  }
-}
-// lint 化したルール(method: lint)の判定条件。契約 JSON から組み、生成 workspace の HARNESS_LINT.json と同じ関数を通す
-export const atlasLintOptions = buildAtlasLintOptions({
-  componentsDir: resolve(rootDir, "design", "components"),
-  examplePath: resolve(rootDir, exampleResource.path),
-});
 
-// @heroui/reactからimportしてよい識別子。exampleが参照する契約のimplementationとanatomyの和集合
-export const approvedHeroUiImportNames = new Set(atlasLintOptions.approvedImports);
+/**
+ * 実験1つ分の判定条件を契約から組む。実験固有の語はすべてここに集め、
+ * 判定関数はこのオブジェクトだけを見る（特定の実験名やドメイン語を直接参照しない）
+ * @param {string} experiment
+ */
+function buildEvaluationContext(experiment) {
+  const { manifestPath } = experimentPaths(experiment);
+  const designContract = resolveManifest(manifestPath);
+  const manifest = JSON.parse(readFileSync(resolve(rootDir, manifestPath), "utf8"));
+  const exampleResource = primaryExampleResource(designContract);
+  const example = JSON.parse(readFileSync(resolve(rootDir, exampleResource.path), "utf8"));
+  const hints = example.evaluation;
+  if (!hints) throw new Error(`${exampleResource.path}: exampleにevaluationがありません`);
+
+  const patternDataById = new Map(
+    designContract.resources
+      .filter((resource) => resource.uri.includes("/patterns/"))
+      .map((resource) => [resource.id, JSON.parse(readFileSync(resolve(rootDir, resource.path), "utf8"))]),
+  );
+
+  const resolveVariantLayout = (ref) => {
+    const [patternId, variantId] = ref.split("#");
+    const variant = patternDataById.get(patternId)?.variants.find((item) => item.id === variantId);
+    if (!variant?.layout) return undefined;
+    return {
+      classes: variant.layout.classes ?? [],
+      values: Object.fromEntries(
+        Object.entries(variant.layout.values ?? {}).map(([key, value]) => [key, resolveContractLength(value)]),
+      ),
+    };
+  };
+
+  const collectionScreen = designContract.screens.find((screen) => screen.pattern.endsWith("#collection-table"));
+  const detailScreen = designContract.screens.find((screen) => screen.pattern.endsWith("#single-one-column"));
+  const collectionLayout = collectionScreen ? resolveVariantLayout(collectionScreen.pattern) : undefined;
+  const detailLayout = detailScreen ? resolveVariantLayout(detailScreen.pattern) : undefined;
+  const drawerOverlay = detailScreen?.overlays?.find((overlay) => overlay.component === "component.drawer");
+  const drawerLayout = drawerOverlay ? resolveVariantLayout(drawerOverlay.pattern) : undefined;
+
+  for (const [key, className] of Object.entries(layoutAnchors)) {
+    const pool =
+      key === "drawerForm" ? drawerLayout?.classes : key.startsWith("detail") ? detailLayout?.classes : collectionLayout?.classes;
+    if (pool && !pool.includes(className)) {
+      throw new Error(`評価器のanchor ${className} が契約のlayout.classesにありません`);
+    }
+  }
+
+  const tableUsage = example.componentUsage["component.table"];
+  const backNavigationUsage = example.componentUsage["component.link"];
+  const toolbarUsage = example.componentUsage["component.toolbar"];
+  const rowHeaderColumn = tableUsage.columns.find((column) => column.isRowHeader);
+  if (!rowHeaderColumn) throw new Error(`${exampleResource.path}: component.tableにisRowHeaderの列がありません`);
+
+  // lint 化したルール(method: lint)の判定条件。契約 JSON から組み、生成 workspace の HARNESS_LINT.json と同じ関数を通す
+  const lintOptions = buildAtlasLintOptions({
+    componentsDir: resolve(rootDir, "design", "components"),
+    examplePath: resolve(rootDir, exampleResource.path),
+  });
+
+  return {
+    name: experiment,
+    manifestPath,
+    designContract,
+    example,
+    requiredStates: manifest.requiredStates,
+    // 画面のURLは manifest の screens[].route から取る
+    routes: designContract.screens.map((screen) => screen.route),
+    collectionScreen,
+    detailScreen,
+    collectionLayout,
+    detailLayout,
+    drawerOverlay,
+    drawerLayout,
+    layoutAnchors,
+    expectedTableUsage: tableUsage,
+    expectedBackNavigationUsage: backNavigationUsage,
+    // 必須入力にする列は Table 契約の行見出し列
+    requiredFieldName: rowHeaderColumn.id,
+    // 証跡に出す業務上の呼び名。列見出しラベルとは別の語になりうるので example から取る
+    requiredFieldLabel: hints.requiredFieldLabel,
+    searchAriaLabel: toolbarUsage.search.ariaLabel,
+    searchPlaceholder: toolbarUsage.search.placeholder,
+    backLinkPattern: example.lint.linkSemantics.backLinkPattern,
+    mobileListClass: example.lint.linkSemantics.mobileListClass,
+    statusValues: hints.statusValues,
+    toolbarAriaLabel: hints.toolbarAriaLabel,
+    screenComponents: hints.screenComponents,
+    readModels: hints.readModels,
+    lintOptions,
+    // @heroui/reactからimportしてよい識別子。exampleが参照する契約のimplementationとanatomyの和集合
+    approvedImportNames: new Set(lintOptions.approvedImports),
+  };
+}
+
+const evaluationContexts = new Map();
+
+/**
+ * 実験名から判定条件を取り出す。同じ実験名では同じインスタンスを返す。
+ * 組み立てに失敗したものは覚えないので、契約を直せば同じプロセスでやり直せる
+ * @param {string} [name] 省略時は既定の実験
+ */
+export function evaluationContext(name) {
+  const experiment = resolveExperimentName(name === undefined ? {} : { experiment: name });
+  const cached = evaluationContexts.get(experiment);
+  if (cached) return cached;
+  const context = buildEvaluationContext(experiment);
+  evaluationContexts.set(experiment, context);
+  return context;
+}
+
+const defaultContext = evaluationContext(defaultExperimentName);
+
+export const atlasLintOptions = defaultContext.lintOptions;
+export const approvedHeroUiImportNames = defaultContext.approvedImportNames;
 
 function result(id, status, evidence) {
   return { id, status, evidence };
@@ -196,17 +266,20 @@ function findColumnDefinitions(sourceFile) {
   return definitions;
 }
 
-function findCanonicalColumnDefinitions(sourceFile) {
+// Example の列定義をそのまま map した宣言。starter が置く変数名に依存せず契約の参照式で見分ける
+const canonicalColumnsPattern = /\bcomponentUsage\["component\.table"\]\.columns\.map\b/;
+
+function findCanonicalColumnDefinitions(sourceFile, context) {
   const definitions = [];
   const visit = (node) => {
     if (
       ts.isVariableDeclaration(node) &&
       ts.isIdentifier(node.name) &&
-      node.initializer?.getText(sourceFile).includes('accountManagementExample.componentUsage["component.table"].columns.map')
+      canonicalColumnsPattern.test(node.initializer?.getText(sourceFile) ?? "")
     ) {
       definitions.push({
         name: node.name.text,
-        columns: expectedTableUsage.columns,
+        columns: context.expectedTableUsage.columns,
       });
     }
     ts.forEachChild(node, visit);
@@ -270,6 +343,11 @@ function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/** 契約由来の候補名を「A|B」の選択にする。契約側の記号はリテラルとして扱う */
+function alternation(names) {
+  return names.map(escapeRegExp).join("|");
+}
+
 function findSurfaceDecorations(styles, classNames) {
   const decorations = [];
   for (const match of styles.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
@@ -311,7 +389,7 @@ function findNegativeMargins(styles) {
   return [...new Set(findings)];
 }
 
-function evaluateTableContract(app, styles) {
+function evaluateTableContract(app, styles, context) {
   const sourceFile = ts.createSourceFile("App.tsx", app, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const roots = [
     ...findJsxOpenings(sourceFile, "Table.Root"),
@@ -319,9 +397,9 @@ function evaluateTableContract(app, styles) {
   ];
   const definitions = [
     ...findColumnDefinitions(sourceFile),
-    ...findCanonicalColumnDefinitions(sourceFile),
+    ...findCanonicalColumnDefinitions(sourceFile, context),
   ];
-  const expectedColumns = expectedTableUsage.columns.map(normalizeColumn);
+  const expectedColumns = context.expectedTableUsage.columns.map(normalizeColumn);
   const definition = definitions.find((candidate) =>
     candidate.columns.some((column) => column.id === expectedColumns[0]?.id),
   );
@@ -415,7 +493,7 @@ function describeGap(label, actual, expected) {
   return `${label}: 実測${actual ?? "不明"}px（契約${expected}px）`;
 }
 
-function evaluateNarrowMeasurements(measurements) {
+function evaluateNarrowMeasurements(measurements, context) {
   const evidence = [];
   let ok = true;
   const fail = (note) => {
@@ -434,8 +512,8 @@ function evaluateNarrowMeasurements(measurements) {
     else evidence.push(`${entry.route} 320px: scrollWidth ${entry.scrollWidth}px`);
   }
 
-  const desktop = findScreenMeasurement(measurements, collectionScreen.id, "desktop");
-  const mobile = findScreenMeasurement(measurements, collectionScreen.id, "mobile");
+  const desktop = findScreenMeasurement(measurements, context.collectionScreen.id, "desktop");
+  const mobile = findScreenMeasurement(measurements, context.collectionScreen.id, "mobile");
   if (!desktop || desktop.error) fail("一覧画面1440pxの計測がありません");
   else if (!desktop.elements?.table?.visible) fail("1440pxでTableを確認できません");
   if (!mobile || mobile.error) fail("一覧画面390pxの計測がありません");
@@ -449,8 +527,8 @@ function evaluateNarrowMeasurements(measurements) {
   return result("layout.narrow", ok ? "passed" : "failed", evidence);
 }
 
-function evaluateCollectionToolbarMeasurements(measurements) {
-  const values = collectionLayout?.values ?? {};
+function evaluateCollectionToolbarMeasurements(measurements, context) {
+  const values = context.collectionLayout?.values ?? {};
   const evidence = [];
   let ok = true;
   const fail = (note) => {
@@ -458,7 +536,7 @@ function evaluateCollectionToolbarMeasurements(measurements) {
     evidence.push(note);
   };
 
-  const desktop = findScreenMeasurement(measurements, collectionScreen.id, "desktop");
+  const desktop = findScreenMeasurement(measurements, context.collectionScreen.id, "desktop");
   if (!desktop || desktop.error) {
     const reason = desktop?.error ? `（${desktop.error}）` : "";
     return result("layout.collection-toolbar", "failed", [`一覧画面1440pxの計測がありません${reason}`]);
@@ -498,7 +576,7 @@ function evaluateCollectionToolbarMeasurements(measurements) {
     } else fail("ToolbarがTableの直前にありません");
   }
 
-  const mobile = findScreenMeasurement(measurements, collectionScreen.id, "mobile");
+  const mobile = findScreenMeasurement(measurements, context.collectionScreen.id, "mobile");
   if (!mobile || mobile.error) fail("一覧画面390pxの計測がありません");
   else {
     const toolbarMobile = foundAnchor(mobile, layoutAnchors.collectionToolbar);
@@ -516,9 +594,9 @@ function evaluateCollectionToolbarMeasurements(measurements) {
   return result("layout.collection-toolbar", ok ? "passed" : "failed", evidence);
 }
 
-function evaluateBackNavigationMeasurements(measurements) {
-  const values = detailLayout?.values ?? {};
-  const entry = findScreenMeasurement(measurements, detailScreen.id, "desktop");
+function evaluateBackNavigationMeasurements(measurements, context) {
+  const values = context.detailLayout?.values ?? {};
+  const entry = findScreenMeasurement(measurements, context.detailScreen.id, "desktop");
   if (!entry || entry.error) {
     const reason = entry?.error ? `（${entry.error}）` : "";
     return result("layout.back-navigation", "failed", [`詳細画面1440pxの計測がありません${reason}`]);
@@ -554,8 +632,8 @@ function evaluateBackNavigationMeasurements(measurements) {
   return result("layout.back-navigation", ok ? "passed" : "failed", evidence);
 }
 
-function evaluateGroupingMeasurements(measurements, negativeMargins) {
-  const values = detailLayout?.values ?? {};
+function evaluateGroupingMeasurements(measurements, negativeMargins, context) {
+  const values = context.detailLayout?.values ?? {};
   const evidence = [];
   let ok = true;
   const fail = (note) => {
@@ -566,7 +644,7 @@ function evaluateGroupingMeasurements(measurements, negativeMargins) {
     ok = false;
     evidence.push("要素の重なりを起こしやすい負のmarginがあります", ...negativeMargins);
   }
-  const entry = findScreenMeasurement(measurements, detailScreen.id, "desktop");
+  const entry = findScreenMeasurement(measurements, context.detailScreen.id, "desktop");
   if (!entry || entry.error) fail(`詳細画面1440pxの計測がありません${entry?.error ? `（${entry.error}）` : ""}`);
   else {
     const grid = foundAnchor(entry, layoutAnchors.detailGrid);
@@ -584,8 +662,8 @@ function evaluateGroupingMeasurements(measurements, negativeMargins) {
       else fail(describeGap(`${layoutAnchors.detailContent} row-gap`, rowGap, values.groupGap));
     }
   }
-  if (drawerOverlay && drawerLayout) {
-    const drawerEntry = findScreenMeasurement(measurements, detailScreen.id, "desktop", "drawer-open");
+  if (context.drawerOverlay && context.drawerLayout) {
+    const drawerEntry = findScreenMeasurement(measurements, context.detailScreen.id, "desktop", "drawer-open");
     if (!drawerEntry || drawerEntry.error) fail("drawer-openの計測がありません");
     else if (!drawerEntry.elements?.dialog?.found) fail("drawer-openでrole=dialogを確認できません");
     else {
@@ -593,21 +671,34 @@ function evaluateGroupingMeasurements(measurements, negativeMargins) {
       if (!form) fail(`契約クラス ${layoutAnchors.drawerForm} がDrawer内にありません`);
       else {
         const rowGap = parsePxValue(form.styles?.rowGap);
-        if (isNear(rowGap, drawerLayout.values.formGap)) {
-          evidence.push(describeGap("Drawerフォームgap", rowGap, drawerLayout.values.formGap));
-        } else fail(describeGap(`${layoutAnchors.drawerForm} row-gap`, rowGap, drawerLayout.values.formGap));
+        if (isNear(rowGap, context.drawerLayout.values.formGap)) {
+          evidence.push(describeGap("Drawerフォームgap", rowGap, context.drawerLayout.values.formGap));
+        } else fail(describeGap(`${layoutAnchors.drawerForm} row-gap`, rowGap, context.drawerLayout.values.formGap));
       }
     }
   }
   return result("layout.grouping", ok ? "passed" : "failed", evidence);
 }
 
-export function evaluateSource({ app, styles, fixtures = "", componentTheme = "", measurements, tsxFiles }) {
+export function evaluateSource({
+  app,
+  styles,
+  fixtures = "",
+  componentTheme = "",
+  measurements,
+  tsxFiles,
+  experiment = defaultExperimentName,
+}) {
+  const context = evaluationContext(experiment);
+  // 判定に使う契約クラス。先頭のドットを外して className と突き合わせる
+  const collectionRegionClass = context.layoutAnchors.collectionRegion.slice(1);
+  const detailHeadingClass = context.layoutAnchors.detailHeading.slice(1);
   const source = `${app}\n${fixtures}\n${styles}`;
   const effectiveStyles = `${styles}\n${componentTheme}`;
   const sourceFile = ts.createSourceFile("App.tsx", app, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  const missingStates = requiredStates.filter((state) => !source.includes(state));
-  const hasCustomerNameGuard = /companyName/.test(app) && /(required|isRequired)/.test(app);
+  const missingStates = context.requiredStates.filter((state) => !source.includes(state));
+  const hasRequiredFieldGuard =
+    new RegExp(escapeRegExp(context.requiredFieldName)).test(app) && /(required|isRequired)/.test(app);
   const hasLoadingGuard = /(isSaving|isLoading|saving)/.test(app) && /(disabled|isDisabled|isPending)/.test(app);
   const hasRetry = /(failure|失敗)/i.test(app) && /(retry|再試行)/i.test(app);
   const hasMobileList = /className=[^\n]*mobile-list/.test(app);
@@ -626,11 +717,13 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
     /(overflow-x|grid-template-columns|display:\s*none)/.test(styles) &&
     (!hasMobileList || (hasVerticalMobileList && hasFlexibleMobileCards));
   const hasRecoveryCopy = /(failure|失敗|エラー|できません)/i.test(app) && /(再試行|保持|確認)/.test(app);
-  const hasStatusCopy = /(商談中|利用中|休眠|success|failure)/.test(app);
-  const hasCustomerRoutes =
-    /["'`]\/customers["'`]/.test(app) &&
-    /["'`]\/customers\/:customerId["'`]/.test(app) &&
-    /(顧客一覧へ戻る|navigate\(["'`]\/customers|to=["'`]\/customers)/.test(app);
+  const hasStatusCopy = new RegExp(`(${alternation([...context.statusValues, "success", "failure"])})`).test(app);
+  const collectionRoute = context.collectionScreen.route;
+  const hasScreenRoutes =
+    context.routes.every((route) => new RegExp(`["'\`]${escapeRegExp(route)}["'\`]`).test(app)) &&
+    new RegExp(
+      `(${context.backLinkPattern}|navigate\\(["'\`]${escapeRegExp(collectionRoute)}|to=["'\`]${escapeRegExp(collectionRoute)})`,
+    ).test(app);
   const navigationLinks = [
     ...findJsxElements(sourceFile, "Link"),
     ...findJsxElements(sourceFile, "RouterLink"),
@@ -641,12 +734,12 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
       getJsxAttribute(element.openingElement, "to"),
     );
   const backLinkElement = navigationLinks.find((element) =>
-    hasNavigationTarget(element) && /顧客一覧(?:へ|に)戻る/.test(element.getText(sourceFile)),
+    hasNavigationTarget(element) && new RegExp(context.backLinkPattern).test(element.getText(sourceFile)),
   );
   const detailHeadingGroup = backLinkElement
     ? findAncestorJsxElement(backLinkElement.openingElement, (element) => {
         const className = getJsxAttributeValue(getJsxAttribute(element.openingElement, "className"));
-        return typeof className === "string" && className.split(/\s+/).includes("detail-page__heading");
+        return typeof className === "string" && className.split(/\s+/).includes(detailHeadingClass);
       })
     : undefined;
   const backNavigation = backLinkElement
@@ -663,11 +756,12 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
   const detailContentIndex = detailPageHeadingIndex >= 0
     ? app.indexOf('className="detail-grid"', detailPageHeadingIndex)
     : -1;
-  const detailHeadingGroupStyles = styles.match(/\.detail-page__heading\s*\{([^}]*)\}/s)?.[1] ?? "";
-  const gapToPageHeading = expectedBackNavigationUsage.gapToPageHeading.replace(".", "-");
-  const gapAfterPageHeading = expectedBackNavigationUsage.gapAfterPageHeading.replace(".", "-");
+  const detailHeadingGroupStyles =
+    styles.match(new RegExp(`\\.${escapeRegExp(detailHeadingClass)}\\s*\\{([^}]*)\\}`, "s"))?.[1] ?? "";
+  const gapToPageHeading = context.expectedBackNavigationUsage.gapToPageHeading.replace(".", "-");
+  const gapAfterPageHeading = context.expectedBackNavigationUsage.gapAfterPageHeading.replace(".", "-");
   const hasBackNavigationLayout =
-    expectedBackNavigationUsage.placement === "before-page-heading" &&
+    context.expectedBackNavigationUsage.placement === "before-page-heading" &&
     Boolean(detailHeadingGroup) &&
     Boolean(backNavigation) &&
     detailPageHeadingIndex > (backLinkElement?.getStart(sourceFile) ?? -1) &&
@@ -676,16 +770,18 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
     new RegExp(`gap\\s*:\\s*var\\(--dh-${gapToPageHeading}\\)`).test(detailHeadingGroupStyles) &&
     new RegExp(`margin-bottom\\s*:\\s*var\\(--dh-${gapAfterPageHeading}\\)`).test(detailHeadingGroupStyles) &&
     !/className=["'][^"']*\bdetail-actions\b/.test(app);
-  const hasSplitCustomerScreens =
-    /(CustomerListPage|CustomersPage)/.test(app) &&
-    /(CustomerDetailPage|CustomerPage)/.test(app);
-  const hasCustomerReadModels =
-    /CustomerSummary/.test(source) &&
-    /CustomerDetail/.test(source) &&
-    /(listCustomerSummaries|getCustomerSummaries)/.test(source) &&
-    /getCustomerDetail/.test(source);
-  const tableContract = evaluateTableContract(app, effectiveStyles);
-  const lint = lintAtlasSources({ app, styles, options: atlasLintOptions, tsxFiles });
+  const hasSplitScreens =
+    new RegExp(`(${alternation(context.screenComponents.collection)})`).test(app) &&
+    new RegExp(`(${alternation(context.screenComponents.detail)})`).test(app);
+  // 読み取りモデルは fixtures を含む source 全体で探す（別ファイルに置く run があるため）
+  const hasSeparatedReadModels = [
+    context.readModels.summaryType,
+    context.readModels.detailType,
+    context.readModels.listFunction,
+    context.readModels.detailFunction,
+  ].every((names) => new RegExp(`(${alternation(names)})`).test(source));
+  const tableContract = evaluateTableContract(app, effectiveStyles, context);
+  const lint = lintAtlasSources({ app, styles, options: context.lintOptions, tsxFiles });
   const lintMessages = (ruleName) => lint.messagesByRule.get(ruleName) ?? [];
   // 画面を複数ファイルに分けた run では、App.tsx 以外の由来ファイル名を先頭に付ける
   const describeMessages = (messages) =>
@@ -708,8 +804,11 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
     /--radius\s*:\s*calc\(var\(--dh-radius-base\)\s*\/\s*3\)/.test(componentTheme) &&
     /\.table-root--primary[^{]*\{[^}]*border-radius\s*:\s*var\(--dh-radius-base\)/s.test(componentTheme);
   const negativeMargins = findNegativeMargins(styles);
+  // Toolbar が Table より前かは文字列の出現位置ではなくASTの開始位置で見る
+  const tableOpenings = [...findJsxOpenings(sourceFile, "Table.Root"), ...findJsxOpenings(sourceFile, "Table")];
+  const tableStart = tableOpenings.length > 0 ? Math.min(...tableOpenings.map((opening) => opening.getStart(sourceFile))) : -1;
   const searchField = findJsxElements(sourceFile, "SearchField").find((element) =>
-    getJsxAttributeValue(getJsxAttribute(element.openingElement, "aria-label")) === "企業名で検索",
+    getJsxAttributeValue(getJsxAttribute(element.openingElement, "aria-label")) === context.searchAriaLabel,
   );
   const collectionToolbar = findJsxElements(sourceFile, "Toolbar").find((element) =>
     searchField ? element.getText(sourceFile).includes(searchField.getText(sourceFile)) : false,
@@ -724,7 +823,8 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
     ? getJsxAttributeValue(getJsxAttribute(searchField.openingElement, "className"))
     : undefined;
   const searchFieldClassName = typeof searchFieldClass === "string" ? searchFieldClass : "";
-  const collectionRegionStyles = styles.match(/\.customer-collection\s*\{([^}]*)\}/s)?.[1] ?? "";
+  const collectionRegionStyles =
+    styles.match(new RegExp(`\\.${escapeRegExp(collectionRegionClass)}\\s*\\{([^}]*)\\}`, "s"))?.[1] ?? "";
   const escapedToolbarClassName = toolbarClassName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const toolbarStyles = escapedToolbarClassName
     ? styles.match(new RegExp(`\\.${escapedToolbarClassName}\\s*\\{([^}]*)\\}`, "s"))?.[1] ?? ""
@@ -736,13 +836,16 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
   const hasSearchFieldAnatomy =
     /<SearchField\.Group(?:\s|>)/.test(searchFieldMarkup) &&
     /<SearchField\.SearchIcon(?:\s|\/?>)/.test(searchFieldMarkup) &&
-    /<SearchField\.Input\b[^>]*placeholder=["']企業名で検索["']/.test(searchFieldMarkup) &&
+    new RegExp(`<SearchField\\.Input\\b[^>]*placeholder=["']${escapeRegExp(context.searchPlaceholder)}["']`).test(
+      searchFieldMarkup,
+    ) &&
     /<SearchField\.ClearButton\b[^>]*aria-label=["'][^"']+["']/.test(searchFieldMarkup);
   const hasToolbarPlacement =
     Boolean(collectionToolbar) &&
-    getJsxAttributeValue(getJsxAttribute(collectionToolbar.openingElement, "aria-label")) === "顧客一覧の操作" &&
+    getJsxAttributeValue(getJsxAttribute(collectionToolbar.openingElement, "aria-label")) === context.toolbarAriaLabel &&
     toolbarMarkup.includes(searchFieldMarkup) &&
-    app.indexOf(toolbarMarkup) < app.indexOf('className="customer-table-wrap"');
+    tableStart >= 0 &&
+    collectionToolbar.getStart(sourceFile) < tableStart;
   const hasToolbarSpacing =
     /margin-top\s*:\s*var\(--dh-space-6\)/.test(collectionRegionStyles) &&
     (
@@ -755,11 +858,12 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
   const hasResponsiveSearchWidth =
     /(?:width\s*:\s*(?:16rem|min\(100%,\s*16rem\))|max-width\s*:\s*16rem)/.test(searchFieldStyles) &&
     new RegExp(`@media[\\s\\S]*\\.${escapedSearchFieldClassName}\\s*\\{[^}]*width\\s*:\\s*100%`, "s").test(styles);
+  const searchWording = [...new Set([context.searchAriaLabel, context.searchPlaceholder])];
   const usesTextFieldForSearch = findJsxElements(sourceFile, "TextField")
-    .some((element) => /会社名で検索|企業名で検索/.test(element.getText(sourceFile)));
+    .some((element) => new RegExp(`(${alternation(searchWording)})`).test(element.getText(sourceFile)));
   const hasCollectionToolbarLayout =
     Boolean(searchField) &&
-    getJsxAttributeValue(getJsxAttribute(searchField.openingElement, "aria-label")) === "企業名で検索" &&
+    getJsxAttributeValue(getJsxAttribute(searchField.openingElement, "aria-label")) === context.searchAriaLabel &&
     hasSearchFieldAnatomy &&
     hasToolbarPlacement &&
     hasToolbarSpacing &&
@@ -788,12 +892,12 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
   );
 
   const measuredLayout =
-    measurements && collectionScreen && detailScreen
+    measurements && context.collectionScreen && context.detailScreen
       ? {
-          narrow: evaluateNarrowMeasurements(measurements),
-          collectionToolbar: evaluateCollectionToolbarMeasurements(measurements),
-          backNavigation: evaluateBackNavigationMeasurements(measurements),
-          grouping: evaluateGroupingMeasurements(measurements, negativeMargins),
+          narrow: evaluateNarrowMeasurements(measurements, context),
+          collectionToolbar: evaluateCollectionToolbarMeasurements(measurements, context),
+          backNavigation: evaluateBackNavigationMeasurements(measurements, context),
+          grouping: evaluateGroupingMeasurements(measurements, negativeMargins, context),
         }
       : undefined;
 
@@ -801,7 +905,7 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
     lintResult("component.approved", "component-approved", "契約対象の独自HTML部品は検出されませんでした"),
     lintResult("component.usage", "component-usage", "exampleのcomponentUsageが求める部品はすべて実装に現れています"),
     componentVariantsResult,
-    lintResult("component.table.variant", "table-variant", `Table.Rootは${expectedTableUsage.variant} variant`),
+    lintResult("component.table.variant", "table-variant", `Table.Rootは${context.expectedTableUsage.variant} variant`),
     tableContract.columns,
     tableContract.surface,
     tokenRadiusResult,
@@ -818,28 +922,32 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
       hasStatusCopy ? "参考: 状態名の文字表示を検出" : "参考: 状態を示す文字を検出できず",
       "色以外の手掛かりが実画面で読めるかはAIレビューと人の確認で判定する",
     ]),
-    result("business.customer-name", hasCustomerNameGuard ? "passed" : "failed", [hasCustomerNameGuard ? "顧客名の必須制御あり" : "顧客名の必須制御を確認できません"]),
+    result("business.customer-name", hasRequiredFieldGuard ? "passed" : "failed", [
+      hasRequiredFieldGuard
+        ? `${context.requiredFieldLabel}の必須制御あり`
+        : `${context.requiredFieldLabel}の必須制御を確認できません`,
+    ]),
     lintResult("business.contact-email", "contact-email", "メール形式の入力制御あり"),
     result(
       "navigation.customer-routes",
-      hasCustomerRoutes && hasSplitCustomerScreens ? "passed" : "failed",
+      hasScreenRoutes && hasSplitScreens ? "passed" : "failed",
       [
-        hasCustomerRoutes && hasSplitCustomerScreens
-          ? "/customersと/customers/:customerIdを独立した画面として実装"
-          : "顧客一覧、顧客詳細、一覧へ戻る経路の分離を確認できません",
+        hasScreenRoutes && hasSplitScreens
+          ? `${context.routes.join("と")}を独立した画面として実装`
+          : "一覧、詳細、一覧へ戻る経路の分離を確認できません",
       ],
     ),
     lintResult("navigation.link-semantics", "link-semantics", "Tableのオブジェクト名、モバイル詳細導線、一覧へ戻る導線をLinkとして実装"),
     result(
       "architecture.customer-read-models",
-      hasCustomerReadModels ? "passed" : "failed",
+      hasSeparatedReadModels ? "passed" : "failed",
       [
-        hasCustomerReadModels
-          ? "CustomerSummaryとCustomerDetailの取得経路を分離"
-          : "一覧用CustomerSummaryと詳細用CustomerDetailの分離を確認できません",
+        hasSeparatedReadModels
+          ? `${context.readModels.summaryType[0]}と${context.readModels.detailType[0]}の取得経路を分離`
+          : `一覧用${context.readModels.summaryType[0]}と詳細用${context.readModels.detailType[0]}の分離を確認できません`,
       ],
     ),
-    result("state.complete", missingStates.length === 0 ? "passed" : "failed", [missingStates.length === 0 ? `必須${requiredStates.length}状態あり` : `不足: ${missingStates.join(", ")}`]),
+    result("state.complete", missingStates.length === 0 ? "passed" : "failed", [missingStates.length === 0 ? `必須${context.requiredStates.length}状態あり` : `不足: ${missingStates.join(", ")}`]),
     measuredLayout?.grouping ??
       result(
         "layout.grouping",
@@ -855,7 +963,7 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
         [
           hasCollectionToolbarLayout
             ? "Toolbar内のSearchFieldをTable直前の末尾側へ配置し、16remから狭幅100%へ再配置"
-            : "customer-collectionにmargin-top: var(--dh-space-6)を指定し、ToolbarをTable直前に置いてください。Toolbarルートはwidth:100%、display:flex、justify-content:flex-endを指定し、SearchFieldは16rem、狭幅100%としてGroup、SearchIcon、Input、ClearButtonを使います",
+            : `${collectionRegionClass}にmargin-top: var(--dh-space-6)を指定し、ToolbarをTable直前に置いてください。Toolbarルートはwidth:100%、display:flex、justify-content:flex-endを指定し、SearchFieldは16rem、狭幅100%としてGroup、SearchIcon、Input、ClearButtonを使います`,
         ],
       ),
     measuredLayout?.backNavigation ??
@@ -865,7 +973,7 @@ export function evaluateSource({ app, styles, fixtures = "", componentTheme = ""
         [
           hasBackNavigationLayout
             ? "BackNavigation、PageHeadingの順に同じ見出しグループへ置き、space.4とspace.8で間隔を固定"
-            : "詳細画面にdetail-page__headingを作り、その中へ戻るLinkを含むnavとPageHeadingをこの順で置いてください。グループはdisplay:grid、gap:var(--dh-space-4)、margin-bottom:var(--dh-space-8)とし、detail-actionsは削除します",
+            : `詳細画面に${detailHeadingClass}を作り、その中へ戻るLinkを含むnavとPageHeadingをこの順で置いてください。グループはdisplay:grid、gap:var(--dh-space-4)、margin-bottom:var(--dh-space-8)とし、detail-actionsは削除します`,
         ],
       ),
     measuredLayout?.narrow ??
@@ -910,9 +1018,9 @@ function toMarkdown(evaluation, rulesById) {
   return `${lines.join("\n")}\n`;
 }
 
-export async function evaluateRun({ pairId, mode, outDir }) {
-  const workspaceDir = resolveWorkspaceDir(pairId, mode);
-  const outputDir = outDir ? resolve(outDir) : resolve(rootDir, "experiments", "account-management", "runs", pairId, mode);
+export async function evaluateRun({ pairId, mode, outDir, experiment = defaultExperimentName }) {
+  const workspaceDir = resolveWorkspaceDir(pairId, mode, process.env, experiment);
+  const outputDir = outDir ? resolve(outDir) : resolve(experimentPaths(experiment).runsDir, pairId, mode);
   // App.tsx から import で辿れる画面ファイルをまとめて評価する(単一ファイル前提を置かない)
   const [{ app, fixtures, styles, tsxFiles }, componentTheme, rulesDocument] = await Promise.all([
     collectScreenSources(resolve(workspaceDir, "src")),
@@ -924,7 +1032,7 @@ export async function evaluateRun({ pairId, mode, outDir }) {
   const measurements = existsSync(measurementsPath)
     ? JSON.parse(await readFile(measurementsPath, "utf8"))
     : undefined;
-  const rules = evaluateSource({ app, fixtures, styles, componentTheme, measurements, tsxFiles });
+  const rules = evaluateSource({ app, fixtures, styles, componentTheme, measurements, tsxFiles, experiment });
   const summary = {
     passed: rules.filter((item) => item.status === "passed").length,
     failed: rules.filter((item) => item.status === "failed").length,
@@ -951,7 +1059,8 @@ const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(imp
 if (isMain) {
   const args = parseArgs(process.argv.slice(2));
   if (typeof args.pair !== "string" || typeof args.mode !== "string") throw new Error("--pairと--modeを指定してください");
+  const experiment = resolveExperimentName(args);
   const outDir = typeof args.out === "string" ? resolve(args.out, args.mode) : undefined;
-  const evaluation = await evaluateRun({ pairId: args.pair, mode: args.mode, outDir });
+  const evaluation = await evaluateRun({ pairId: args.pair, mode: args.mode, outDir, experiment });
   console.log(`${args.mode}: ${evaluation.summary.passed} passed / ${evaluation.summary.failed} failed / ${evaluation.summary.review} review`);
 }

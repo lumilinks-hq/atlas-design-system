@@ -88,12 +88,31 @@ export function stripLintRules(rulesDocument) {
   return { ...rulesDocument, rules: rulesDocument.rules.filter((rule) => rule.method !== "lint") };
 }
 
+// example の evaluation は採点条件そのもの。agent へ渡すと harness だけが答えを見た比較になるため外す
+export function stripEvaluationFields(example) {
+  return Object.fromEntries(Object.entries(example).filter(([key]) => key !== "evaluation"));
+}
+
 export function readAtlasResource(uri) {
   const resource = resourcesByUri.get(uri);
   if (!resource) throw new Error(`Unknown Atlas resource: ${uri}`);
   const raw = readFileSync(resolve(rootDir, resource.path), "utf8");
-  const text = uri === "atlas://design/rules" ? `${JSON.stringify(stripLintRules(JSON.parse(raw)), null, 2)}\n` : raw;
-  return { ...resource, text };
+  return { ...resource, text: publicResourceText(uri, resource.path, raw) };
+}
+
+// agent と MCP に見せる本文。design/rules.json と example から採点条件を外す
+function publicResourceText(uri, path, raw) {
+  if (uri === "atlas://design/rules" || path === "design/rules.json") {
+    return `${JSON.stringify(stripLintRules(JSON.parse(raw)), null, 2)}\n`;
+  }
+  if (path.startsWith("design/examples/")) {
+    return `${JSON.stringify(stripEvaluationFields(JSON.parse(raw)), null, 2)}\n`;
+  }
+  return raw;
+}
+
+export function publicDesignResourceText(path, raw) {
+  return publicResourceText(undefined, path, raw);
 }
 
 function resolvePatternRef(ref) {
@@ -175,6 +194,20 @@ export function resolveDesignContract({ patterns = [], examples = [], screens = 
       ...(patternVariants.has(id) ? { variants: [...patternVariants.get(id)] } : {}),
     })),
   };
+}
+
+/**
+ * 契約が要求した最初の example の resource を返す。
+ * resources から /examples/ を拾うと実験が増えたとき別の example を掴むので、
+ * manifest の designRefs.examples が指す id で引く。
+ * @param {{ requested?: { examples?: string[] }, resources: { id: string }[] }} contract
+ */
+export function primaryExampleResource(contract) {
+  const [exampleId] = contract.requested?.examples ?? [];
+  if (!exampleId) throw new Error("契約にexampleがありません");
+  const resource = contract.resources.find((item) => item.id === exampleId);
+  if (!resource) throw new Error(`契約にexampleがありません: ${exampleId}`);
+  return resource;
 }
 
 export function resolveManifest(manifestPath) {

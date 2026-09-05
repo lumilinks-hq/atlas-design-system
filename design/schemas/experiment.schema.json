@@ -27,7 +27,13 @@
       },
       "additionalProperties": false
     },
-    "requiredStates": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+    "requiredStates": {
+      "type": "array",
+      "description": "画面が備える状態。invalid- で始まる名前は入力検証の状態として扱い、Drawerを持つ画面のスクリーンショットに使う",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
     "checks": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
     "screens": {
       "type": "array",

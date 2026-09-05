@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { createServer } from "vite";
 import { parseArgs, rootDir } from "./lib.mjs";
+import { experimentPaths, resolveExperimentName } from "./workspace-paths.mjs";
 
 const args = parseArgs(process.argv.slice(2));
 const pairId = typeof args.pair === "string" ? args.pair : "mvp-11";
@@ -13,8 +14,9 @@ const allowedModes = new Set(["baseline", "harness", "harness-corrected"]);
 if (!allowedModes.has(mode)) throw new Error("--modeはbaseline、harness、harness-correctedから選んでください");
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("--portには有効なポート番号を指定してください");
 
-const sourceDir = resolve(rootDir, "experiments", "account-management", "runs", pairId, mode, "source");
-const starterDir = resolve(rootDir, "experiments", "account-management", "starter");
+const experimentDirs = experimentPaths(resolveExperimentName(args));
+const sourceDir = resolve(experimentDirs.runsDir, pairId, mode, "source");
+const starterDir = experimentDirs.starterDir;
 const previewDir = await mkdtemp(resolve(tmpdir(), "atlas-run-preview-"));
 
 await cp(starterDir, previewDir, { recursive: true });

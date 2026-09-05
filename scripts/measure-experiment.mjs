@@ -2,27 +2,23 @@ import { existsSync, readFileSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { resolveManifest } from "./design-catalog.mjs";
+import { substituteRouteParams } from "./capture-targets.mjs";
+import { primaryExampleResource, resolveManifest } from "./design-catalog.mjs";
 import { parseArgs, rootDir } from "./lib.mjs";
-import { workspaceDir as resolveWorkspaceDir } from "./workspace-paths.mjs";
+import {
+  defaultExperimentName,
+  experimentPaths,
+  resolveExperimentName,
+  workspaceDir as resolveWorkspaceDir,
+} from "./workspace-paths.mjs";
 
-const manifestPath = "experiments/account-management/manifest.json";
+export { substituteRouteParams };
 
 export const viewports = [
   { name: "desktop", width: 1440, height: 900 },
   { name: "mobile", width: 390, height: 844 },
   { name: "tiny", width: 320, height: 568 },
 ];
-
-export function substituteRouteParams(route, sampleParams = {}) {
-  return route.replace(/:([A-Za-z0-9_]+)/g, (_, name) => {
-    const value = sampleParams[name];
-    if (typeof value !== "string" || value.length === 0) {
-      throw new Error(`route ${route} のパラメータ :${name} に対応するscreens.sampleParamsがありません`);
-    }
-    return value;
-  });
-}
 
 function readVariantLayout(contract, ref) {
   const [patternId, variantId] = ref.split("#");
@@ -118,15 +114,15 @@ function collectScreenMeasurements({ anchorClasses, searchLabel, backLinkText })
   };
 }
 
-export async function measureRun({ pairId, mode, outDir }) {
-  const workspaceDir = resolveWorkspaceDir(pairId, mode);
-  const outputDir = outDir ? resolve(outDir) : resolve(rootDir, "experiments", "account-management", "runs", pairId, mode);
+export async function measureRun({ pairId, mode, outDir, experiment = defaultExperimentName }) {
+  const experimentDirs = experimentPaths(experiment);
+  const manifestPath = experimentDirs.manifestPath;
+  const workspaceDir = resolveWorkspaceDir(pairId, mode, process.env, experiment);
+  const outputDir = outDir ? resolve(outDir) : resolve(experimentDirs.runsDir, pairId, mode);
   const contract = resolveManifest(manifestPath);
   const manifest = JSON.parse(await readFile(resolve(rootDir, manifestPath), "utf8"));
-  const exampleResource = contract.resources.find((resource) => resource.uri.includes("/examples/"));
-  const example = exampleResource
-    ? JSON.parse(await readFile(resolve(rootDir, exampleResource.path), "utf8"))
-    : undefined;
+  const exampleResource = primaryExampleResource(contract);
+  const example = JSON.parse(await readFile(resolve(rootDir, exampleResource.path), "utf8"));
   const searchLabel = example?.componentUsage?.["component.toolbar"]?.search?.ariaLabel;
   const plan = buildMeasurementPlan(contract, { requiredStates: manifest.requiredStates ?? [] });
   const measurements = { pairId, mode, screens: [] };
@@ -211,16 +207,17 @@ const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(imp
 if (isMain) {
   const args = parseArgs(process.argv.slice(2));
   if (typeof args.pair !== "string") throw new Error("--pairを指定してください");
+  const experiment = resolveExperimentName(args);
   const modes = typeof args.mode === "string" ? [args.mode] : ["baseline", "harness", "harness-corrected"];
   for (const mode of modes) {
-    const workspaceDir = resolveWorkspaceDir(args.pair, mode);
+    const workspaceDir = resolveWorkspaceDir(args.pair, mode, process.env, experiment);
     if (!existsSync(workspaceDir)) {
       if (typeof args.mode === "string") throw new Error(`workspaceがありません: ${workspaceDir}`);
       console.log(`${mode}: workspaceなし、スキップ`);
       continue;
     }
     const outDir = typeof args.out === "string" ? resolve(args.out, mode) : undefined;
-    const measurements = await measureRun({ pairId: args.pair, mode, outDir });
+    const measurements = await measureRun({ pairId: args.pair, mode, outDir, experiment });
     const errored = measurements.error ? " (error)" : "";
     console.log(`${mode}: ${measurements.screens.length} screens measured${errored}`);
   }

@@ -112,6 +112,30 @@
     "component.alert",
     "component.toast"
   ],
+  "lint": {
+    "forbiddenText": ["Atlas CRM", "ワークスペース", "顧客を追加", "契約管理", "料金管理", "利用人数", "権限管理"],
+    "linkSemantics": {
+      "objectNameExpression": "customer.companyName",
+      "backLinkPattern": "顧客一覧(?:へ|に)戻る",
+      "mobileListClass": "collection-list-mobile",
+      "navigationTextPattern": "customer\\.companyName|顧客を確認|顧客一覧(?:へ|に)戻る"
+    }
+  },
+  "evaluation": {
+    "requiredFieldLabel": "顧客名",
+    "statusValues": ["商談中", "利用中", "休眠"],
+    "toolbarAriaLabel": "顧客一覧の操作",
+    "screenComponents": {
+      "collection": ["CustomerListPage", "CustomersPage"],
+      "detail": ["CustomerDetailPage", "CustomerPage"]
+    },
+    "readModels": {
+      "summaryType": ["CustomerSummary"],
+      "detailType": ["CustomerDetail"],
+      "listFunction": ["listCustomerSummaries", "getCustomerSummaries"],
+      "detailFunction": ["getCustomerDetail"]
+    }
+  },
   "rules": [
     "business.customer-name",
     "business.contact-email",

@@ -1,12 +1,15 @@
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { createHash } from "node:crypto";
-import { parseArgs, rootDir } from "./lib.mjs";
+import { parseArgs } from "./lib.mjs";
+import { experimentPaths, resolveExperimentName } from "./workspace-paths.mjs";
 
 const args = parseArgs(process.argv.slice(2));
 if (typeof args.pair !== "string") throw new Error("--pairを指定してください");
 
-const runsDir = resolve(rootDir, "experiments", "account-management", "runs", args.pair);
+const experiment = resolveExperimentName(args);
+const experimentDirs = experimentPaths(experiment);
+const runsDir = resolve(experimentDirs.runsDir, args.pair);
 const baseline = JSON.parse(await readFile(resolve(runsDir, "baseline", "run.json"), "utf8"));
 const harness = JSON.parse(await readFile(resolve(runsDir, "harness", "run.json"), "utf8"));
 let corrected;
@@ -53,4 +56,4 @@ const comparison = {
 
 await mkdir(runsDir, { recursive: true });
 await writeFile(resolve(runsDir, "comparison.json"), `${JSON.stringify(comparison, null, 2)}\n`);
-console.log(`Comparison OK: experiments/account-management/runs/${args.pair}/comparison.json`);
+console.log(`Comparison OK: experiments/${experiment}/runs/${args.pair}/comparison.json`);

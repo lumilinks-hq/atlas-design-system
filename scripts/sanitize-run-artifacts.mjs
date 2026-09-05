@@ -3,7 +3,7 @@ import { userInfo } from "node:os";
 import { extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs, rootDir, usernamePattern } from "./lib.mjs";
-import { runsRootDir } from "./workspace-paths.mjs";
+import { experimentPaths, resolveExperimentName, runsRootDir } from "./workspace-paths.mjs";
 
 const textExtensions = new Set([".diff", ".json", ".jsonl", ".log", ".md", ".tsx", ".ts", ".css"]);
 
@@ -97,7 +97,8 @@ const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(imp
 if (isMain) {
   const args = parseArgs(process.argv.slice(2));
   if (typeof args.pair !== "string") throw new Error("--pairを指定してください");
-  const directory = resolve(rootDir, "experiments", "account-management", "runs", args.pair);
+  const experiment = resolveExperimentName(args);
+  const directory = resolve(experimentPaths(experiment).runsDir, args.pair);
   await sanitizeRunArtifacts(directory);
-  console.log(`Sanitized: experiments/account-management/runs/${args.pair}`);
+  console.log(`Sanitized: experiments/${experiment}/runs/${args.pair}`);
 }

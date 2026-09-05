@@ -1,5 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { approvedHeroUiImportNames, evaluateSource } from "./evaluate-experiment.mjs";
+import { approvedHeroUiImportNames, evaluateSource, evaluationContext } from "./evaluate-experiment.mjs";
+
+describe("evaluationContext", () => {
+  it("実験名から判定条件を組み、同じ実験では同じインスタンスを返す", () => {
+    const context = evaluationContext("account-management");
+
+    expect(evaluationContext("account-management")).toBe(context);
+    expect(context.name).toBe("account-management");
+    expect(context.routes).toEqual(["/customers", "/customers/:customerId"]);
+    expect(context.backLinkPattern).toBe("顧客一覧(?:へ|に)戻る");
+    expect(context.statusValues).toEqual(["商談中", "利用中", "休眠"]);
+    expect(context.requiredFieldName).toBe("companyName");
+    expect(context.toolbarAriaLabel).toBe("顧客一覧の操作");
+    expect(context.searchAriaLabel).toBe("企業名で検索");
+    expect(context.screenComponents.collection).toContain("CustomerListPage");
+    expect(context.readModels.summaryType).toContain("CustomerSummary");
+  });
+
+  it("存在しない実験名を拒否する", () => {
+    expect(() => evaluationContext("no-such-experiment")).toThrow("実験が見つかりません");
+  });
+});
 
 describe("evaluateSource", () => {
   it("detects design contract escapes", () => {
@@ -169,12 +190,30 @@ describe("evaluateSource", () => {
       styles: ".search-field { width: 100%; }",
     });
     const valid = evaluateSource({
-      app: '<div className="customer-collection"><Toolbar aria-label="顧客一覧の操作" className="customer-list-toolbar"><SearchField aria-label="企業名で検索" className="search-field"><SearchField.Group><SearchField.SearchIcon /><SearchField.Input placeholder="企業名で検索" /><SearchField.ClearButton aria-label="検索語をクリア" /></SearchField.Group></SearchField></Toolbar><div className="customer-table-wrap"><Table.Root /></div></div>',
-      styles: '.customer-collection { display: grid; gap: var(--dh-space-3); margin-top: var(--dh-space-6); } .customer-list-toolbar { width: 100%; display: flex; justify-content: flex-end; } .search-field { width: min(100%, 16rem); } @media (max-width: 767px) { .search-field { width: 100%; } }',
+      app: '<div className="collection-region"><Toolbar aria-label="顧客一覧の操作" className="customer-list-toolbar"><SearchField aria-label="企業名で検索" className="search-field"><SearchField.Group><SearchField.SearchIcon /><SearchField.Input placeholder="企業名で検索" /><SearchField.ClearButton aria-label="検索語をクリア" /></SearchField.Group></SearchField></Toolbar><div className="table-wrap"><Table.Root /></div></div>',
+      styles: '.collection-region { display: grid; gap: var(--dh-space-3); margin-top: var(--dh-space-6); } .customer-list-toolbar { width: 100%; display: flex; justify-content: flex-end; } .search-field { width: min(100%, 16rem); } @media (max-width: 767px) { .search-field { width: 100%; } }',
     });
 
     expect(invalid.find((rule) => rule.id === "layout.collection-toolbar")?.status).toBe("failed");
     expect(valid.find((rule) => rule.id === "layout.collection-toolbar")?.status).toBe("passed");
+  });
+
+  it("TextFieldの検索は契約のaria-labelとplaceholderで判定する", () => {
+    const toolbar = (search: string) =>
+      `<div className="collection-region"><Toolbar aria-label="顧客一覧の操作" className="t"><SearchField aria-label="企業名で検索" className="s"><SearchField.Group><SearchField.SearchIcon /><SearchField.Input placeholder="企業名で検索" /><SearchField.ClearButton aria-label="検索語をクリア" /></SearchField.Group></SearchField></Toolbar>${search}<Table.Root /></div>`;
+    const styles =
+      ".collection-region { display: grid; gap: var(--dh-space-3); margin-top: var(--dh-space-6); } .t { width: 100%; display: flex; justify-content: flex-end; } .s { width: min(100%, 16rem); } @media (max-width: 767px) { .s { width: 100%; } }";
+    const contractWording = evaluateSource({
+      app: toolbar('<TextField><Label>企業名で検索</Label><Input /></TextField>'),
+      styles,
+    });
+    const otherWording = evaluateSource({
+      app: toolbar('<TextField><Label>担当者名で絞り込む</Label><Input /></TextField>'),
+      styles,
+    });
+
+    expect(contractWording.find((rule) => rule.id === "layout.collection-toolbar")?.status).toBe("failed");
+    expect(otherWording.find((rule) => rule.id === "layout.collection-toolbar")?.status).toBe("passed");
   });
 
   it("requires independent customer list and detail routes", () => {
@@ -367,7 +406,7 @@ describe("evaluateSource", () => {
   it("accepts columns derived from the resolved Example and mapped by Header and Row", () => {
     const rules = evaluateSource({
       app: `
-        const customerColumns = accountManagementExample.componentUsage["component.table"].columns.map((column) => ({ ...column }));
+        const customerColumns = exampleContract.componentUsage["component.table"].columns.map((column) => ({ ...column }));
         <Table variant="primary">
           <Table.Header>{customerColumns.map((column) => <Table.Column id={column.id}>{column.label}</Table.Column>)}</Table.Header>
           <Table.Row>{customerColumns.map((column) => <Table.Cell className={column.tabular ? "tabular" : undefined} />)}</Table.Row>

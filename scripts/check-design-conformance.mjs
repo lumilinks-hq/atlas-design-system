@@ -1,16 +1,14 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { evaluateSource } from "./evaluate-experiment.mjs";
-import { rootDir } from "./lib.mjs";
+import { parseArgs, rootDir } from "./lib.mjs";
+import { experimentPaths, resolveExperimentName } from "./workspace-paths.mjs";
 
-const correctedDir = resolve(
-  rootDir,
-  "experiments",
-  "account-management",
-  "runs",
-  "mvp-11",
-  "harness-corrected",
-);
+const args = parseArgs(process.argv.slice(2));
+const experiment = resolveExperimentName(args);
+// 契約の適合を証明する基準Run。実験ごとに1本だけ選ぶ
+const pairId = typeof args.pair === "string" ? args.pair : "mvp-11";
+const correctedDir = resolve(experimentPaths(experiment).runsDir, pairId, "harness-corrected");
 
 const [app, fixtures, styles, componentTheme, storedEvaluation, measurements] = await Promise.all([
   readFile(resolve(correctedDir, "source", "App.tsx"), "utf8"),
@@ -22,7 +20,7 @@ const [app, fixtures, styles, componentTheme, storedEvaluation, measurements] = 
   readFile(resolve(correctedDir, "measurements.json"), "utf8").then(JSON.parse),
 ]);
 
-const rules = evaluateSource({ app, fixtures, styles, componentTheme, measurements });
+const rules = evaluateSource({ app, fixtures, styles, componentTheme, measurements, experiment });
 const failedRules = rules.filter((rule) => rule.status === "failed");
 if (failedRules.length > 0) {
   const details = failedRules

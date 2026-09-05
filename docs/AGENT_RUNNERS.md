@@ -13,6 +13,8 @@ pnpm experiment:run --pair "$PAIR_ID" --mode baseline --runner claude
 AGENT_RUNNER=claude pnpm experiment:run --pair "$PAIR_ID" --mode harness
 ```
 
+実験の切り替えは `--experiment <name>`（既定は `account-management`）で、runner の指定とは独立している。
+
 runner は最初の `experiment:run` で `run.json` の `environment.runner` に記録され、refine / review / compare はその値を使う。同じ pair で runner や CLI バージョンが違うと compare が止まる。
 
 ## adapter の形

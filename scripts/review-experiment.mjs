@@ -4,7 +4,10 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as z from "zod/v4";
 import { resolveRunner } from "./agent-runners/index.mjs";
+import { buildCaptureTargets } from "./capture-targets.mjs";
+import { resolveManifest } from "./design-catalog.mjs";
 import { parseArgs, rootDir, runCommand } from "./lib.mjs";
+import { defaultExperimentName, experimentPaths, resolveExperimentName } from "./workspace-paths.mjs";
 
 export function selectReviewRuleIds(rulesDocument) {
   // レビュー対象はrules.jsonのmethod宣言を唯一の情報源とし、ここでは列挙しない
@@ -33,12 +36,16 @@ export function parseReviewFindings(text) {
   return undefined;
 }
 
-async function reviewRun({ pairId, mode }) {
-  const outputDir = resolve(rootDir, "experiments", "account-management", "runs", pairId, mode);
-  const screenshotsDir = resolve(rootDir, "public", "experiments", "account-management", "runs", pairId);
+async function reviewRun({ pairId, mode, experiment = defaultExperimentName }) {
+  const experimentDirs = experimentPaths(experiment);
+  const outputDir = resolve(experimentDirs.runsDir, pairId, mode);
+  const screenshotsDir = resolve(experimentDirs.publicRunsDir, pairId);
   const evaluationPath = resolve(outputDir, "design-evaluation.json");
-  const images = [`${mode}.png`, `${mode}-detail.png`, `${mode}-mobile.png`, `${mode}-detail-mobile.png`]
-    .map((name) => resolve(screenshotsDir, name))
+  // 撮影側と同じ一覧から名前を作る。既定状態の画面だけをレビューへ渡す
+  const contract = resolveManifest(experimentDirs.manifestPath);
+  const images = buildCaptureTargets(contract)
+    .filter((target) => target.state === "default" && target.modes.includes(mode))
+    .map((target) => resolve(screenshotsDir, `${mode}${target.suffix}.png`))
     .filter((path) => existsSync(path));
   if (!existsSync(evaluationPath) || images.length === 0) {
     return { skipped: true, reason: !existsSync(evaluationPath) ? "design-evaluation.jsonなし" : "スクリーンショットなし" };
@@ -83,9 +90,10 @@ const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(imp
 if (isMain) {
   const args = parseArgs(process.argv.slice(2));
   if (typeof args.pair !== "string") throw new Error("--pairを指定してください");
+  const experiment = resolveExperimentName(args);
   const modes = typeof args.mode === "string" ? [args.mode] : ["baseline", "harness", "harness-corrected"];
   for (const mode of modes) {
-    const outcome = await reviewRun({ pairId: args.pair, mode });
+    const outcome = await reviewRun({ pairId: args.pair, mode, experiment });
     if (outcome.skipped) {
       if (typeof args.mode === "string") throw new Error(`${mode}: ${outcome.reason}`);
       console.log(`${mode}: ${outcome.reason}、スキップ`);

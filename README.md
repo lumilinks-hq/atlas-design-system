@@ -122,6 +122,8 @@ pnpm experiment:review --pair "$PAIR_ID"
 pnpm experiment:compare --pair "$PAIR_ID"
 ```
 
+どのスクリプトも`--experiment <name>`で対象の実験を選べます。省略時は`account-management`です。実験の定義は`experiments/<name>/manifest.json`、保存Runは`experiments/<name>/runs/<PAIR_ID>/<mode>/`、workspaceは`DESIGN_HARNESS_RUNS_DIR/<name>/<PAIR_ID>/<mode>/`に置かれます。
+
 `experiment:refine`は検査結果を入力に修正を依頼し、実測込みの再評価まで行います。`experiment:review`はスクリーンショットをAIレビューへ渡し、所見を`design-evaluation.json`の`review`欄へ保存します。`experiment:evaluate`は`review`欄を含めて評価ファイルを作り直すため、必ずreviewより前に実行し、review後に再実行しないでください。`experiment:compare`は最後に実行し、所見を`comparison.json`へ転記します。
 
 生成コードを人が直接直すと比較条件が崩れます。修正は`VALIDATION.md`を入力にした`harness-corrected`として別Runへ保存します。公開前の確認で新しい設計違反が見つかった場合も、人が生成コードを編集せず`pnpm experiment:refine --pair "$PAIR_ID"`で追加の修正イベントとして保存します。

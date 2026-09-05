@@ -19,11 +19,23 @@ export const variantTagMap = {
   "AlertDialog.Backdrop": "alert-dialog",
 };
 
-// Issue の対象外として削除すべき UI の文言。account-management 固有で、manifest 移管は Phase 2
-export const defaultForbiddenText = ["Atlas CRM", "ワークスペース", "顧客を追加", "契約管理", "料金管理", "利用人数", "権限管理"];
-
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
+}
+
+// linkSemantics の語は実験ごとに変わるので example が持つ。
+// キーの並びは HARNESS_LINT.json の差分を安定させるため固定する
+const linkSemanticsKeys = ["objectNameExpression", "backLinkPattern", "mobileListClass", "navigationTextPattern"];
+
+function buildLinkSemantics(example, examplePath) {
+  const source = example.lint?.linkSemantics;
+  if (!source) throw new Error(`${examplePath}: lint.linkSemantics がありません`);
+  for (const key of ["objectNameExpression", "backLinkPattern"]) {
+    if (!source[key]) throw new Error(`${examplePath}: lint.linkSemantics.${key} がありません`);
+  }
+  return Object.fromEntries(
+    linkSemanticsKeys.filter((key) => source[key] !== undefined).map((key) => [key, source[key]]),
+  );
 }
 
 /**
@@ -31,7 +43,7 @@ function readJson(path) {
  * 評価器と生成 workspace の両方が同じ関数を通るので、判定条件は 1 か所に集まる。
  * 戻り値は JSON 化できる(HARNESS_LINT.json として workspace へ書く)
  */
-export function buildAtlasLintOptions({ componentsDir, examplePath, forbiddenText = defaultForbiddenText }) {
+export function buildAtlasLintOptions({ componentsDir, examplePath }) {
   const contracts = new Map(
     readdirSync(componentsDir)
       .filter((file) => file.endsWith(".json"))
@@ -66,16 +78,11 @@ export function buildAtlasLintOptions({ componentsDir, examplePath, forbiddenTex
 
   return {
     approvedImports,
-    forbiddenText: [...forbiddenText],
+    forbiddenText: [...(example.lint?.forbiddenText ?? [])],
     componentUsage,
     variants,
     tableVariant: tableUsage?.variant ?? "primary",
-    linkSemantics: {
-      objectNameExpression: "customer.companyName",
-      backLinkPattern: "顧客一覧(?:へ|に)戻る",
-      mobileListClass: "collection-list-mobile",
-      navigationTextPattern: "customer\\.companyName|顧客を確認|顧客一覧(?:へ|に)戻る",
-    },
+    linkSemantics: buildLinkSemantics(example, examplePath),
     componentThemeImport: "design/component-theme.css",
   };
 }

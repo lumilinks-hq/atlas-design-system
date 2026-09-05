@@ -103,6 +103,14 @@ tsxTester.run("link-semantics", rules["link-semantics"], {
   ],
 });
 
+// options を渡さない構成では実験固有の語で判定しない(プラグインに既定値を置かない)
+tsxTester.run("link-semantics-no-options", rules["link-semantics"], {
+  valid: [
+    { code: `export const A = () => <><Table.Cell>{customer.companyName}</Table.Cell><Button onPress={go}>顧客一覧へ戻る</Button></>;` },
+  ],
+  invalid: [],
+});
+
 tsxTester.run("action-confirmation", rules["action-confirmation"], {
   valid: [
     { code: `export const A = () => <Button>保存</Button>;` },

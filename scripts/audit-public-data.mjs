@@ -1,7 +1,9 @@
 import { readFile, stat } from "node:fs/promises";
 import { userInfo } from "node:os";
 import { relative, resolve } from "node:path";
-import { rootDir, usernamePattern, walk } from "./lib.mjs";
+import { fileURLToPath } from "node:url";
+import { parseArgs, rootDir, usernamePattern, walk } from "./lib.mjs";
+import { experimentPaths, resolveExperimentName } from "./workspace-paths.mjs";
 
 const excludedSegments = new Set([
   ".git",
@@ -17,15 +19,24 @@ const intentionalFixtures = new Set([
   "scripts/audit-public-data.test.ts",
   "scripts/sanitize-run-artifacts.test.ts",
 ]);
-const requiredArtifacts = [
-  "experiments/account-management/runs/mvp-11/comparison.json",
-  "experiments/account-management/runs/mvp-11/baseline/design-evaluation.json",
-  "experiments/account-management/runs/mvp-11/harness/design-evaluation.json",
-  "experiments/account-management/runs/mvp-11/harness-corrected/design-evaluation.json",
-  "public/experiments/account-management/runs/mvp-11/baseline.png",
-  "public/experiments/account-management/runs/mvp-11/harness-corrected.png",
-  "public/experiments/account-management/runs/mvp-11/harness-corrected-invalid-email.png",
-];
+/**
+ * 公開ページが読む成果物。実験とpairを指定できるようにし、既定は掲載中のRunに合わせる。
+ * @param {string} experiment
+ * @param {string} pairId
+ */
+function listRequiredArtifacts(experiment, pairId) {
+  const runs = `experiments/${experiment}/runs/${pairId}`;
+  const shots = `public/experiments/${experiment}/runs/${pairId}`;
+  return [
+    `${runs}/comparison.json`,
+    `${runs}/baseline/design-evaluation.json`,
+    `${runs}/harness/design-evaluation.json`,
+    `${runs}/harness-corrected/design-evaluation.json`,
+    `${shots}/baseline.png`,
+    `${shots}/harness-corrected.png`,
+    `${shots}/harness-corrected-invalid-email.png`,
+  ];
+}
 
 /**
  * 検査対象のユーザー名を決める。ATLAS_AUDIT_USERNAMESの指定は常に含める。
@@ -73,7 +84,7 @@ export function auditText(value, path = "", options = {}) {
     }
   }
 
-  if (/experiments\/account-management\/(?:starter\/src|runs\/[^/]+\/[^/]+\/source)\/fixtures\.tsx?$/.test(path)) {
+  if (/experiments\/[^/]+\/(?:starter\/src|runs\/[^/]+\/[^/]+\/source)\/fixtures\.tsx?$/.test(path)) {
     for (const match of value.matchAll(/[A-Z0-9._%+-]+@([A-Z0-9.-]+\.[A-Z]{2,})/gi)) {
       if (match[1]?.toLowerCase() !== "example.com") findings.push({ id: "non-fixture-email", match: match[0] });
     }
@@ -81,27 +92,34 @@ export function auditText(value, path = "", options = {}) {
   return findings;
 }
 
-const files = (await walk(rootDir)).filter((absolutePath) => {
-  const path = relative(rootDir, absolutePath);
-  return !path.split("/").some((segment) => excludedSegments.has(segment)) && textExtensions.test(path);
-});
-const findings = [];
-for (const absolutePath of files) {
-  const path = relative(rootDir, absolutePath);
-  const value = await readFile(absolutePath, "utf8");
-  for (const finding of auditText(value, path)) findings.push({ path, ...finding });
-}
-
-for (const path of requiredArtifacts) {
-  try {
-    if ((await stat(resolve(rootDir, path))).size === 0) findings.push({ path, id: "empty-required-artifact", match: "" });
-  } catch {
-    findings.push({ path, id: "missing-required-artifact", match: "" });
+const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isMain) {
+  const args = parseArgs(process.argv.slice(2));
+  const experiment = resolveExperimentName(args);
+  const pairId = typeof args.pair === "string" ? args.pair : "mvp-11";
+  const requiredArtifacts = listRequiredArtifacts(experimentPaths(experiment).name, pairId);
+  const files = (await walk(rootDir)).filter((absolutePath) => {
+    const path = relative(rootDir, absolutePath);
+    return !path.split("/").some((segment) => excludedSegments.has(segment)) && textExtensions.test(path);
+  });
+  const findings = [];
+  for (const absolutePath of files) {
+    const path = relative(rootDir, absolutePath);
+    const value = await readFile(absolutePath, "utf8");
+    for (const finding of auditText(value, path)) findings.push({ path, ...finding });
   }
-}
 
-if (findings.length > 0) {
-  throw new Error(`Public data audit failed\n${findings.map((finding) => `${finding.path}: ${finding.id} ${finding.match}`).join("\n")}`);
-}
+  for (const path of requiredArtifacts) {
+    try {
+      if ((await stat(resolve(rootDir, path))).size === 0) findings.push({ path, id: "empty-required-artifact", match: "" });
+    } catch {
+      findings.push({ path, id: "missing-required-artifact", match: "" });
+    }
+  }
 
-console.log(`Public data audit OK: ${files.length} text files, ${requiredArtifacts.length} required artifacts`);
+  if (findings.length > 0) {
+    throw new Error(`Public data audit failed\n${findings.map((finding) => `${finding.path}: ${finding.id} ${finding.match}`).join("\n")}`);
+  }
+
+  console.log(`Public data audit OK: ${files.length} text files, ${requiredArtifacts.length} required artifacts`);
+}

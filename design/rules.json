@@ -35,7 +35,7 @@
       "category": "component",
       "severity": "error",
       "method": "lint",
-      "description": "顧客一覧のTableは契約で定義したprimary variantを使う",
+      "description": "一覧のTableは契約で定義したprimary variantを使う",
       "fix": "Table.Rootのvariantをprimaryにし、secondary固有の見た目を持ち込まない（lint: atlas/table-variant）"
     },
     {
@@ -121,11 +121,11 @@
     },
     {
       "id": "business.customer-name",
-      "title": "顧客名を必須にする",
+      "title": "オブジェクトの識別名を必須にする",
       "category": "business",
       "severity": "error",
       "method": "automatic",
-      "description": "顧客を識別できない空の会社名を保存しない",
+      "description": "対象を識別できない空の名前を保存しない",
       "fix": "TextFieldをrequiredにし、空白だけの値も送信前に検証する"
     },
     {
@@ -139,11 +139,11 @@
     },
     {
       "id": "navigation.customer-routes",
-      "title": "顧客一覧と顧客詳細を別ルートに分ける",
+      "title": "一覧と詳細を別ルートに分ける",
       "category": "navigation",
       "severity": "error",
       "method": "automatic",
-      "description": "一覧は/customers、詳細は/customers/:customerIdで扱い、戻る経路を提供する",
+      "description": "一覧と詳細をそれぞれ独立したルートで扱い、詳細から一覧へ戻る経路を提供する",
       "fix": "HashRouterのRoutesで一覧と詳細を分け、一覧の行から詳細へ、詳細から一覧へ遷移できるようにする"
     },
     {
@@ -162,7 +162,7 @@
       "severity": "error",
       "method": "automatic",
       "description": "一覧へ詳細項目を渡さず、画面の用途に必要なデータだけを取得する",
-      "fix": "CustomerSummaryとCustomerDetailを定義し、一覧取得とID指定の詳細取得を分ける"
+      "fix": "一覧用と詳細用の型を別に定義し、一覧取得とID指定の詳細取得を分ける"
     },
     {
       "id": "state.complete",

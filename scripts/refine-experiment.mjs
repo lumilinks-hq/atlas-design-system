@@ -5,23 +5,25 @@ import { resolve } from "node:path";
 import { evaluateRun } from "./evaluate-experiment.mjs";
 import { hashHarnessContext, syncHarnessContext } from "./harness-context.mjs";
 import { measureRun } from "./measure-experiment.mjs";
-import { parseArgs, rootDir, runCommand, runCommandToFiles } from "./lib.mjs";
+import { parseArgs, runCommand, runCommandToFiles } from "./lib.mjs";
 import { sanitizeRunArtifacts } from "./sanitize-run-artifacts.mjs";
-import { workspaceDir as resolveWorkspaceDir } from "./workspace-paths.mjs";
+import { experimentPaths, resolveExperimentName, workspaceDir as resolveWorkspaceDir } from "./workspace-paths.mjs";
 
 const args = parseArgs(process.argv.slice(2));
 if (typeof args.pair !== "string") throw new Error("--pairを指定してください");
 
 const pairId = args.pair;
 const mode = "harness-corrected";
-const workspaceDir = resolveWorkspaceDir(pairId, mode);
-const outputDir = resolve(rootDir, "experiments", "account-management", "runs", pairId, mode);
+const experiment = resolveExperimentName(args);
+const experimentDirs = experimentPaths(experiment);
+const workspaceDir = resolveWorkspaceDir(pairId, mode, process.env, experiment);
+const outputDir = resolve(experimentDirs.runsDir, pairId, mode);
 const runPath = resolve(outputDir, "run.json");
 const run = JSON.parse(await readFile(runPath, "utf8"));
 
-await syncHarnessContext(workspaceDir, "experiments/account-management/manifest.json");
-await measureRun({ pairId, mode });
-const beforeRefinement = await evaluateRun({ pairId, mode });
+await syncHarnessContext(workspaceDir, experimentDirs.manifestPath);
+await measureRun({ pairId, mode, experiment });
+const beforeRefinement = await evaluateRun({ pairId, mode, experiment });
 const hasFailedChecks = run.checks?.some((check) => check.status === "failed") ?? false;
 
 if (beforeRefinement.summary.failed === 0 && !hasFailedChecks) {
@@ -34,7 +36,7 @@ if (beforeRefinement.summary.failed === 0 && !hasFailedChecks) {
   }
   checks.push({ name: "design-rules", status: "passed", exitCode: 0 });
   currentRun.status = checks.every((check) => check.status === "passed") ? "completed" : "failed";
-  currentRun.input.designContractSha256 = await hashHarnessContext("experiments/account-management/manifest.json");
+  currentRun.input.designContractSha256 = await hashHarnessContext(experimentDirs.manifestPath);
   currentRun.checks = checks;
   currentRun.artifacts = [...new Set([...currentRun.artifacts, "source", "design", "typecheck.log", "test.log", "build.log", "design-evaluation.json"])];
   await cp(resolve(workspaceDir, "src"), resolve(outputDir, "source"), { recursive: true, force: true });
@@ -74,13 +76,13 @@ for (const [name, commandArgs] of [["typecheck", ["exec", "tsc", "-p", "tsconfig
 const updatedRun = {
   ...run,
   status: result.code === 0 ? "completed" : "failed",
-  input: { ...run.input, designContractSha256: await hashHarnessContext("experiments/account-management/manifest.json") },
+  input: { ...run.input, designContractSha256: await hashHarnessContext(experimentDirs.manifestPath) },
   artifacts: [...new Set([...run.artifacts, "design", "refinement-events.jsonl", "refinement-stderr.log"])],
   checks,
 };
 await writeFile(runPath, `${JSON.stringify(updatedRun, null, 2)}\n`);
-await measureRun({ pairId, mode });
-const evaluation = await evaluateRun({ pairId, mode });
+await measureRun({ pairId, mode, experiment });
+const evaluation = await evaluateRun({ pairId, mode, experiment });
 await sanitizeRunArtifacts(outputDir);
 
 console.log(`${mode}: ${updatedRun.status}`);

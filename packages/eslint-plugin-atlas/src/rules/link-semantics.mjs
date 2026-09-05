@@ -25,10 +25,10 @@ export default {
   },
   create(context) {
     const options = context.options[0] ?? {};
-    const objectNameExpression = options.objectNameExpression ?? "customer.companyName";
-    const backLinkPattern = new RegExp(options.backLinkPattern ?? "顧客一覧(?:へ|に)戻る");
-    const mobileListClass = options.mobileListClass ?? "collection-list-mobile";
-    const navigationTextPattern = new RegExp(options.navigationTextPattern ?? "customer\\.companyName|顧客を確認|顧客一覧(?:へ|に)戻る");
+    // 判定語は experiment ごとに変わる。プラグインに既定値を置かず、渡されなかった検査は行わない
+    const { objectNameExpression, mobileListClass } = options;
+    const backLinkPattern = options.backLinkPattern ? new RegExp(options.backLinkPattern) : undefined;
+    const navigationTextPattern = options.navigationTextPattern ? new RegExp(options.navigationTextPattern) : undefined;
     const sourceCode = context.sourceCode;
 
     let objectNameCell;
@@ -42,27 +42,29 @@ export default {
       JSXElement(node) {
         const tagName = getTagName(node.openingElement.name);
         const text = sourceCode.getText(node);
-        if (tagName === "Table.Cell" && !objectNameCell && text.includes(objectNameExpression)) {
+        if (objectNameExpression && tagName === "Table.Cell" && !objectNameCell && text.includes(objectNameExpression)) {
           objectNameCell = node;
           hasObjectNameLink = /<(?:Link|RouterLink)\b[^>]*(?:href|to)=/.test(text);
         }
         if (tagName === "Link" || tagName === "RouterLink") {
           if (!hasTarget(node)) return;
-          if (findAncestorElement(node, (ancestor) => getClassNames(ancestor.openingElement).includes(mobileListClass))) {
+          if (mobileListClass && findAncestorElement(node, (ancestor) => getClassNames(ancestor.openingElement).includes(mobileListClass))) {
             hasMobileDetailLink = true;
           }
-          if (backLinkPattern.test(text)) hasBackLink = true;
+          if (backLinkPattern?.test(text)) hasBackLink = true;
         }
-        if ((tagName === "Button" || tagName === "ButtonRoot") && navigationTextPattern.test(text)) {
+        if ((tagName === "Button" || tagName === "ButtonRoot") && navigationTextPattern?.test(text)) {
           context.report({ node: node.openingElement, messageId: "navigationButton" });
         }
       },
       "Program:exit"(node) {
-        if (!hasObjectNameLink) {
+        if (objectNameExpression && !hasObjectNameLink) {
           context.report({ node: objectNameCell?.openingElement ?? node, messageId: "objectNameLink", data: { expression: objectNameExpression } });
         }
-        if (!hasMobileDetailLink) context.report({ node, messageId: "mobileDetailLink", data: { className: mobileListClass } });
-        if (!hasBackLink) context.report({ node, messageId: "backLink" });
+        if (mobileListClass && !hasMobileDetailLink) {
+          context.report({ node, messageId: "mobileDetailLink", data: { className: mobileListClass } });
+        }
+        if (backLinkPattern && !hasBackLink) context.report({ node, messageId: "backLink" });
       },
     };
   },

@@ -1,16 +1,17 @@
 import { cp, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { parseArgs, rootDir, runCommand } from "./lib.mjs";
+import { parseArgs, runCommand } from "./lib.mjs";
 import { sanitizeRunArtifacts } from "./sanitize-run-artifacts.mjs";
-import { workspaceDir as resolveWorkspaceDir } from "./workspace-paths.mjs";
+import { experimentPaths, resolveExperimentName, workspaceDir as resolveWorkspaceDir } from "./workspace-paths.mjs";
 
 const args = parseArgs(process.argv.slice(2));
 if (typeof args.pair !== "string" || typeof args.mode !== "string") {
   throw new Error("--pairと--modeを指定してください");
 }
 
-const workspaceDir = resolveWorkspaceDir(args.pair, args.mode);
-const outputDir = resolve(rootDir, "experiments", "account-management", "runs", args.pair, args.mode);
+const experiment = resolveExperimentName(args);
+const workspaceDir = resolveWorkspaceDir(args.pair, args.mode, process.env, experiment);
+const outputDir = resolve(experimentPaths(experiment).runsDir, args.pair, args.mode);
 const runPath = resolve(outputDir, "run.json");
 const run = JSON.parse(await readFile(runPath, "utf8"));
 

@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { buildAtlasLintOptions } from "eslint-plugin-atlas/options";
-import { resolveManifest, stripLintRules } from "./design-catalog.mjs";
+import { primaryExampleResource, publicDesignResourceText, resolveManifest } from "./design-catalog.mjs";
 import { hashPath, rootDir } from "./lib.mjs";
 
 // workspace の eslint.config.js。starter の土台に Atlas ルールを重ねる。
@@ -35,8 +35,7 @@ export default tseslint.config(
 `;
 
 export function buildWorkspaceLintOptions(resolvedContract) {
-  const exampleResource = resolvedContract.resources.find((resource) => resource.uri.includes("/examples/"));
-  if (!exampleResource) throw new Error("契約にexampleがありません");
+  const exampleResource = primaryExampleResource(resolvedContract);
   return buildAtlasLintOptions({
     componentsDir: resolve(rootDir, "design", "components"),
     examplePath: resolve(rootDir, exampleResource.path),
@@ -49,17 +48,15 @@ export async function syncHarnessContext(workspaceDir, manifestPath) {
 
   await cp(resolve(rootDir, "DESIGN.md"), resolve(workspaceDir, "DESIGN.md"), { force: true });
   // design/ は丸ごとではなく、manifest から解決した資源だけを渡す。
-  // rules.json は lint が検査するルールを除いた版を同じパスに書く
+  // rules.json の lint ルールと example の evaluation は採点条件なので publicDesignResourceText で外す
   for (const resource of resolvedContract.resources) {
     if (resource.path === "DESIGN.md") continue;
     const target = resolve(workspaceDir, resource.path);
     await mkdir(dirname(target), { recursive: true });
-    if (resource.path === "design/rules.json") {
-      const rulesDocument = JSON.parse(await readFile(resolve(rootDir, resource.path), "utf8"));
-      await writeFile(target, `${JSON.stringify(stripLintRules(rulesDocument), null, 2)}\n`);
-    } else {
-      await cp(resolve(rootDir, resource.path), target, { force: true });
-    }
+    const raw = await readFile(resolve(rootDir, resource.path), "utf8").catch(() => undefined);
+    const text = raw === undefined ? undefined : publicDesignResourceText(resource.path, raw);
+    if (text !== undefined && text !== raw) await writeFile(target, text);
+    else await cp(resolve(rootDir, resource.path), target, { force: true });
   }
   await cp(manifestAbsolutePath, resolve(workspaceDir, "HARNESS.json"), { force: true });
   const workspaceContract = {

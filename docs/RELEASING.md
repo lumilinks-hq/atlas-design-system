@@ -16,6 +16,8 @@ pnpm experiment:capture --pair "$PAIR_ID"
 pnpm runs:sanitize --pair "$PAIR_ID"
 ```
 
+account-management以外の実験を回すときは各コマンドへ`--experiment <name>`を足す。省略時は`account-management`を使う。
+
 生成結果の比較（`src/data/runs.ts`）とPlayが参照するRunを更新し、数値、画像、環境情報が`run.json`と一致することを確認する。
 
 ## 公開候補を検証する

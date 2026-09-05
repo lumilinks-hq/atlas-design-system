@@ -94,3 +94,38 @@ JSX 内 raw color、jsx-a11y、manifest 駆動ルール(customer-routes / custom
 - サイトは汎用の `PatternDocPage` で 2 ルートを追加。既存 2 ページは専用プレビューを持つため汎用化していない
 - 未解消: 狭い画面の左右余白が `layout.css` は 12px、`spacing-layout.json` と `mobile-layout.json` は 16px と食い違う
 - 次: Phase 2（`--experiment` 汎用化）→ Phase 3（請求書）→ Phase 4（顧客追加 + 再 run）。計画は `docs/plans/patterns-invoice-create-plan.md`
+
+## 2026-09-05 実験スクリプトの題材非依存化（Phase 2）
+
+挙動を変えずに account-management 以外の実験を回せるようにした。振る舞いの変更は入れていない。
+
+### `--experiment` を通した
+- `scripts/workspace-paths.mjs` の定数 `experimentDir` を関数へ。`experimentPaths(name)` が manifest / starter / brief / prompt / workspace / 保存Run のパスを返し、`resolveExperimentName(args)` が名前の形（`^[a-z0-9][a-z0-9-]*$`）と manifest の存在を検査する。既定は `account-management`
+- CLI 12 本（run / evaluate / capture / measure / finalize / compare / refine / review / preview / runs:sanitize / public:audit / design:conformance）が `--experiment` を受ける。workspace は `DESIGN_HARNESS_RUNS_DIR/<name>/<pair>/<mode>/` へ 1 階層深くなった
+- `scripts/experiment-arg.test.mjs` が「12 本すべてが `resolveExperimentName` を使い、`defaultExperimentName` を直接参照しない」を固定する
+
+### 画面と状態を manifest から引く
+- `scripts/capture-targets.mjs` を新設。`buildCaptureTargets(contract, { requiredStates })` が manifest の `screens[].route` / `sampleParams` / `overlays` と `requiredStates` からスクリーンショットの対象とファイル名を組み立てる。capture（書く側）と review（読む側）が同じ関数を使うのでファイル名が食い違わない
+- `invalid-` で始まる状態名を入力検証の状態として扱う規約を `design/schemas/experiment.schema.json` の description に書いた
+- example が 1 本だけという前提（`uri.includes("/examples/")` での探索）を `manifest.designRefs.examples` 経由の解決へ置き換えた（harness-context / evaluate / measure の 3 箇所）
+
+### 題材語彙を契約側へ移した
+- `packages/eslint-plugin-atlas/src/options.mjs` の `defaultForbiddenText` と linkSemantics の既定値を削除し、example の新設 `lint` から読む
+- `scripts/evaluate-experiment.mjs` の題材リテラル（必須項目名、ステータス文言、ルート、戻る導線の文言、読み取りモデル名、検索の aria-label と placeholder、Toolbar の aria-label）を example / manifest 由来にした。採点側だけが見る値は example の `evaluation` に置く。`evaluation` は公開本文から落ちる唯一のキーなので harness だけが答えを見る状態にはならない
+- `design/rules.json` の 4 件（`component.table.variant` / `business.customer-name` / `navigation.customer-routes` / `architecture.customer-read-models`）から顧客語彙を抜いた。id と件数（28）は変えていない
+- 判定の入力だけでなく、`design-evaluation.json` に残る証跡の文言も契約から組むようにした。ルートは `context.routes`、読み取りモデル名は `evaluation.readModels`、必須入力の呼び名は example へ新設した `evaluation.requiredFieldLabel`（値は「顧客名」）から取る。account-management では以前と同じ文字列を生成するので保存済み評価とのバイト一致は崩れない。別題材の実験でも証跡が嘘にならない
+- `scripts/rules-domain-neutral.test.mjs` が rules.json と `scripts/evaluate-experiment.mjs` の本文に顧客語彙が戻らないことを固定する。あわせて読み取りモデル名が example の公開本文（`composition`）に残っていることも固定した。ここが harness へ渡る唯一の経路なので、消すとテストが落ちる
+
+### 検証
+- `pnpm exec vitest run scripts packages` → 30 files / 299 tests 緑
+- `pnpm design:conformance` → `23 passed / 5 review`。mvp-11 とのバイト一致は維持
+- `pnpm experiment:run -- --pair phase2-verify --mode <harness|baseline> --dry-run` を隔離先で実行し、harness workspace の `HARNESS_LINT.json` / `HARNESS.json` / `HARNESS_RESOLVED.json` / `eslint.config.js` が変更前と完全一致することを `cmp` で確認
+- `pnpm demo:check` 緑
+
+### 残る限界
+- `design/rules.json` の本文はデモサイトにそのまま出る公開コピーなので、文言の一般化はサイト表示にも出る
+- rules.json と example は `hashHarnessContext` の対象。次の Run から `designContractSha256` が変わる。保存済み Run の値とは揃わない
+- `evaluation.requiredFieldLabel` は「顧客名」で、Table の列ラベル「企業名」とは別の語を持つ。証跡の文言を保存済み評価と一致させるために分けている
+- `--dry-run` でも `experiments/<name>/runs/<pair>/<mode>/run.json` は書かれる（Phase 2 以前からの挙動）。検証で作った pair は消すこと
+- Table の列ラベルは「企業名」、brief と rules は「会社名」で以前から食い違っている。今回は触っていない
+- 保存済み Run（mvp-11 / lint-01 / prelint-01）は experiment 階層が無い頃のもので、workspace の形が今と違う

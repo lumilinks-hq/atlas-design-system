@@ -7,7 +7,12 @@ import { hashPath, parseArgs, rootDir, runCommand, runCommandToFiles } from "./l
 import { sanitizeRunArtifacts } from "./sanitize-run-artifacts.mjs";
 import { addHarnessLintDependency, packHarnessLintPlugin } from "./workspace-deps.mjs";
 import { scanIsolation } from "./workspace-isolation.mjs";
-import { pairWorkspaceDir as resolvePairWorkspaceDir, workspaceDir as resolveWorkspaceDir } from "./workspace-paths.mjs";
+import {
+  experimentPaths,
+  pairWorkspaceDir as resolvePairWorkspaceDir,
+  resolveExperimentName,
+  workspaceDir as resolveWorkspaceDir,
+} from "./workspace-paths.mjs";
 
 const args = parseArgs(process.argv.slice(2));
 const mode = args.mode;
@@ -23,14 +28,16 @@ if (!/^[a-zA-Z0-9_-]+$/.test(pairId)) throw new Error("--pairには英数字、_
 const runner = resolveRunner(defaultRunnerId(args));
 const model = typeof args.model === "string" ? args.model : runner.defaultModel;
 const dryRun = args["dry-run"] === true;
-const experimentDir = resolve(rootDir, "experiments", "account-management");
-const starterDir = resolve(experimentDir, "starter");
+const experiment = resolveExperimentName(args);
+const experimentDirs = experimentPaths(experiment);
+const manifest = JSON.parse(await readFile(resolve(rootDir, experimentDirs.manifestPath), "utf8"));
+const starterDir = experimentDirs.starterDir;
 // workspaceはリポジトリの外に作る。中にあるとエージェントが親リポジトリと採点器を見つけられる
-const pairWorkspaceDir = resolvePairWorkspaceDir(pairId);
-const workspaceDir = resolveWorkspaceDir(pairId, mode);
-const outputDir = resolve(experimentDir, "runs", pairId, mode);
-const briefPath = resolve(experimentDir, "brief.md");
-const promptPath = resolve(experimentDir, "prompt.md");
+const pairWorkspaceDir = resolvePairWorkspaceDir(pairId, process.env, experiment);
+const workspaceDir = resolveWorkspaceDir(pairId, mode, process.env, experiment);
+const outputDir = resolve(experimentDirs.runsDir, pairId, mode);
+const briefPath = experimentDirs.briefPath;
+const promptPath = experimentDirs.promptPath;
 
 async function exists(path) {
   try {
@@ -66,7 +73,7 @@ if (mode === "harness-corrected") {
 }
 
 if (mode !== "baseline") {
-  await syncHarnessContext(workspaceDir, "experiments/account-management/manifest.json");
+  await syncHarnessContext(workspaceDir, experimentDirs.manifestPath);
   await runner.prepareWorkspace?.(workspaceDir);
   // 生成した eslint.config.js は eslint-plugin-atlas を読む。未公開なのでpackしたtarballを
   // file:で入れる。baselineには入れない(対照群にAtlas層を混ぜない)
@@ -88,7 +95,7 @@ const starterSha256 = await hashPath(starterDir);
 const promptSha256 = await hashPath(promptPath);
 const designContractSha256 = mode === "baseline"
   ? null
-  : await hashHarnessContext("experiments/account-management/manifest.json");
+  : await hashHarnessContext(experimentDirs.manifestPath);
 const cliVersionResult = await runCommand(runner.command, runner.versionArgs);
 const cliVersion = cliVersionResult.stdout.trim() || cliVersionResult.stderr.trim();
 const createdAt = new Date().toISOString();
@@ -96,7 +103,7 @@ const createdAt = new Date().toISOString();
 let run = {
   $schema: "../../../../../design/schemas/run.schema.json",
   id: `${pairId}-${mode}`,
-  experimentId: "experiment.account-management",
+  experimentId: manifest.id,
   condition: mode,
   status: dryRun ? "prepared" : "running",
   createdAt,
@@ -162,5 +169,5 @@ console.log(`${mode}: ${run.status}`);
 if (isolation.repoPathMentions > 0 || Object.values(isolation.markerMentions).some((count) => count > 0)) {
   console.log(`Isolation: repoPathMentions=${isolation.repoPathMentions} ${JSON.stringify(isolation.markerMentions)}`);
 }
-console.log(`Run: experiments/account-management/runs/${pairId}/${mode}/run.json`);
+console.log(`Run: experiments/${experiment}/runs/${pairId}/${mode}/run.json`);
 if (agentResult.code !== 0) process.exitCode = agentResult.code;

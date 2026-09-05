@@ -1,6 +1,14 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
-import { atlasResources, readAtlasResource, resolveDesignContract, resolveManifest, stripLintRules } from "./design-catalog.mjs";
+import {
+  atlasResources,
+  primaryExampleResource,
+  stripEvaluationFields,
+  readAtlasResource,
+  resolveDesignContract,
+  resolveManifest,
+  stripLintRules,
+} from "./design-catalog.mjs";
 
 describe("Atlas design catalog", () => {
   it("lists only fixed read-only design resources", () => {
@@ -96,6 +104,29 @@ describe("Atlas design catalog", () => {
     expect(usage.columns[2]).toMatchObject({ align: "end", tabular: true });
   });
 
+  it("picks the example named by the manifest, not the first example resource", () => {
+    const contract = {
+      requested: { patterns: [], examples: ["example.invoice-management"] },
+      resources: [
+        { id: "example.account-management", uri: "atlas://design/examples/account-management", path: "design/examples/account-management.json" },
+        { id: "example.invoice-management", uri: "atlas://design/examples/invoice-management", path: "design/examples/invoice-management.json" },
+      ],
+    };
+
+    expect(primaryExampleResource(contract).id).toBe("example.invoice-management");
+  });
+
+  it("returns the resolved example resource of a real manifest", () => {
+    const contract = resolveManifest("experiments/account-management/manifest.json");
+
+    expect(primaryExampleResource(contract).path).toBe("design/examples/account-management.json");
+  });
+
+  it("rejects a contract that requests no example", () => {
+    expect(() => primaryExampleResource({ requested: { examples: [] }, resources: [] }))
+      .toThrow("契約にexampleがありません");
+  });
+
   it("rejects missing design references", () => {
     expect(() => resolveDesignContract({ patterns: ["pattern.unknown"], examples: [] })).toThrow("Unknown pattern reference");
   });
@@ -146,6 +177,26 @@ describe("Atlas design catalog", () => {
         ],
       }),
     ).toThrow("Unknown component reference");
+  });
+});
+
+describe("stripEvaluationFields", () => {
+  it("評価器だけが使う evaluation を除き、それ以外はそのまま残す", () => {
+    const stripped = stripEvaluationFields({
+      id: "example.x",
+      componentUsage: {},
+      lint: { forbiddenText: [] },
+      evaluation: { statusValues: ["a"] },
+    });
+
+    expect(stripped).toEqual({ id: "example.x", componentUsage: {}, lint: { forbiddenText: [] } });
+  });
+
+  it("MCP の atlas://design/examples も evaluation を含まない", () => {
+    const example = JSON.parse(readAtlasResource("atlas://design/examples/account-management").text);
+
+    expect(example.evaluation).toBeUndefined();
+    expect(example.lint.linkSemantics.objectNameExpression).toBe("customer.companyName");
   });
 });
 

@@ -69,6 +69,13 @@ describe("syncHarnessContext", () => {
     expect(existsSync(join(workspaceDir, "design/layout.css"))).toBe(true);
     expect(existsSync(join(workspaceDir, "design/component-theme.css"))).toBe(true);
 
+    // 採点条件そのものは agent へ渡さない。渡すと harness だけが答えを見た比較になる
+    const example = JSON.parse(
+      await readFile(join(workspaceDir, "design/examples/account-management.json"), "utf8"),
+    );
+    expect(example.evaluation).toBeUndefined();
+    expect(example.componentUsage["component.table"].columns.length).toBeGreaterThan(0);
+
     const rulesDocument = JSON.parse(await readFile(join(workspaceDir, "design/rules.json"), "utf8"));
     const methods = new Set(rulesDocument.rules.map((rule: { method: string }) => rule.method));
     expect(methods.has("lint")).toBe(false);
