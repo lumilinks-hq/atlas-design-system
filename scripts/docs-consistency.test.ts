@@ -6,18 +6,21 @@ const rootDir = resolve(import.meta.dirname, "..");
 
 describe("public setup documentation", () => {
   it("keeps the core README commands aligned with the setup page", async () => {
-    const [readme, setupPage] = await Promise.all([
+    // MCP クライアントの接続コマンドは README から docs/MCP.md へ移した
+    const [readme, mcpDoc, setupPage] = await Promise.all([
       readFile(resolve(rootDir, "README.md"), "utf8"),
+      readFile(resolve(rootDir, "docs/MCP.md"), "utf8"),
       readFile(resolve(rootDir, "src/pages/DocsPages.tsx"), "utf8"),
     ]);
     for (const command of ["pnpm install", "pnpm dev", "pnpm demo:check", "pnpm skills:check", "pnpm mcp:start"]) {
       expect(readme).toContain(command);
       expect(setupPage).toContain(command);
     }
-    expect(readme).toContain("codex mcp add atlas-design-system");
-    expect(readme).toContain("claude mcp add --scope project atlas-design-system");
-    expect(setupPage).toContain("codex mcp add atlas-design-system");
-    expect(setupPage).toContain("claude mcp add --scope project atlas-design-system");
+    expect(readme).toContain("docs/MCP.md");
+    for (const command of ["codex mcp add atlas-design-system", "claude mcp add --scope project atlas-design-system"]) {
+      expect(mcpDoc).toContain(command);
+      expect(setupPage).toContain(command);
+    }
   });
 });
 
