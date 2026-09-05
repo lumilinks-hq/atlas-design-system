@@ -306,6 +306,7 @@ describe("Atlas Design System demo", () => {
     await user.click(screen.getByRole("button", { name: "デザインハーネスの仕組みを見る" }));
 
     expect(screen.getByRole("heading", { level: 1, name: "デザインハーネス" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /デザインハーネスの公式サイト/ })).toHaveAttribute("href", "https://design-harness.com/");
     const diagram = screen.getByRole("figure", { name: "デザインハーネスのループ図" });
     const layerNames = ["制約する層", "コンテキストを渡す層", "検証する層", "フィードバックする層"];
     for (const [index, layer] of layerNames.entries()) {

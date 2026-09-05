@@ -221,8 +221,8 @@ export function GettingStartedPage() {
             <dl className="setup-details">
               <div><dt>前提</dt><dd>{prerequisite}</dd></div>
               <div><dt>導入</dt><dd>下のコマンドを順に実行します。</dd></div>
-              <div><dt>確認</dt><dd><code>{verification}</code></dd></div>
-              <div><dt>更新</dt><dd><pre className="setup-update"><code>{update}</code></pre></dd></div>
+              <div><dt>確認</dt><dd><pre className="setup-code"><code>{verification}</code></pre></dd></div>
+              <div><dt>更新</dt><dd><pre className="setup-code"><code>{update}</code></pre></dd></div>
             </dl>
             <SetupCommand command={command} title={title} />
           </article>
@@ -247,12 +247,14 @@ export function GettingStartedPage() {
           <article>
             <h3>Codex</h3>
             <SetupCommand title="Codex MCP" command={'codex mcp add atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system-demo mcp:start\ncodex mcp get atlas-design-system'} />
-            <p>削除: <code>codex mcp remove atlas-design-system</code></p>
+            <p className="setup-note">削除するとき</p>
+            <pre className="setup-code"><code>codex mcp remove atlas-design-system</code></pre>
           </article>
           <article>
             <h3>Claude Code</h3>
             <SetupCommand title="Claude Code MCP" command={'claude mcp add --scope project atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system-demo mcp:start\nclaude mcp get atlas-design-system'} />
-            <p>削除: <code>claude mcp remove --scope project atlas-design-system</code></p>
+            <p className="setup-note">削除するとき</p>
+            <pre className="setup-code"><code>claude mcp remove --scope project atlas-design-system</code></pre>
           </article>
         </div>
       </section>

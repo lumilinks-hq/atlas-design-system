@@ -87,9 +87,9 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .setup-details > div { display: grid; gap: 3px; }
 .setup-details dt { color: var(--dh-text-muted); font-size: .875rem; font-weight: 600; }
 .setup-details dd { min-width: 0; margin: 0; font-size: 1rem; line-height: 1.6; }
-.setup-details code { display: block; color: var(--dh-accent); overflow-wrap: anywhere; white-space: normal; }
-.setup-details .setup-update { margin: 0; overflow-x: auto; }
-.setup-details .setup-update code { white-space: pre-wrap; }
+.setup-code { margin: 0; border-radius: var(--dh-radius-base); background: var(--dh-surface-muted); color: var(--dh-text-muted); padding: var(--dh-space-3); font-size: .875rem; line-height: 1.6; overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.setup-details .setup-code { margin-top: 4px; }
+.client-setup-grid .setup-note { margin: var(--dh-space-4) 0 var(--dh-space-2); color: var(--dh-text-muted); font-size: .875rem; }
 .setup-command { position: relative; margin-top: auto; border-radius: var(--dh-radius-base); background: var(--dh-surface-muted); color: var(--dh-text-muted); }
 .setup-command pre { margin: 0; padding: var(--dh-space-3) 52px var(--dh-space-3) var(--dh-space-3); font-size: .875rem; line-height: 1.6; overflow-x: auto; white-space: pre-wrap; }
 .setup-command .button { position: absolute; top: var(--dh-space-2); right: var(--dh-space-2); }
@@ -565,3 +565,7 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 @media (forced-colors: active) {
   :focus-visible { outline-color: Highlight; }
 }
+
+.harness-official-link { margin: calc(-1 * var(--dh-space-4)) 0 var(--dh-space-6); font-size: 0.9375rem; }
+.harness-official-link a { display: inline-flex; align-items: center; gap: 4px; color: var(--dh-accent); font-weight: 600; text-decoration: none; }
+.harness-official-link a:hover { text-decoration: underline; }

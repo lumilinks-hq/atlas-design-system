@@ -206,6 +206,11 @@ export function HarnessPage() {
         title="デザインハーネス"
         description="AIに渡す制約とコンテキスト、生成後の検証、結果の書き戻しを1つのループにします。"
       />
+      <p className="harness-official-link">
+        <a href="https://design-harness.com/" target="_blank" rel="noreferrer">
+          デザインハーネスの公式サイト <ExternalLink size={14} aria-hidden="true" />
+        </a>
+      </p>
 
       <section aria-labelledby="cycle-title" className="harness-section">
         <h2 id="cycle-title">4つの層</h2>
