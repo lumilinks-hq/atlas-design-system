@@ -1430,6 +1430,9 @@ function ruleContractTitle(ruleId: string) {
   return designData.rules.find((rule) => rule.id === ruleId)?.title ?? ruleId;
 }
 
+// 顧客管理サンプルが参照する設計データ。GitHub の原本へリンクする
+const exampleDataFiles = ["design/examples/account-management.json", "design/patterns/page-layout.json", "design/rules.json"] as const;
+
 export function ExamplePage() {
   const { example, pattern } = designData;
   const navigate = useNavigate();
@@ -1451,27 +1454,49 @@ export function ExamplePage() {
           <ol className="composition-list">{example.composition.map((item, index) => <li key={item}><span>{index + 1}</span><p>{item}</p></li>)}</ol>
         </div>
         <aside className="contract-reference" aria-label="実装時に参照する契約">
-          <div><p className="meta-label">必要な画面状態</p><div className="chip-list">{example.states.map((state) => <Chip key={state} size="sm" variant="soft">{state}</Chip>)}</div></div>
-          <div>
-            <p className="meta-label">組み合わせるコンポーネント</p>
+          <section className="site-card contract-card" aria-labelledby="example-states-title">
+            <h3 id="example-states-title">必要な画面状態</h3>
+            <div className="chip-list">{example.states.map((state) => <Chip key={state} size="sm" variant="soft">{state}</Chip>)}</div>
+          </section>
+          <section className="site-card contract-card" aria-labelledby="example-components-title">
+            <h3 id="example-components-title">組み合わせるコンポーネント</h3>
             <div className="chip-list">{example.components.map((componentId) => <Chip key={componentId} size="sm" variant="soft">{componentContractName(componentId)}</Chip>)}</div>
-          </div>
-          <div>
-            <p className="meta-label">満たす検証ルール</p>
+          </section>
+          <section className="site-card contract-card" aria-labelledby="example-rules-title">
+            <h3 id="example-rules-title">満たす検証ルール</h3>
             <ul className="example-rule-list">
               {example.rules.map((ruleId) => <li key={ruleId}>{ruleContractTitle(ruleId)}<code>{ruleId}</code></li>)}
             </ul>
-          </div>
-          <div><p className="meta-label">参照する設計データ</p><code>design/examples/account-management.json</code><code>design/patterns/page-layout.json</code><code>design/rules.json</code></div>
+          </section>
+          <section className="site-card contract-card" aria-labelledby="example-data-title">
+            <h3 id="example-data-title">参照する設計データ</h3>
+            <ul className="example-data-list">
+              {exampleDataFiles.map((path) => (
+                <li key={path}>
+                  <a className="artifact-source" href={artifactSourceHref(path)} target="_blank" rel="noreferrer">
+                    <code>{path}</code>
+                    <ExternalLink size={14} aria-hidden="true" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
         </aside>
       </section>
 
       <section className="pattern-section harness-contract" aria-labelledby="harness-contract-title">
         <div><h2 id="harness-contract-title">AIへ参照IDを渡す</h2><p>Issueそのものは変えず、デザインハーネスを適用した場合だけパターン、サンプル、コンポーネント、検証ルールを追加で読みます。</p></div>
-        <div className="reference-code"><span>一覧</span><code>{example.pattern}#{example.variant}</code><span>詳細</span><code>{example.pattern}#single-one-column</code><span>サンプル</span><code>{example.id}</code></div>
+        <div className="site-card handoff-card">
+          <table className="reference-table" aria-label="AIへ渡す参照ID">
+            <tbody>
+              <tr><th scope="row">一覧</th><td><code>{example.pattern}#{example.variant}</code></td></tr>
+              <tr><th scope="row">詳細</th><td><code>{example.pattern}#single-one-column</code></td></tr>
+              <tr><th scope="row">サンプル</th><td><code>{example.id}</code></td></tr>
+            </tbody>
+          </table>
+          <Button variant="primary" onPress={() => navigate("/play/account-management?mode=atlas")}>生成された画面を操作する <ArrowRight size={16} /></Button>
+        </div>
       </section>
-
-      <Button variant="primary" onPress={() => navigate("/play/account-management?mode=atlas")}>生成された画面を操作する <ArrowRight size={16} /></Button>
     </article>
   );
 }

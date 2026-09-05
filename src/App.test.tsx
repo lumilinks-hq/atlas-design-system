@@ -269,6 +269,14 @@ describe("Atlas Design System demo", () => {
     expect(screen.queryByText("Implementation example")).not.toBeInTheDocument();
     expect(screen.getByText("Page layout / 一覧（テーブル） → 詳細（1カラム）")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "生成された画面を操作する" })).toBeInTheDocument();
+
+    // 参照する設計データは GitHub の原本へリンクする
+    const data = screen.getByRole("region", { name: "参照する設計データ" });
+    expect(within(data).getByRole("link", { name: "design/examples/account-management.json" })).toHaveAttribute(
+      "href",
+      `${repositoryUrl}/blob/main/design/examples/account-management.json`,
+    );
+    expect(screen.getByRole("table", { name: "AIへ渡す参照ID" })).toBeInTheDocument();
   });
 
   it("switches the interactive implementation between Atlas and baseline", async () => {

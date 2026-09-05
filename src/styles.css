@@ -311,15 +311,24 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .composition-list li { display: grid; gap: var(--dh-space-4); border-block-end: 1px solid var(--dh-border); padding-block: var(--dh-space-4); grid-template-columns: 24px 1fr; }
 .composition-list span { color: var(--dh-accent); font-family: monospace; font-size: .875rem; }
 .composition-list p { margin: 0; font-size: 1rem; line-height: 1.7; }
-.contract-reference { display: grid; gap: var(--dh-space-8); border-radius: var(--dh-radius-base); background: var(--dh-surface-muted); padding: var(--dh-space-6); }
+.contract-reference { display: grid; gap: var(--dh-space-4); }
+.contract-card { border-radius: var(--dh-radius-base); background: var(--dh-surface); padding: var(--dh-space-6); }
+.contract-card h3 { margin: 0 0 var(--dh-space-4); font-size: 1rem; font-weight: 600; }
 .contract-reference code { display: block; margin-top: var(--dh-space-2); color: var(--dh-text-muted); font-size: .875rem; overflow-wrap: break-word; }
+.example-data-list { display: grid; gap: var(--dh-space-2); margin: 0; padding: 0; list-style: none; }
+.example-data-list li { display: flex; }
+.example-data-list .artifact-source code { display: inline; margin: 0; color: inherit; }
+.handoff-card { display: grid; gap: var(--dh-space-6); border-radius: var(--dh-radius-base); background: var(--dh-surface); padding: var(--dh-space-6); }
+.handoff-card .button { justify-self: start; }
+.reference-table { width: 100%; border-collapse: collapse; }
+.reference-table th, .reference-table td { border-block-end: 1px solid var(--dh-border); padding-block: var(--dh-space-3); text-align: start; vertical-align: top; }
+.reference-table tr:last-child th, .reference-table tr:last-child td { border-block-end: 0; }
+.reference-table th { width: 72px; color: var(--dh-text-muted); font-size: .875rem; font-weight: 600; }
+.reference-table code { font-size: .875rem; overflow-wrap: anywhere; }
 .example-rule-list { display: grid; gap: var(--dh-space-3); margin: 0; padding: 0; list-style: none; }
 .example-rule-list li { font-size: 1rem; line-height: 1.5; }
 .contract-reference .example-rule-list code { margin-top: 2px; font-size: .8125rem; }
-.harness-contract { display: grid; align-items: end; gap: 72px; grid-template-columns: 1fr .9fr; }
-.reference-code { display: grid; align-items: center; gap: var(--dh-space-3); border-block-start: 1px solid var(--dh-border); padding-block-start: var(--dh-space-4); grid-template-columns: 64px 1fr; }
-.reference-code span { color: var(--dh-text-muted); font-size: .875rem; font-weight: 600; }
-.reference-code code { font-size: .875rem; overflow-wrap: break-word; }
+.harness-contract { display: grid; align-items: start; gap: 72px; grid-template-columns: 1fr .9fr; }
 
 .rules-table { margin-top: 56px; border-top: 1px solid var(--dh-border); }
 .rules-row { display: grid; align-items: center; gap: var(--dh-space-6); border-bottom: 1px solid var(--dh-border); padding: var(--dh-space-4) 0; grid-template-columns: minmax(0, 1fr) 120px 84px; }
