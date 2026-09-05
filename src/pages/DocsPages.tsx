@@ -23,6 +23,7 @@ import {
   useOverlayState,
 } from "@heroui/react";
 import { ArrowRight, Check, ChevronDown, ChevronUp, Code2, Copy, FileCode2, FileText, FlaskConical, GitFork, LayoutTemplate, Monitor, Plug, ScanSearch, Smartphone, Sparkles } from "lucide-react";
+import { repositoryUrl } from "../data/repository";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -134,7 +135,7 @@ const setupMethods = [
     title: "GitHub",
     status: "初回推奨・公開準備中",
     description: "リポジトリを複製し、設計データ、検証スクリプト、デモ画面をまとめて手元で動かします。",
-    command: "git clone <repository-url>\ncd <repository-directory>\npnpm install --frozen-lockfile\npnpm dev",
+    command: `git clone ${repositoryUrl}.git\ncd atlas-design-system\npnpm install --frozen-lockfile\npnpm dev`,
     prerequisite: "公開後のGitHub URLと、Node.js 24、pnpm 11が必要です。",
     verification: "pnpm demo:check",
     update: "git pull --ff-only\npnpm install --frozen-lockfile\npnpm demo:check",
