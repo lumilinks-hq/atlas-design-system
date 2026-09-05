@@ -89,7 +89,7 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .setup-details dd { min-width: 0; margin: 0; font-size: 1rem; line-height: 1.6; }
 .setup-code { margin: 0; border-radius: var(--dh-radius-base); background: var(--dh-surface-muted); color: var(--dh-text-muted); padding: var(--dh-space-3); font-size: .875rem; line-height: 1.6; overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
 .setup-details .setup-code { margin-top: 4px; }
-.client-setup-grid .setup-note { margin: var(--dh-space-4) 0 var(--dh-space-2); color: var(--dh-text-muted); font-size: .875rem; }
+.client-setup-grid .setup-note { margin: 0 0 calc(-1 * var(--dh-space-2)); color: var(--dh-text-muted); font-size: .875rem; }
 .setup-command { position: relative; margin-top: auto; border-radius: var(--dh-radius-base); background: var(--dh-surface-muted); color: var(--dh-text-muted); }
 .setup-command pre { margin: 0; padding: var(--dh-space-3) 52px var(--dh-space-3) var(--dh-space-3); font-size: .875rem; line-height: 1.6; overflow-x: auto; white-space: pre-wrap; }
 .setup-command .button { position: absolute; top: var(--dh-space-2); right: var(--dh-space-2); }
