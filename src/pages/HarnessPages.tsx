@@ -16,7 +16,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { HarnessCycle } from "../components/HarnessCycle";
 import { HarnessLoop, type LoopStep } from "../components/HarnessLoop";
 import { designData } from "../data/design";
-import { repositoryBranch, repositoryUrl } from "../data/repository";
+import { artifactSourceHref } from "../data/repository";
 import {
   baselineEvaluation,
   comparison,
@@ -171,15 +171,6 @@ type LayerArtifact = { path: string; note: string; inRepository?: boolean };
 export const harnessArtifacts: readonly LayerArtifact[] = layers.flatMap(
   (layer): readonly LayerArtifact[] => layer.artifacts,
 );
-
-// 表のパスを GitHub の原本へ結ぶ。* を含むものと末尾が / のものはディレクトリ、それ以外はファイルを指す
-export function artifactSourceHref(path: string) {
-  const segments = path.replace(/\/$/, "").split("/");
-  const globIndex = segments.findIndex((segment) => segment.includes("*"));
-  if (globIndex >= 0) return `${repositoryUrl}/tree/${repositoryBranch}/${segments.slice(0, globIndex).join("/")}`;
-  if (path.endsWith("/")) return `${repositoryUrl}/tree/${repositoryBranch}/${segments.join("/")}`;
-  return `${repositoryUrl}/blob/${repositoryBranch}/${segments.join("/")}`;
-}
 
 function ArtifactPath({ artifact }: { artifact: LayerArtifact }) {
   if (artifact.inRepository === false) return <code>{artifact.path}</code>;

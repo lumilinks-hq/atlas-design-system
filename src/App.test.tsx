@@ -8,9 +8,10 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 import { designData } from "./data/design";
-import { repositoryUrl } from "./data/repository";
+import { artifactSourceHref, repositoryUrl } from "./data/repository";
 import { ruleMethodLabels } from "./pages/DocsPages";
-import { ChecksList, artifactSourceHref, harnessArtifacts } from "./pages/HarnessPages";
+import { ChecksList, harnessArtifacts } from "./pages/HarnessPages";
+import { mainFiles } from "./pages/DocsPages";
 import {
   baselineEvaluation,
   comparison,
@@ -90,6 +91,28 @@ describe("Atlas Design System demo", () => {
     expect(screen.getByText("React 19.2.8 / TypeScript 6.0.3")).toBeInTheDocument();
     expect(screen.getByText("HeroUI 3.2.4")).toBeInTheDocument();
     expect(screen.getByText("Agent Skill / MCP")).toBeInTheDocument();
+  });
+
+  it("links each main file in the technical specifications to its source on GitHub", () => {
+    render(<MemoryRouter initialEntries={["/technical-specifications"]}><App /></MemoryRouter>);
+
+    const files = screen.getByRole("region", { name: "主なファイル" });
+    const tokens = within(files).getByRole("link", { name: "design/tokens.json" });
+    expect(tokens).toHaveAttribute("href", `${repositoryUrl}/blob/main/design/tokens.json`);
+    expect(tokens).toHaveAttribute("target", "_blank");
+    expect(tokens).toHaveAttribute("rel", "noreferrer");
+    expect(within(files).getByRole("link", { name: "design/components/*.json" })).toHaveAttribute(
+      "href",
+      `${repositoryUrl}/tree/main/design/components`,
+    );
+    expect(within(files).getByRole("link", { name: "skills/atlas-design-system/" })).toHaveAttribute(
+      "href",
+      `${repositoryUrl}/tree/main/skills/atlas-design-system`,
+    );
+    expect(within(files).getByRole("link", { name: "scripts/mcp/server.mjs" })).toHaveAttribute(
+      "href",
+      `${repositoryUrl}/blob/main/scripts/mcp/server.mjs`,
+    );
   });
 
   it("shows visual previews for spacing, radius, and typography tokens", () => {
@@ -386,6 +409,16 @@ describe("Atlas Design System demo", () => {
       ]);
     }
     expect(harnessArtifacts.find((artifact) => artifact.path === "VALIDATION.md")?.inRepository).toBe(false);
+  });
+
+  it("only lists main files that exist in the repository", () => {
+    const repositoryRoot = cwd();
+    for (const file of mainFiles) {
+      const target = artifactSourceHref(file.path)
+        .replace(`${repositoryUrl}/blob/main/`, "")
+        .replace(`${repositoryUrl}/tree/main/`, "");
+      expect([file.path, existsSync(join(repositoryRoot, target))]).toEqual([file.path, true]);
+    }
   });
 
   it("links from the demo cycle section to the technical specifications", () => {

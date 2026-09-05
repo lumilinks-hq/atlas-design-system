@@ -22,8 +22,8 @@ import {
   Toast,
   useOverlayState,
 } from "@heroui/react";
-import { ArrowRight, Check, ChevronDown, ChevronUp, Code2, Copy, FileCode2, FileText, FlaskConical, GitFork, LayoutTemplate, Monitor, Plug, ScanSearch, Smartphone, Sparkles } from "lucide-react";
-import { repositoryUrl } from "../data/repository";
+import { ArrowRight, Check, ChevronDown, ChevronUp, Code2, Copy, ExternalLink, FileCode2, FileText, FlaskConical, GitFork, LayoutTemplate, Monitor, Plug, ScanSearch, Smartphone, Sparkles } from "lucide-react";
+import { artifactSourceHref, repositoryUrl } from "../data/repository";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -311,17 +311,30 @@ export function TechnicalSpecsPage() {
       <section className="spec-section" aria-labelledby="source-structure-title">
         <h2 id="source-structure-title">主なファイル</h2>
         <div className="file-reference-list">
-          <div><code>design/tokens.json</code><span>色、文字、余白、角丸、影の基準値</span></div>
-          <div><code>design/components/*.json</code><span>HeroUIコンポーネントの利用条件</span></div>
-          <div><code>design/patterns/*.json</code><span>再利用できる画面構造</span></div>
-          <div><code>design/rules.json</code><span>自動検査とレビューのルール</span></div>
-          <div><code>skills/atlas-design-system/</code><span>AIエージェント向けの実装手順</span></div>
-          <div><code>scripts/mcp/server.mjs</code><span>設計データを読み出すMCPサーバー</span></div>
+          {mainFiles.map((file) => (
+            <div key={file.path}>
+              <a className="artifact-source" href={artifactSourceHref(file.path)} target="_blank" rel="noreferrer">
+                <code>{file.path}</code>
+                <ExternalLink size={14} aria-hidden="true" />
+              </a>
+              <span>{file.note}</span>
+            </div>
+          ))}
         </div>
       </section>
     </article>
   );
 }
+
+// 技術仕様の「主なファイル」。パスの規則は artifactSourceHref に従う
+export const mainFiles = [
+  { path: "design/tokens.json", note: "色、文字、余白、角丸、影の基準値" },
+  { path: "design/components/*.json", note: "HeroUIコンポーネントの利用条件" },
+  { path: "design/patterns/*.json", note: "再利用できる画面構造" },
+  { path: "design/rules.json", note: "自動検査とレビューのルール" },
+  { path: "skills/atlas-design-system/", note: "AIエージェント向けの実装手順" },
+  { path: "scripts/mcp/server.mjs", note: "設計データを読み出すMCPサーバー" },
+] as const;
 
 const contentTokenLabels: Record<string, string> = {
   maxWidth: "ページ全体の最大幅",
