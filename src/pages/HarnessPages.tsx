@@ -277,7 +277,7 @@ export function HarnessPage() {
       <section aria-labelledby="loop-title" className="harness-section">
         <h2 id="loop-title">デモ画面の生成サイクル</h2>
         <p>
-          検査の違反数は、下のリンク先の比較ページと同じ run（lint-01、Claude Opus 5）の初回検査の値です。
+          検査の違反数は、下のリンク先の比較ページと同じ run（create-01、Claude Opus 5）の初回検査の値です。
         </p>
         <HarnessLoop steps={loopSteps} />
         <div className="harness-cta-row">
@@ -544,7 +544,7 @@ export function ResultsPage({ experiment }: { experiment: ExperimentId }) {
         <div className="section-heading">
           <h2 id="same-model-title">同じモデルでの比較</h2>
           <p>
-            上の比較で見せている lint-01 の初回生成を、ESLint 層を入れる前の prelint-01 と並べます。同じモデル（{sameModel[0]?.model}）で、
+            ESLint 層を入れた直後の lint-01 と、入れる前の prelint-01 を並べます。同じモデル（{sameModel[0]?.model}）で、
             ESLint 層を入れる前と後に 1 回ずつ生成した結果です。各条件 1 run なので傾向を見るための数字で、統計的な差ではありません。
             評価器は App.tsx から import で辿れるファイルをまとめて検査するので、画面を複数ファイルに分けた run も同じ基準で数えています。
           </p>

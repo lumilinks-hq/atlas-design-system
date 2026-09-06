@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0",
+  "experiment": "account-management",
+  "pair": "create-01",
+  "mode": "harness-corrected",
+  "note": "設計契約の適合を証明する基準Run。design:conformanceのバイト一致と、rules-method.test.mjsのmethod宣言テストがこの1本を入力に使う。契約を変えて基準Runが適合しなくなったら、新しいRunが入るのと同じコミットでここを切り替える"
+}

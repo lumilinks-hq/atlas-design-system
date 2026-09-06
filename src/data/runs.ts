@@ -1,7 +1,10 @@
-import accountBaseline from "../../experiments/account-management/runs/lint-01/baseline/design-evaluation.json";
-import accountComparison from "../../experiments/account-management/runs/lint-01/comparison.json";
-import accountHarness from "../../experiments/account-management/runs/lint-01/harness/design-evaluation.json";
-import accountRun from "../../experiments/account-management/runs/lint-01/harness/run.json";
+import accountBaseline from "../../experiments/account-management/runs/create-01/baseline/design-evaluation.json";
+import accountComparison from "../../experiments/account-management/runs/create-01/comparison.json";
+import accountHarness from "../../experiments/account-management/runs/create-01/harness/design-evaluation.json";
+import accountRun from "../../experiments/account-management/runs/create-01/harness/run.json";
+import lint01Baseline from "../../experiments/account-management/runs/lint-01/baseline/design-evaluation.json";
+import lint01Harness from "../../experiments/account-management/runs/lint-01/harness/design-evaluation.json";
+import lint01Run from "../../experiments/account-management/runs/lint-01/harness/run.json";
 import prelint01Baseline from "../../experiments/account-management/runs/prelint-01/baseline/design-evaluation.json";
 import prelint01Harness from "../../experiments/account-management/runs/prelint-01/harness/design-evaluation.json";
 import prelint01Run from "../../experiments/account-management/runs/prelint-01/harness/run.json";
@@ -11,7 +14,16 @@ import invoiceHarness from "../../experiments/invoice-management/runs/invoice-01
 import invoiceRun from "../../experiments/invoice-management/runs/invoice-01/harness/run.json";
 
 export type RunEvaluation = typeof accountBaseline;
-export type RunComparison = typeof accountComparison;
+
+type ComparisonChecks = { name: string; status: string; exitCode: number }[];
+type ComparisonReview = { reviewedAt: string; model: string; findings: { ruleId: string; verdict: string; note: string }[] };
+
+/** 比較の集計。修正Runまで回したpairだけcorrectedを持つので、correctedは任意にする */
+export type RunComparison = Omit<typeof accountComparison, "reveal" | "checks" | "review"> & {
+  reveal: { baseline: string; harness: string; corrected?: string };
+  checks: { baseline: ComparisonChecks; harness: ComparisonChecks; corrected?: ComparisonChecks };
+  review: { baseline: ComparisonReview; harness: ComparisonReview; corrected?: ComparisonReview };
+};
 export type RunCheck = RunComparison["checks"]["baseline"][number];
 export type RunEnvironment = (typeof accountRun)["environment"];
 
@@ -68,11 +80,11 @@ const accountSameModelRuns: SameModelRun[] = [
   },
   {
     pairId: "lint-01",
-    model: accountRun["environment"].model,
+    model: lint01Run["environment"].model,
     lintLayer: true,
     note: "同じ設計データに ESLint 層を足した初回生成です。AIは生成中に pnpm lint で自分の違反を直せます。",
-    baseline: accountBaseline,
-    harness: accountHarness,
+    baseline: lint01Baseline,
+    harness: lint01Harness,
   },
 ];
 

@@ -1,0 +1,147 @@
+{
+  "$schema": "../schemas/pattern.schema.json",
+  "version": "1.0.0",
+  "id": "pattern.mobile-layout",
+  "name": "モバイルレイアウト",
+  "purpose": "breakpoint.narrow未満の幅で、情報と操作を落とさずに1カラムで読める形へ組み替える",
+  "principles": [
+    {
+      "id": "responsive-or-adaptive",
+      "title": "積み替えと作り替えを使い分ける",
+      "description": "同じ情報を縦に積み替えれば読める場合は積み替え、表のように積み替えても読めない場合だけ構造を別の形に作り替える"
+    },
+    {
+      "id": "one-primary-action",
+      "title": "1画面の主要操作は1つにする",
+      "description": "主要操作は見出しの直下か画面下に1つだけ置き、それ以外の操作は一覧の各項目か詳細画面へ移す"
+    },
+    {
+      "id": "reachable-targets",
+      "title": "指で押せる大きさを確保する",
+      "description": "操作は最小44px四方を確保し、隣り合う操作の間隔はspace.2（8px）以上空けて誤操作を防ぐ"
+    }
+  ],
+  "anatomy": [
+    {
+      "id": "header",
+      "name": "固定ヘッダー",
+      "required": true,
+      "description": "現在位置と戻る手段を常に示す。スクロールしても画面上部に残す"
+    },
+    {
+      "id": "one-column-content",
+      "name": "1カラムのコンテンツ",
+      "required": true,
+      "description": "横並びをやめて縦に積む。読み順は情報の優先順と一致させる"
+    },
+    {
+      "id": "primary-action",
+      "name": "主要操作",
+      "required": true,
+      "description": "見出しの直下か画面下に幅いっぱいで置く。ラベルは何が起きるかを書く"
+    },
+    {
+      "id": "full-height-drawer",
+      "name": "全高のDrawer",
+      "required": false,
+      "description": "入力や編集は画面の全高を使うDrawerで開く。閉じる操作は常に見える位置に置く"
+    }
+  ],
+  "variants": [
+    {
+      "id": "responsive-collection",
+      "name": "一覧の作り替え",
+      "useWhen": "デスクトップで表として並ぶ一覧を、狭い画面でも項目ごとに読ませる",
+      "avoidWhen": "列同士の数値を横に比較することが一覧の目的になっている",
+      "structure": ["ツールバー", "表（広い画面）", "項目リスト（狭い画面）"],
+      "desktop": "表を表示し、項目リストは隠す。ツールバーの検索欄は16remで右寄せにする",
+      "narrow": "表を隠して項目リストへ切り替える。各項目は行見出しの列を先頭に置き、詳細への導線を幅いっぱいにする",
+      "layout": {
+        "breakpoint": "breakpoint.narrow",
+        "classes": [
+          ".collection-toolbar",
+          ".search-field",
+          ".collection-table-wrap",
+          ".collection-list-mobile",
+          ".collection-list-mobile__content",
+          ".collection-list-mobile__meta"
+        ],
+        "values": {
+          "listGap": "space.4",
+          "itemGap": "space.3",
+          "toolbarGap": "space.3"
+        }
+      }
+    },
+    {
+      "id": "adaptive-detail",
+      "name": "詳細の1カラム化",
+      "useWhen": "詳細画面が広い画面で複数カラムに分かれている",
+      "avoidWhen": "並べて見ること自体が目的の比較画面",
+      "structure": ["戻る導線", "見出しと主要操作", "1カラムの内容", "編集は全高のDrawer"],
+      "desktop": "見出しと主要操作を横並びにし、内容はセクション間24pxで置く",
+      "narrow": "見出しと主要操作を縦に積み、主要操作は幅いっぱいにする。編集は全高のDrawerで開く",
+      "layout": {
+        "breakpoint": "breakpoint.narrow",
+        "classes": [".detail-page__heading", ".detail-grid", ".detail-content", ".drawer-form"],
+        "values": {
+          "backNavigationGap": "space.4",
+          "headingToContentGap": "space.8",
+          "sectionGap": "space.6",
+          "drawerPadding": "space.6"
+        }
+      }
+    },
+    {
+      "id": "compact-spacing",
+      "name": "外周の余白を縮める",
+      "useWhen": "狭い画面で外周の余白が内容の幅を圧迫している",
+      "avoidWhen": "内容同士の関係を示す余白まで一緒に縮めてしまう",
+      "structure": ["外周 上下space.6・左右space.4", "セクション間 space.8", "グループ間 space.6"],
+      "desktop": "外周は上下32px、左右は最大幅の内側に16px残す",
+      "narrow": "外周を上下24px・左右16pxに縮める。内容間の余白は縮めずに維持する",
+      "layout": {
+        "breakpoint": "breakpoint.narrow",
+        "classes": [".page-shell", ".page-shell--stack"],
+        "values": {
+          "pagePaddingBlock": "space.8",
+          "narrowPagePaddingBlock": "space.6",
+          "narrowPagePaddingInline": "space.4",
+          "sectionGap": "space.8",
+          "groupGap": "space.6"
+        }
+      }
+    },
+    {
+      "id": "touch-targets",
+      "name": "タップ領域の確保",
+      "useWhen": "狭い画面に操作が並び、指で押し分ける必要がある",
+      "avoidWhen": "表示だけの要素にまで最小サイズを広げ、余白の意味が崩れる",
+      "structure": ["操作の最小サイズ 44px", "隣接する操作の間隔 space.2以上"],
+      "desktop": "ポインタで押すため最小サイズの制約は課さない。間隔だけ8px以上を保つ",
+      "narrow": "操作は最小44px四方を確保し、隣り合う操作の間隔を8px以上空ける",
+      "layout": {
+        "breakpoint": "breakpoint.narrow",
+        "classes": [".touch-target", ".collection-list-mobile__link"],
+        "values": {
+          "minSize": "44px",
+          "adjacentGap": "space.2"
+        }
+      }
+    }
+  ],
+  "states": ["default", "narrow", "drawer-open"],
+  "components": [
+    "component.table",
+    "component.drawer",
+    "component.button",
+    "component.link",
+    "component.search-field"
+  ],
+  "rules": [
+    "layout.narrow",
+    "layout.collection-toolbar",
+    "layout.back-navigation",
+    "a11y.control-name"
+  ]
+}

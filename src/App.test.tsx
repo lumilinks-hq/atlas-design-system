@@ -481,16 +481,16 @@ describe("Atlas Design System demo", () => {
 
     expect(screen.getByAltText("ハーネスなしで生成した顧客管理画面（一覧）")).toHaveAttribute(
       "src",
-      "/experiments/account-management/runs/lint-01/baseline.png",
+      "/experiments/account-management/runs/create-01/baseline.png",
     );
     await user.click(screen.getByRole("button", { name: "詳細（モバイル）" }));
     expect(screen.getByAltText("ハーネスなしで生成した顧客管理画面（詳細（モバイル））")).toHaveAttribute(
       "src",
-      "/experiments/account-management/runs/lint-01/baseline-detail-mobile.png",
+      "/experiments/account-management/runs/create-01/baseline-detail-mobile.png",
     );
     expect(screen.getByAltText("ハーネスありで生成した顧客管理画面（詳細（モバイル））")).toHaveAttribute(
       "src",
-      "/experiments/account-management/runs/lint-01/harness-detail-mobile.png",
+      "/experiments/account-management/runs/create-01/harness-detail-mobile.png",
     );
 
     const table = screen.getByRole("table", { name: "ルールごとの検査結果" });

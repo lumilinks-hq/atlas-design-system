@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 <workspace>/account-management/create-01/baseline
+
+
+ Test Files  2 passed (2)
+      Tests  14 passed (14)
+   Start at  14:39:10
+   Duration  2.85s (transform 82ms, setup 0ms, import 892ms, tests 2.19s, environment 542ms)
+
+$ vitest run

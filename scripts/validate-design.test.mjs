@@ -193,6 +193,8 @@ describe("FormとAlertの契約", () => {
     expect(Object.keys(example.componentUsage)).toEqual([
       "component.link",
       "component.toolbar",
+      "component.button",
+      "component.drawer",
       "component.alert-dialog",
       "component.table",
     ]);

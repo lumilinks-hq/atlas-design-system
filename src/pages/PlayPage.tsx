@@ -33,6 +33,7 @@ const playScreens: Record<ExperimentId, { modes: Record<PlayMode, PlayModeInfo>;
     states: [
       { id: "default", label: "通常", route: "/customers" },
       { id: "empty", label: "検索結果なし", route: "/customers" },
+      { id: "create-open", label: "追加を開く", route: "/customers" },
       { id: "drawer-open", label: "編集を開く", route: "/customers/customer_northstar" },
       { id: "invalid-email", label: "入力エラー", route: "/customers/customer_northstar" },
       { id: "loading", label: "保存中", route: "/customers/customer_northstar" },
@@ -151,7 +152,9 @@ export function PlayPage({ experiment }: { experiment: ExperimentId }) {
       </section>
 
       <div className="play-frame-wrap">
-        <iframe className="play-frame" src={frameSrc} title={current.title} />
+        {/* srcがハッシュだけ変わる切り替えはフラグメント遷移になり画面が作り直されません。
+            keyにsrcを入れてiframeごと作り直し、URLのstateどおりの初期表示にします */}
+        <iframe className="play-frame" key={frameSrc} src={frameSrc} title={current.title} />
       </div>
     </main>
   );

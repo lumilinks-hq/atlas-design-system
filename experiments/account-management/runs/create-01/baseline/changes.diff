@@ -1,0 +1,151 @@
+diff --git a/src/App.tsx b/src/App.tsx
+index 0f1f347..bd8c5ba 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -1,33 +1,35 @@
+-import { HashRouter, Link, Navigate, Route, Routes, useParams } from "react-router-dom";
+-import { getCustomerDetail, listCustomerSummaries } from "./fixtures";
++import { HashRouter, Navigate, Route, Routes, useParams, useSearchParams } from "react-router-dom";
++import { CustomerDetailPage } from "./pages/CustomerDetailPage";
++import { CustomerListPage } from "./pages/CustomerListPage";
++import { readDetailScreenState, readListScreenState } from "./screenState";
++
++function CustomerListRoute() {
++  const [searchParams] = useSearchParams();
++  const requested = searchParams.get("state");
++  const screenState = readListScreenState(requested) ?? "default";
+ 
+-function CustomerListPage() {
+   return (
+-    <main>
+-      <h1>顧客一覧</h1>
+-      <ul>
+-        {listCustomerSummaries().map((customer) => (
+-          <li key={customer.id}>
+-            <Link to={`/customers/${customer.id}`}>{customer.companyName}</Link>
+-          </li>
+-        ))}
+-      </ul>
+-    </main>
++    // state が変わったら初期表示から作り直す
++    <CustomerListPage
++      key={requested ?? "default"}
++      detailScreenStateRequest={readDetailScreenState(requested)}
++      screenState={screenState}
++    />
+   );
+ }
+ 
+-function CustomerDetailPage() {
++function CustomerDetailRoute() {
+   const { customerId = "" } = useParams();
+-  const customer = getCustomerDetail(customerId);
+-
+-  if (!customer) return <Navigate replace to="/customers" />;
++  const [searchParams] = useSearchParams();
++  const requested = searchParams.get("state");
+ 
+   return (
+-    <main>
+-      <Link to="/customers">顧客一覧へ戻る</Link>
+-      <h1>{customer.companyName}</h1>
+-      <p>brief.mdの要件に沿って、この詳細画面を実装してください。</p>
+-    </main>
++    <CustomerDetailPage
++      key={`${customerId}-${requested ?? "default"}`}
++      customerId={customerId}
++      listScreenStateRequest={readListScreenState(requested)}
++      screenState={readDetailScreenState(requested)}
++    />
+   );
+ }
+ 
+@@ -35,8 +37,8 @@ export function App() {
+   return (
+     <HashRouter>
+       <Routes>
+-        <Route path="/customers" element={<CustomerListPage />} />
+-        <Route path="/customers/:customerId" element={<CustomerDetailPage />} />
++        <Route path="/customers" element={<CustomerListRoute />} />
++        <Route path="/customers/:customerId" element={<CustomerDetailRoute />} />
+         <Route path="*" element={<Navigate replace to="/customers" />} />
+       </Routes>
+     </HashRouter>
+diff --git a/src/fixtures.ts b/src/fixtures.ts
+index 6407683..8cf514d 100644
+--- a/src/fixtures.ts
++++ b/src/fixtures.ts
+@@ -142,6 +142,53 @@ export function createCustomer(
+   };
+ }
+ 
++export type UpdateCustomerInput = {
++  companyName: string;
++  contactName: string;
++  email: string;
++  status: CustomerStatus;
++};
++
++export type UpdateCustomerResult =
++  | { ok: true; customer: CustomerDetail }
++  | { ok: false; reason: string };
++
++export function updateCustomer(
++  customerId: string,
++  input: UpdateCustomerInput,
++  options: { simulateFailure?: boolean } = {},
++): UpdateCustomerResult {
++  if (options.simulateFailure) {
++    return { ok: false, reason: "変更の保存に失敗しました。時間をおいて再試行してください。" };
++  }
++  const companyName = input.companyName.trim();
++  if (companyName.length === 0) {
++    return { ok: false, reason: "会社名を入力してください。" };
++  }
++  const record = customerRecords.find(({ id }) => id === customerId);
++  if (!record) {
++    return { ok: false, reason: "対象の顧客が見つかりません。" };
++  }
++
++  record.companyName = companyName;
++  record.contactName = input.contactName.trim();
++  record.email = input.email.trim();
++  record.status = input.status;
++
++  return {
++    ok: true,
++    customer: {
++      id: record.id,
++      companyName: record.companyName,
++      contactName: record.contactName,
++      email: record.email,
++      phone: record.phone,
++      status: record.status,
++      note: record.note,
++    },
++  };
++}
++
+ export type DeleteCustomerResult = { ok: true } | { ok: false; reason: string };
+ 
+ export function deleteCustomer(
+diff --git a/src/styles.css b/src/styles.css
+index 24127eb..c8448c7 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -9,4 +9,6 @@ body {
+   margin: 0;
+   min-width: 320px;
+   min-height: 100vh;
++  background-color: var(--background);
++  color: var(--foreground);
+ }
+diff --git a/tsconfig.app.tsbuildinfo b/tsconfig.app.tsbuildinfo
+index 66c2190..6cbe58c 100644
+--- a/tsconfig.app.tsbuildinfo
++++ b/tsconfig.app.tsbuildinfo
+@@ -1 +1 @@
+-{"root":["./src/app.test.tsx","./src/app.tsx","./src/fixtures.ts","./src/main.tsx"],"version":"6.0.3"}
+\ No newline at end of file
++{"root":["./src/app.test.tsx","./src/app.tsx","./src/customerservice.ts","./src/customers.test.tsx","./src/fixtures.ts","./src/main.tsx","./src/screenstate.ts","./src/components/customercreatemodal.tsx","./src/components/customerdeletedialog.tsx","./src/components/customereditdrawer.tsx","./src/components/customerformfields.tsx","./src/components/statuschip.tsx","./src/components/customerform.ts","./src/pages/customerdetailpage.tsx","./src/pages/customerlistpage.tsx"],"version":"6.0.3"}
+\ No newline at end of file

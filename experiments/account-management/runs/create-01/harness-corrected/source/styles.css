@@ -1,0 +1,87 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+@import "../design/component-theme.css";
+@import "../design/layout.css";
+
+html {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--dh-text);
+  background-color: var(--dh-background);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--dh-background);
+  color: var(--dh-text);
+  font-size: var(--dh-type-body);
+  line-height: var(--dh-type-line-height-body);
+}
+
+/* pattern.spacing-layout#dialog-content が定義しない Drawer 内部の間隔だけ補う */
+.drawer-form__intro {
+  margin: var(--dh-space-2) 0 0;
+  color: var(--dh-text-muted);
+  font-size: var(--dh-type-small);
+}
+
+.drawer-form__fields {
+  display: grid;
+  gap: var(--dh-space-4);
+}
+
+.dialog-body {
+  display: grid;
+  gap: var(--dh-space-3);
+}
+
+.dialog-body p {
+  margin: 0;
+}
+
+/* pattern.spacing-layout#inline-actions: buttonGap space.2 */
+.detail-actions {
+  display: flex;
+  gap: var(--dh-space-2);
+  align-items: center;
+}
+
+.detail-content .detail-item {
+  display: grid;
+  gap: var(--dh-space-1);
+}
+
+.detail-item__label {
+  margin: 0;
+  color: var(--dh-text-muted);
+  font-size: var(--dh-type-label);
+}
+
+.detail-item__value {
+  margin: 0;
+  font-size: var(--dh-type-body);
+}
+
+.detail-note {
+  margin: 0;
+  line-height: var(--dh-type-line-height-body);
+}
+
+.empty-state {
+  margin: 0;
+  padding: var(--dh-space-8) var(--dh-space-4);
+  color: var(--dh-text-muted);
+  text-align: center;
+}
+
+@media (max-width: 767px) {
+  .detail-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .detail-actions .detail-actions__item {
+    width: 100%;
+  }
+}

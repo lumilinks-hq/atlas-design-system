@@ -1,0 +1,5 @@
+src/components/CustomerCreateModal.tsx(15,3): error TS2322: Type 'CustomerStatus | undefined' is not assignable to type 'CustomerStatus'.
+  Type 'undefined' is not assignable to type 'CustomerStatus'.
+src/customerService.ts(73,52): error TS2322: Type 'CustomerStatus | undefined' is not assignable to type 'CustomerStatus'.
+  Type 'undefined' is not assignable to type 'CustomerStatus'.
+src/pages/CustomerListPage.tsx(50,27): error TS2532: Object is possibly 'undefined'.

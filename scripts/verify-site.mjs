@@ -144,13 +144,32 @@ try {
   {
     const { page, errors } = await openCheckedPage("/play/account-management?mode=atlas&state=invalid-email", { width: 1440, height: 900 });
     const frame = page.frameLocator("iframe[title='Atlas適用後の顧客管理画面']");
-    const closeTrigger = frame.getByRole("button", { name: "編集を閉じる" });
+    // 閉じる操作とエラー文言はRunごとに言い回しが変わるため、構造で確かめます。
+    const closeTrigger = frame.locator("[role='dialog'] [data-slot='drawer-close-trigger']");
     await closeTrigger.waitFor();
+    assert(await closeTrigger.count() === 1, "Drawerの閉じる操作が1件になっていません");
     const closeBox = await closeTrigger.boundingBox();
     const closeText = (await closeTrigger.textContent())?.trim() ?? "";
+    const closeName = (await closeTrigger.getAttribute("aria-label"))?.trim() ?? "";
     assert(Boolean(closeBox) && closeText === "" && closeBox.width >= 24 && closeBox.width <= 48, "Drawerの閉じる操作が崩れています");
-    await frame.getByText("メールアドレスの形式を確認してください。").waitFor();
+    assert(closeName !== "", "Drawerの閉じる操作に読み上げ名がありません");
+    assert(await frame.getByLabel("メールアドレス").getAttribute("aria-invalid") === "true", "メールアドレスの入力エラーが伝わっていません");
+    const fieldError = frame.locator("[role='dialog'] [data-slot='field-error']").first();
+    await fieldError.waitFor();
+    assert(((await fieldError.textContent())?.trim() ?? "") !== "", "入力エラーの説明文が表示されていません");
     assert(errors.length === 0, `Atlas操作画面のブラウザエラー:\n${errors.join("\n")}`);
+    // 同じルートのまま状態だけ切り替えたとき、URLのstateどおりに作り直されることを確かめます。
+    // iframeのsrcはハッシュしか変わらないので、作り直さないと前の状態が残ります。
+    await page.getByRole("button", { name: "状態" }).click();
+    await page.getByRole("option", { name: "削除を確認" }).click();
+    await frame.locator("[role='alertdialog']").waitFor();
+    assert(
+      (await frame.locator("[data-slot='drawer-close-trigger']").count()) === 0,
+      "状態を切り替えても前の状態のDrawerが残っています",
+    );
+    await page.getByRole("button", { name: "状態" }).click();
+    await page.getByRole("option", { name: "入力エラー" }).click();
+    await frame.locator("[role='dialog'] [data-slot='field-error']").first().waitFor();
     await page.getByRole("button", { name: "設計指示なし" }).click();
     await page.waitForURL(/mode=baseline&state=invalid-email/);
     await page.locator("iframe[title='設計指示なしの顧客管理画面']").waitFor();

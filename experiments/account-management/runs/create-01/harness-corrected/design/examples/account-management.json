@@ -1,0 +1,235 @@
+{
+  "$schema": "../schemas/example.schema.json",
+  "version": "1.0.0",
+  "id": "example.account-management",
+  "name": "顧客管理",
+  "purpose": "営業・CS担当者が一覧から顧客を探し、独立した詳細画面で情報を確認・更新する",
+  "pattern": "pattern.page-layout",
+  "variant": "collection-table",
+  "composition": [
+    "顧客一覧は/customersで集合を扱う独立した画面とし、企業名、担当者、最終対応日、ステータスをHeroUI Tableの列定義から表示する",
+    "顧客の追加は一覧のPageHeadingの操作領域に置いたprimaryのButton「顧客を追加」から、Header、Body、Footerを持つDrawerで行う",
+    "追加Drawerでは会社名、担当者名、メールアドレス、ステータスを入力し、成功はToastで通知して一覧へ反映し、失敗はDrawer内に理由を出して入力内容を保持したまま再試行できるようにする",
+    "企業名をrow header、最終対応日を末尾揃えとし、列幅と最小幅を列定義へ持たせる",
+    "企業名から詳細画面への移動にはLinkを使い、Buttonを使わない",
+    "一覧操作とTableは一つのCollectionRegionにまとめ、Table直前のToolbarをflexの末尾揃えにしてSearchFieldを置く",
+    "SearchFieldはデスクトップで16rem、狭幅で100%とし、検索アイコン、入力、クリア操作を表示する",
+    "顧客詳細は一人の顧客を扱う独立した画面とし、一覧から/customers/:customerIdへ遷移する",
+    "顧客一覧に戻るLinkはPageHeadingの前に置き、LinkとPageHeadingをspace.4、PageHeadingと詳細コンテンツをspace.8で分ける",
+    "一覧ではCustomerSummary、詳細ではCustomerDetailの読み取りモデルを使用する",
+    "詳細画面に一覧へ戻る経路を置き、顧客情報の編集はHeader、Body、Footerを持つDrawerへ分離する",
+    "詳細の情報群はCard.HeaderとCard.Contentを使い、HeroUI標準のspace.4の内側余白を保つ",
+    "顧客の削除はPageHeadingの操作領域に置き、主要操作は「顧客を編集」1つを維持して削除はdanger-softの副次操作とする",
+    "削除の確定前にAlertDialogで対象の会社名と取り消せないことを確認し、確定はdangerのButton、キャンセルを併置する",
+    "削除成功はToastで通知して顧客一覧へ戻り、削除失敗は理由を表示して再試行できるようにする",
+    "一覧のページ見出しの主要操作は「顧客を追加」1つとし、Issueにない追加操作やデモ用説明は一覧・詳細のどちらにも設けない"
+  ],
+  "componentUsage": {
+    "component.link": {
+      "purpose": "back-navigation",
+      "placement": "before-page-heading",
+      "target": "/customers",
+      "gapToPageHeading": "space.4",
+      "gapAfterPageHeading": "space.8"
+    },
+    "component.toolbar": {
+      "placement": "before-table",
+      "gapBeforeTable": "space.3",
+      "search": {
+        "component": "component.search-field",
+        "ariaLabel": "企業名で検索",
+        "placeholder": "企業名で検索",
+        "desktopWidth": "16rem",
+        "narrowWidth": "100%",
+        "align": "end"
+      }
+    },
+    "component.button": {
+      "purpose": "create",
+      "screen": "collection",
+      "variant": "primary",
+      "label": "顧客を追加",
+      "placement": "page-heading-actions",
+      "opens": "component.drawer"
+    },
+    "component.drawer": {
+      "purpose": "record-form",
+      "states": {
+        "create": "create-open",
+        "edit": "drawer-open"
+      },
+      "sections": [
+        "Drawer.Header",
+        "Drawer.Body",
+        "Drawer.Footer"
+      ],
+      "fields": [
+        {
+          "name": "companyName",
+          "label": "会社名",
+          "component": "component.text-field",
+          "required": true
+        },
+        {
+          "name": "contactName",
+          "label": "担当者名",
+          "component": "component.text-field"
+        },
+        {
+          "name": "email",
+          "label": "メールアドレス",
+          "component": "component.text-field",
+          "inputType": "email"
+        },
+        {
+          "name": "status",
+          "label": "ステータス",
+          "component": "component.select"
+        }
+      ],
+      "submit": {
+        "component": "component.button",
+        "variant": "primary",
+        "label": "保存する"
+      },
+      "cancel": {
+        "component": "component.button",
+        "variant": "tertiary",
+        "label": "キャンセル"
+      },
+      "onSuccess": {
+        "toast": "顧客を保存しました",
+        "reflectIn": "collection"
+      },
+      "onFailure": "Drawer内に理由を表示し、入力内容を保持して再試行できる"
+    },
+    "component.alert-dialog": {
+      "purpose": "delete-confirmation",
+      "state": "delete-confirm",
+      "trigger": {
+        "component": "component.button",
+        "variant": "danger-soft",
+        "label": "顧客を削除",
+        "placement": "page-heading-actions"
+      },
+      "confirm": {
+        "component": "component.button",
+        "variant": "danger",
+        "label": "削除する"
+      },
+      "cancel": {
+        "component": "component.button",
+        "variant": "tertiary",
+        "label": "キャンセル"
+      },
+      "content": [
+        "対象の会社名",
+        "削除は取り消せないことの説明"
+      ],
+      "onSuccess": {
+        "toast": "顧客を削除しました",
+        "navigateTo": "/customers"
+      },
+      "onFailure": "AlertDialog内に理由を表示し再試行できる"
+    },
+    "component.table": {
+      "variant": "primary",
+      "narrowVariant": "collection-list",
+      "columns": [
+        {
+          "id": "companyName",
+          "label": "企業名",
+          "isRowHeader": true,
+          "width": "38%",
+          "minWidth": 240,
+          "align": "start"
+        },
+        {
+          "id": "contactName",
+          "label": "担当者",
+          "width": "22%",
+          "minWidth": 160,
+          "align": "start"
+        },
+        {
+          "id": "lastContactedAt",
+          "label": "最終対応日",
+          "width": "22%",
+          "minWidth": 160,
+          "align": "end",
+          "tabular": true
+        },
+        {
+          "id": "status",
+          "label": "ステータス",
+          "width": "18%",
+          "minWidth": 128,
+          "align": "start"
+        }
+      ]
+    }
+  },
+  "states": [
+    "default",
+    "empty",
+    "create-open",
+    "drawer-open",
+    "invalid-email",
+    "loading",
+    "success",
+    "failure",
+    "delete-confirm"
+  ],
+  "components": [
+    "component.button",
+    "component.link",
+    "component.table",
+    "component.toolbar",
+    "component.search-field",
+    "component.card",
+    "component.form",
+    "component.text-field",
+    "component.select",
+    "component.chip",
+    "component.surface",
+    "component.drawer",
+    "component.alert-dialog",
+    "component.alert",
+    "component.toast"
+  ],
+  "lint": {
+    "forbiddenText": [
+      "Atlas CRM",
+      "ワークスペース",
+      "契約管理",
+      "料金管理",
+      "利用人数",
+      "権限管理"
+    ],
+    "requiredInputType": "email",
+    "irreversibleActionPattern": "削除|delete|remove",
+    "linkSemantics": {
+      "objectNameExpression": "customer.companyName",
+      "backLinkPattern": "顧客一覧(?:へ|に)戻る",
+      "mobileListClass": "collection-list-mobile",
+      "navigationTextPattern": "customer\\.companyName|顧客を確認|顧客一覧(?:へ|に)戻る"
+    }
+  },
+  "rules": [
+    "business.customer-name",
+    "business.contact-email",
+    "state.complete",
+    "state.loading",
+    "state.failure",
+    "a11y.form-label",
+    "a11y.error-recovery",
+    "a11y.focus-management",
+    "action.confirmation",
+    "layout.collection-toolbar",
+    "layout.back-navigation",
+    "layout.narrow",
+    "navigation.customer-routes",
+    "navigation.link-semantics",
+    "architecture.customer-read-models"
+  ]
+}

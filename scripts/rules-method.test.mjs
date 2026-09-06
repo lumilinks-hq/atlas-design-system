@@ -1,12 +1,15 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
+import { resolveConformanceTarget } from "./conformance-target.mjs";
 import { evaluateSource } from "./evaluate-experiment.mjs";
 import { rootDir } from "./lib.mjs";
+import { collectScreenSources } from "./screen-sources.mjs";
 
 // design/rules.jsonのmethod宣言と、実際の判定手段が食い違っていないかを守る契約テスト。
 //
-// 判定手段の確認にはmvp-11 harness-correctedのソースを「アンカー」として使う。
+// 判定手段の確認にはdesign/conformance-target.jsonが指す基準Runのソースを「アンカー」として使う。
+// design:conformanceと同じ1本を見ることで、契約を変えたときに片方だけ通る状態を防ぐ。
 // つまりここで見ているのは任意のソースに対する普遍的な制約ではなく、
 // このソースを入力したときの実測結果である。別ソースでは同じruleでも結果が変わりうる:
 //   - automaticのcomponent.variantsは、動的variantを含むソースではreviewを返す設計
@@ -14,33 +17,24 @@ import { rootDir } from "./lib.mjs";
 // それでも「同一入力に対してhumanのruleがpassed/failedになる」ような食い違いは
 // 判定手段の宣言が誤っている証拠になるため、アンカーとして十分に機能する。
 
-const correctedDir = resolve(
-  rootDir,
-  "experiments",
-  "account-management",
-  "runs",
-  "mvp-11",
-  "harness-corrected",
-);
-
 /** @type {{ id: string, method: string }[]} */
 let declaredRules;
 /** @type {Map<string, string>} */
 let statusById;
 
 beforeAll(async () => {
-  const [app, fixtures, styles, componentTheme, measurements, rulesDocument] = await Promise.all([
-    readFile(resolve(correctedDir, "source", "App.tsx"), "utf8"),
-    readFile(resolve(correctedDir, "source", "fixtures.ts"), "utf8"),
-    readFile(resolve(correctedDir, "source", "styles.css"), "utf8"),
+  const { experiment, runDir } = await resolveConformanceTarget();
+  // check-design-conformanceと同じくApp.tsxから辿った全画面ファイルを入力にする
+  const [{ app, fixtures, styles, tsxFiles }, componentTheme, measurements, rulesDocument] = await Promise.all([
+    collectScreenSources(resolve(runDir, "source")),
     readFile(resolve(rootDir, "design", "component-theme.css"), "utf8"),
     // 幾何実測込みで判定するruleがあるため、check-design-conformanceと同じmeasurementsを渡す
-    readFile(resolve(correctedDir, "measurements.json"), "utf8").then(JSON.parse),
+    readFile(resolve(runDir, "measurements.json"), "utf8").then(JSON.parse),
     readFile(resolve(rootDir, "design", "rules.json"), "utf8").then(JSON.parse),
   ]);
 
   declaredRules = rulesDocument.rules;
-  const evaluated = evaluateSource({ app, fixtures, styles, componentTheme, measurements });
+  const evaluated = evaluateSource({ app, fixtures, styles, componentTheme, measurements, tsxFiles, experiment });
   statusById = new Map(evaluated.map((rule) => [rule.id, rule.status]));
 });
 
@@ -52,7 +46,7 @@ function violations(methodValue, allowedStatuses) {
     .filter((entry) => !allowedStatuses.includes(entry.status));
 }
 
-describe("rules.jsonのmethod宣言と判定実装の整合（mvp-11 harness-correctedを入力にした実測）", () => {
+describe("rules.jsonのmethod宣言と判定実装の整合（基準Runを入力にした実測）", () => {
   it("automaticのruleはこの入力に対して機械判定（passed/failed）が付く", () => {
     expect(violations("automatic", ["passed", "failed"])).toEqual([]);
   });

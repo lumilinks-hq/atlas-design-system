@@ -1,0 +1,220 @@
+diff --git a/VALIDATION.md b/VALIDATION.md
+index da00fb7..5114084 100644
+--- a/VALIDATION.md
++++ b/VALIDATION.md
+@@ -1,23 +1,11 @@
+ # Design validation
+ 
+-自動判定: 21 passed / 3 failed / 5 review
++自動判定: 22 passed / 1 failed / 5 review
+ 
+ ## FAIL component.table.columns: Tableの列定義をExampleと一致させる
+ 
+-- 期待する列順: companyName → contactName → lastContactedAt → status
++- 列の値は一致
+ - HeaderとRowが同じ列定義を参照していません
+-- tabular列の適用を確認できません
+-- 列のidと順序は一致。companyNameのisRowHeader: trueとlastContactedAtのtabular: trueが無く、Rowが列定義をmapしていない
++- tabular列の適用あり
+ - 修正: 実験のexample契約のcomponent.table列定義を参照してHeaderとRowで共有する
+ 
+-## FAIL business.customer-name: オブジェクトの識別名を必須にする
+-
+-- 顧客名の必須制御を確認できません
+-- 修正: TextFieldをrequiredにし、空白だけの値も送信前に検証する
+-
+-## FAIL a11y.control-name: 操作要素に名前を付ける
+-
+-- src/CustomerFormDrawer.tsx の Drawer.CloseTrigger に aria-label も表示テキストもありません
+-- HeroUIの既定名は日本語ではないため、支援技術が英語のまま読み上げます
+-- アイコンのみの表示は維持し、aria-labelに「閉じる」を含む日本語（例: 編集を閉じる）を付ける
+-- 修正: 視覚ラベルまたはaria-labelを追加する
+diff --git a/src/CustomerDetailPage.tsx b/src/CustomerDetailPage.tsx
+index 6302b5c..0a4c5ed 100644
+--- a/src/CustomerDetailPage.tsx
++++ b/src/CustomerDetailPage.tsx
+@@ -103,6 +103,7 @@ export function CustomerDetailPage() {
+               triggerVariantClass="button button--md button--primary detail-actions__item"
+               heading="顧客の編集"
+               description="登録済みの顧客情報を変更します。"
++              closeLabel="編集を閉じる"
+               initialValues={editValues}
+               initialErrors={screenState === "invalid-email" ? { email: EMAIL_FORMAT_ERROR } : undefined}
+               isOpen={isEditOpen}
+diff --git a/src/CustomerFormDrawer.tsx b/src/CustomerFormDrawer.tsx
+index 48007d9..11480bb 100644
+--- a/src/CustomerFormDrawer.tsx
++++ b/src/CustomerFormDrawer.tsx
+@@ -27,6 +27,8 @@ type CustomerFormDrawerProps = {
+   triggerVariantClass: string;
+   heading: string;
+   description: string;
++  /** アイコンのみの閉じる操作に付けるアクセシブルネーム(a11y.control-name) */
++  closeLabel: string;
+   initialValues: CustomerFormValues;
+   /** URL の state から復元する初期エラー(invalid-email 用) */
+   initialErrors?: CustomerFormErrors;
+@@ -43,6 +45,7 @@ export function CustomerFormDrawer({
+   triggerVariantClass,
+   heading,
+   description,
++  closeLabel,
+   initialValues,
+   initialErrors,
+   isOpen,
+@@ -89,7 +92,7 @@ export function CustomerFormDrawer({
+       <Drawer.Backdrop variant="blur">
+         <Drawer.Content placement="right">
+           <Drawer.Dialog>
+-            <Drawer.CloseTrigger />
++            <Drawer.CloseTrigger aria-label={closeLabel} />
+             <Form className="drawer-form" validationBehavior="aria" onSubmit={handleSubmit}>
+               <Drawer.Header>
+                 <Drawer.Heading>{heading}</Drawer.Heading>
+@@ -108,6 +111,7 @@ export function CustomerFormDrawer({
+                   ) : null}
+                   <TextField
+                     name="companyName"
++                    isRequired
+                     value={values.companyName}
+                     onChange={(value) => updateValue("companyName", value)}
+                     isInvalid={Boolean(errors.companyName)}
+diff --git a/src/CustomerListPage.tsx b/src/CustomerListPage.tsx
+index e2780d2..20a276a 100644
+--- a/src/CustomerListPage.tsx
++++ b/src/CustomerListPage.tsx
+@@ -13,12 +13,23 @@ import {
+ import { CustomerFormDrawer } from "./CustomerFormDrawer";
+ import { useScreenState } from "./screenState";
+ 
+-const CUSTOMER_COLUMNS = [
+-  { id: "companyName", label: "企業名", width: "38%", minWidth: 240, align: "start" },
++/** example.account-management の componentUsage["component.table"].columns をそのまま持つ定義 */
++type CustomerColumn = {
++  id: "companyName" | "contactName" | "lastContactedAt" | "status";
++  label: string;
++  width: string;
++  minWidth: number;
++  align: "start" | "end";
++  isRowHeader?: boolean;
++  tabular?: boolean;
++};
++
++const CUSTOMER_COLUMNS: CustomerColumn[] = [
++  { id: "companyName", label: "企業名", isRowHeader: true, width: "38%", minWidth: 240, align: "start" },
+   { id: "contactName", label: "担当者", width: "22%", minWidth: 160, align: "start" },
+-  { id: "lastContactedAt", label: "最終対応日", width: "22%", minWidth: 160, align: "end" },
++  { id: "lastContactedAt", label: "最終対応日", width: "22%", minWidth: 160, align: "end", tabular: true },
+   { id: "status", label: "ステータス", width: "18%", minWidth: 128, align: "start" },
+-] as const;
++];
+ 
+ const EMPTY_FORM_VALUES: CustomerFormValues = {
+   companyName: "",
+@@ -95,6 +106,7 @@ export function CustomerListPage() {
+             triggerVariantClass="button button--md button--primary"
+             heading="顧客の追加"
+             description="新しい顧客の基本情報を登録します。"
++            closeLabel="追加を閉じる"
+             initialValues={screenState === "invalid-email" ? INVALID_EMAIL_VALUES : EMPTY_FORM_VALUES}
+             initialErrors={screenState === "invalid-email" ? { email: EMAIL_FORMAT_ERROR } : undefined}
+             isOpen={isCreateOpen}
+@@ -126,38 +138,43 @@ export function CustomerListPage() {
+           <Table variant="primary" className="collection-table">
+             <Table.ScrollContainer>
+               <Table.Content aria-label="顧客">
+-                <Table.Header>
+-                  {CUSTOMER_COLUMNS.map((column) => (
++                <Table.Header columns={CUSTOMER_COLUMNS}>
++                  {(column) => (
+                     <Table.Column
+-                      key={column.id}
+                       id={column.id}
+-                      isRowHeader={column.id === "companyName"}
++                      isRowHeader={column.isRowHeader ?? false}
+                       style={{ width: column.width, minWidth: column.minWidth, textAlign: column.align }}
+                     >
+                       {column.label}
+                     </Table.Column>
+-                  ))}
++                  )}
+                 </Table.Header>
+                 <Table.Body
+                   items={visibleCustomers}
+                   renderEmptyState={() => <p className="empty-state">{emptyMessage(customers.length)}</p>}
+                 >
+                   {(customer) => (
+-                    <Table.Row key={customer.id} id={customer.id}>
+-                      <Table.Cell>
+-                        <Link className="link table-link" to={`/customers/${customer.id}`}>
+-                          {customer.companyName}
+-                        </Link>
+-                      </Table.Cell>
+-                      <Table.Cell>{customer.contactName}</Table.Cell>
+-                      <Table.Cell className="table-cell--numeric">
+-                        <span className="numeric-text">{formatContactDate(customer.lastContactedAt)}</span>
+-                      </Table.Cell>
+-                      <Table.Cell>
+-                        <Chip color={statusColor(customer.status)} variant="soft" size="sm">
+-                          {customer.status}
+-                        </Chip>
+-                      </Table.Cell>
++                    <Table.Row id={customer.id} columns={CUSTOMER_COLUMNS}>
++                      {(column) => (
++                        <Table.Cell
++                          className={column.tabular ? "table-cell--numeric" : undefined}
++                          style={{ textAlign: column.align }}
++                        >
++                          {column.id === "companyName" ? (
++                            <Link className="link table-link" to={`/customers/${customer.id}`}>
++                              {customer.companyName}
++                            </Link>
++                          ) : column.id === "contactName" ? (
++                            customer.contactName
++                          ) : column.id === "lastContactedAt" ? (
++                            <span className="numeric-text">{formatContactDate(customer.lastContactedAt)}</span>
++                          ) : (
++                            <Chip color={statusColor(customer.status)} variant="soft" size="sm">
++                              {customer.status}
++                            </Chip>
++                          )}
++                        </Table.Cell>
++                      )}
+                     </Table.Row>
+                   )}
+                 </Table.Body>
+diff --git a/src/customerFlows.test.tsx b/src/customerFlows.test.tsx
+index 2515dc4..5813f43 100644
+--- a/src/customerFlows.test.tsx
++++ b/src/customerFlows.test.tsx
+@@ -12,6 +12,12 @@ function go(hash: string) {
+   render(<App />);
+ }
+ 
++function firstAlertDialog(): HTMLElement {
++  const [dialog] = screen.getAllByRole("alertdialog");
++  if (!dialog) throw new Error("alertdialog が見つかりません");
++  return dialog;
++}
++
+ describe("required states", () => {
+   it("default", () => {
+     go("#/customers?state=default");
+@@ -51,7 +57,7 @@ describe("required states", () => {
+   });
+   it("delete-confirm", () => {
+     go("#/customers/customer_northstar?state=delete-confirm");
+-    const dialog = screen.getAllByRole("alertdialog")[0];
++    const dialog = firstAlertDialog();
+     expect(within(dialog).getByText("株式会社ノーススター")).toBeInTheDocument();
+     expect(within(dialog).getByText(/取り消せません/)).toBeInTheDocument();
+     expect(within(dialog).getByRole("button", { name: "削除する" })).toBeInTheDocument();
+@@ -103,7 +109,7 @@ describe("customer flows", () => {
+   it("deletes the customer and returns to the list", async () => {
+     const user = userEvent.setup();
+     go("#/customers/customer_northstar?state=delete-confirm");
+-    const dialog = screen.getAllByRole("alertdialog")[0];
++    const dialog = firstAlertDialog();
+     await user.click(within(dialog).getByRole("button", { name: "削除する" }));
+     await waitFor(() => expect(window.location.hash).toBe("#/customers"));
+     expect(screen.queryByRole("link", { name: "株式会社ノーススター" })).not.toBeInTheDocument();

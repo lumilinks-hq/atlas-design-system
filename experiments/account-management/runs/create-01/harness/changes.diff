@@ -1,0 +1,164 @@
+diff --git a/src/App.tsx b/src/App.tsx
+index 0f1f347..f6179ab 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -1,35 +1,7 @@
+-import { HashRouter, Link, Navigate, Route, Routes, useParams } from "react-router-dom";
+-import { getCustomerDetail, listCustomerSummaries } from "./fixtures";
+-
+-function CustomerListPage() {
+-  return (
+-    <main>
+-      <h1>顧客一覧</h1>
+-      <ul>
+-        {listCustomerSummaries().map((customer) => (
+-          <li key={customer.id}>
+-            <Link to={`/customers/${customer.id}`}>{customer.companyName}</Link>
+-          </li>
+-        ))}
+-      </ul>
+-    </main>
+-  );
+-}
+-
+-function CustomerDetailPage() {
+-  const { customerId = "" } = useParams();
+-  const customer = getCustomerDetail(customerId);
+-
+-  if (!customer) return <Navigate replace to="/customers" />;
+-
+-  return (
+-    <main>
+-      <Link to="/customers">顧客一覧へ戻る</Link>
+-      <h1>{customer.companyName}</h1>
+-      <p>brief.mdの要件に沿って、この詳細画面を実装してください。</p>
+-    </main>
+-  );
+-}
++import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
++import { Toast } from "@heroui/react";
++import { CustomerListPage } from "./CustomerListPage";
++import { CustomerDetailPage } from "./CustomerDetailPage";
+ 
+ export function App() {
+   return (
+@@ -39,6 +11,7 @@ export function App() {
+         <Route path="/customers/:customerId" element={<CustomerDetailPage />} />
+         <Route path="*" element={<Navigate replace to="/customers" />} />
+       </Routes>
++      <Toast.Provider />
+     </HashRouter>
+   );
+ }
+diff --git a/src/styles.css b/src/styles.css
+index 24127eb..63480ed 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -1,12 +1,87 @@
+ @import "tailwindcss";
+ @import "@heroui/styles";
++@import "../design/component-theme.css";
++@import "../design/layout.css";
+ 
+ html {
+   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
++  color: var(--dh-text);
++  background-color: var(--dh-background);
+ }
+ 
+ body {
+   margin: 0;
+   min-width: 320px;
+   min-height: 100vh;
++  background-color: var(--dh-background);
++  color: var(--dh-text);
++  font-size: var(--dh-type-body);
++  line-height: var(--dh-type-line-height-body);
++}
++
++/* pattern.spacing-layout#dialog-content が定義しない Drawer 内部の間隔だけ補う */
++.drawer-form__intro {
++  margin: var(--dh-space-2) 0 0;
++  color: var(--dh-text-muted);
++  font-size: var(--dh-type-small);
++}
++
++.drawer-form__fields {
++  display: grid;
++  gap: var(--dh-space-4);
++}
++
++.dialog-body {
++  display: grid;
++  gap: var(--dh-space-3);
++}
++
++.dialog-body p {
++  margin: 0;
++}
++
++/* pattern.spacing-layout#inline-actions: buttonGap space.2 */
++.detail-actions {
++  display: flex;
++  gap: var(--dh-space-2);
++  align-items: center;
++}
++
++.detail-content .detail-item {
++  display: grid;
++  gap: var(--dh-space-1);
++}
++
++.detail-item__label {
++  margin: 0;
++  color: var(--dh-text-muted);
++  font-size: var(--dh-type-label);
++}
++
++.detail-item__value {
++  margin: 0;
++  font-size: var(--dh-type-body);
++}
++
++.detail-note {
++  margin: 0;
++  line-height: var(--dh-type-line-height-body);
++}
++
++.empty-state {
++  margin: 0;
++  padding: var(--dh-space-8) var(--dh-space-4);
++  color: var(--dh-text-muted);
++  text-align: center;
++}
++
++@media (max-width: 767px) {
++  .detail-actions {
++    flex-direction: column;
++    align-items: stretch;
++  }
++
++  .detail-actions .detail-actions__item {
++    width: 100%;
++  }
+ }
+diff --git a/tsconfig.app.tsbuildinfo b/tsconfig.app.tsbuildinfo
+index 66c2190..b694669 100644
+--- a/tsconfig.app.tsbuildinfo
++++ b/tsconfig.app.tsbuildinfo
+@@ -1 +1 @@
+-{"root":["./src/app.test.tsx","./src/app.tsx","./src/fixtures.ts","./src/main.tsx"],"version":"6.0.3"}
+\ No newline at end of file
++{"root":["./src/app.test.tsx","./src/app.tsx","./src/customerdetailpage.tsx","./src/customerformdrawer.tsx","./src/customerlistpage.tsx","./src/customerflows.test.tsx","./src/customermodel.ts","./src/fixtures.ts","./src/main.tsx","./src/screenstate.ts","./src/test-setup.ts"],"version":"6.0.3"}
+\ No newline at end of file
+diff --git a/vitest.config.ts b/vitest.config.ts
+index 9f6250a..1a89694 100644
+--- a/vitest.config.ts
++++ b/vitest.config.ts
+@@ -3,5 +3,6 @@ import { defineConfig } from "vitest/config";
+ export default defineConfig({
+   test: {
+     environment: "jsdom",
++    setupFiles: ["./src/test-setup.ts"],
+   },
+ });

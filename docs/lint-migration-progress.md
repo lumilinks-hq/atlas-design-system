@@ -152,7 +152,7 @@ JSX 内 raw color、jsx-a11y、manifest 駆動ルール(customer-routes / custom
 | ターン数 | 60 | 105 |
 
 - 費用は `events.jsonl` 末尾の `result` イベントの `total_cost_usd`。`run.json` に usage 欄は無い。`experiment:review` の AI レビュー呼び出しの費用はどこにも記録されない
-- harness の唯一の違反は `component.table.columns`。account-management の mvp-11 harness も同じルールを同じ形の証跡で落としており、Phase 3 の退行ではなく評価器側の限界
+- harness の唯一の違反は `component.table.columns`。account-management の mvp-11 harness も同じルールを同じ形の証跡で落としており、Phase 3 の退行ではない（この行は当初「評価器側の限界」と書いていたが誤り。Phase 4 の「`component.table.columns` は評価器の限界ではなかった」で撤回した。生成コード側で直せる違反）
 - 隔離チェックは baseline / harness とも `repoPathMentions` 0。harness の `markerMentions.evaluate-experiment` 4 は `packages/eslint-plugin-atlas/src/index.mjs` のコメント（「評価器(scripts/evaluate-experiment.mjs)がこれを使う」）が plugin の tgz ごと workspace へ入るためで、評価器そのものは渡っていない
 - パイプラインは `docs/EXPERIMENTS.md` の順で measure → evaluate → capture → review → compare → sanitize。`harness-corrected` と `refine` は 3 本目の有料 run になるので回していない
 
@@ -172,3 +172,121 @@ JSX 内 raw color、jsx-a11y、manifest 駆動ルール(customer-routes / custom
 - `pnpm public:audit --experiment invoice-management --pair invoice-01` は落ちる。`listRequiredArtifacts` が `harness-corrected/design-evaluation.json` を必須にしているが、invoice-01 は harness-corrected を回していない。`demo:check` が呼ぶ既定の `public:audit` は通る
 - `design:conformance` の既定は account-management / mvp-11 のままで、請求書は対象外
 - `scripts/verify-site.mjs` の「導入方法が縦3件」の判定が `.setup-card` を全ページから数えており、MCP クライアントのカード 2 枚を足した時点から 5 件になって落ちていた（Phase 3 以前からの壊れ）。`.setup-grid .setup-card` に絞って直した
+
+## Phase 4: 顧客管理に「顧客を追加」を足して再 run（2026-09-05）
+
+顧客管理の題材に集合画面からの追加操作を足し、契約・starter・サイトを揃えたうえで有料 run を 1 ペア回した。生成コードは直していない。
+
+### 契約と実験定義の改訂
+- `experiments/account-management/brief.md`: 対象外から「顧客の追加」を外し、集合画面の見出し操作から追加フォームを開いて保存する要件を足した。Drawer という語は出していない（baseline に実装手段を漏らさないため）
+- `manifest.json`: `requiredStates` に `create-open` を追加して 9 件
+- `design/examples/account-management.json`: 見出し操作の構成を改訂し、`componentUsage` に `component.button`（追加操作）と `component.drawer`（作成と編集を兼ねるフォーム）を追加。`lint.forbiddenText` から「顧客を追加」を外した
+- `design/schemas/example.schema.json`: 上記 2 つの `$defs`（`createActionUsage` / `formDrawerUsage`）を追加。ルール数は 28 のまま増やしていない
+- `starter/src/fixtures.ts` に `createCustomer` を追加。`deleteCustomer` と同じ同期の結果ユニオンで、`simulateFailure` を持つ
+- `prompt.md` は題材非依存の書き方なので変更なし
+
+### 基準 Run の設定を 1 か所に出した
+- `design/conformance-target.json` と `scripts/conformance-target.mjs` を新設。`design:conformance` のバイト一致と `scripts/rules-method.test.mjs` の method 宣言テストが同じ 1 本を見るようにした。`--experiment` / `--pair` / `--mode` で一時的に上書きできる
+- 中身は `account-management / mvp-11 / harness-corrected` のまま。create-01 の harness は違反 2 件あり、違反ゼロを求める既存のガードが正しく弾く。ガードは緩めていない
+
+### create-01 の結果（2026-09-05、claude-opus-5）
+
+| | baseline | harness |
+| --- | --- | --- |
+| status | completed | completed |
+| 設計ルール | 合格 12 / 違反 11 / 要確認 5 | 合格 21 / 違反 2 / 要確認 5 |
+| typecheck（サイト側の厳格設定） | failed | failed |
+| lint / test / build | すべて passed | すべて passed |
+| 費用 (USD) | 6.88 | 14.22 |
+| 所要 (ms) | 1074494 | 2011574 |
+| ターン数 | 86 | 152 |
+
+- harness の違反 2 件は `component.table.columns` と `business.customer-name`。後者は会社名の `TextField` に `isRequired` が無く、必須であることが読み上げに乗らない。lint-01 / mvp-11 / prelint-01 では通っていた退行で、baseline は通している
+- baseline の違反 11 件は component.approved / component.usage / component.table.columns / token.radius / navigation.link-semantics / layout.grouping / layout.collection-toolbar / layout.back-navigation / layout.narrow / action.confirmation / a11y.focus-management
+- 費用は 2 本で 21.10 ドル。harness は事前見積り（1 本 6〜11 ドル）を超えた
+- 実在する企業名・人名は無い。画面に出る 4 社は starter の fixtures から引き継いだもので、エージェントが足した名前はテストファイル内だけ（架空社名と `example.com` のアドレス）
+
+### `component.table.columns` は評価器の限界ではなかった（前回報告の訂正）
+- 前回この違反を「評価器側の限界」と書いたが、調べたところ誤りだった。撤回する
+- 判定は `scripts/evaluate-experiment.mjs` の `evaluateTableContract` が、列の値一致・Header と Row の列定義共有・`tabular` 適用の 3 条件を見る。`normalizeColumn` は `isRowHeader` と `tabular` も比較対象に含める
+- create-01/harness の `CustomerListPage.tsx` の列配列は id と順序こそ example と一致するが、`companyName` の `isRowHeader: true` と `lastContactedAt` の `tabular: true` を持たず、Row が列定義を map していない。どれも生成コード側で直せる
+- 実際、lint-01/harness、prelint-01/harness、mvp-11/harness-corrected はこのルールを通している。落ちているのは create-01 と invoice-01 と mvp-11 の harness、および全 baseline
+- ただし評価器の失敗メッセージは誤解を招く。列順が合っていても「期待する列順: …」を出すため、列順を確かめたエージェントは「合っている」と判断して先へ進みかねない。メッセージ文言を変えると保存済み評価とのバイト一致が崩れるので今回は直していない
+
+### 評価器が見ていない退行
+- create-01 の harness は `<Drawer.CloseTrigger />` をラベル無しで置いたため、閉じるボタンの読み上げ名が HeroUI 既定の英語 "Close" になっている。lint-01 と invoice-01 は日本語ラベルを渡していた
+- 閉じる操作のラベルを見る設計ルールが無いので評価は合格のまま通る。`business.customer-name` と同じく「前の run では出ていた a11y 属性が今回落ちた」形
+
+### サイト側の対応
+- Play の入口（`src/play/atlas.tsx` / `baseline.tsx`）と `src/data/runs.ts` の顧客管理ペアを lint-01 から create-01 へ切り替えた。`sameModelRuns`（prelint-01 と lint-01）は比較材料としてそのまま残す
+- `PlayPage` の状態一覧に「追加を開く」（`create-open`）を追加。この状態はスクリーンショットを撮っていない。capture が Drawer 画面では `invalid-*` の状態しか扱わないため
+- README の件数と `--pair` を create-01 に更新。`HarnessPages.tsx` の説明文も同じ run を指すよう直した
+
+### tsconfig を 3 分割した（判断が必要な箇所）
+- create-01 の生成コードは `noUncheckedIndexedAccess` の下でエラーを出す。Play 画面はこの生成コードを取り込むので、切り替えた時点で `pnpm typecheck` が落ちた
+- ただし内訳は baseline 側だけ。baseline は `CustomerCreateModal.tsx` `customerService.ts` `CustomerListPage.tsx` のアプリコード 3 件、harness は `customerFlows.test.tsx` の 4 件のみで、テストファイルは Play が読み込まない。つまり分割が要ったのは baseline のためで、どちらのアームもこのフラグを知らされていないが、harness のアプリコードはたまたま満たしていた
+- `tsconfig.app.json` に `exclude: ["src/play"]` を足し、`tsconfig.play.json`（同フラグを off、`exclude: []` が必須。`exclude` は `extends` で継承されるため）を新設して `tsconfig.json` の references に追加した
+- 生成コードを直す・`tsc -b` をやめる・Play を lint-01 に戻す、はいずれも採らなかった。lint-01 に戻すと新しい「追加を開く」が動かない
+- 取り消すなら 3 ファイルを戻すだけで済む
+- 後日案: starter の tsconfig に `noUncheckedIndexedAccess` を入れて次の run から両アームに同じ条件を課し、通ったら `tsconfig.play.json` の上書きを消す。記録済みの run の条件を後から変えたくないので今回はやっていない
+
+### E2E のロケータを実装依存から構造依存に変えた
+- `scripts/verify-site.mjs` の顧客管理ブロックが、閉じるボタンを「編集を閉じる」という lint-01 固有のラベルで、エラー表示を「メールアドレスの形式を確認してください。」という lint-01 固有の文言で探していた。どちらも設計契約が定めていない文言で、create-01 は別の言い回しを選んだため落ちた
+- `[role='dialog'] [data-slot='drawer-close-trigger']` で引き、アイコンのみ・幅 24〜48px・読み上げ名が空でないこと、を確かめる形にした。読み上げ名は「空でない」までで、"Close" を許容値として書き込むことはしていない
+- エラー表示はメールアドレス欄の `aria-invalid` と `[data-slot='field-error']` の本文が空でないことで確かめる
+- 請求書ブロックは通っているので触っていない。ただし同じ形の脆さが残っており、請求書を再 run すると同じ壁に当たる
+
+### create-01/harness-corrected の結果（2026-09-06、claude-opus-5）
+
+| | harness | harness-corrected |
+| --- | --- | --- |
+| status | completed | completed |
+| 設計ルール | 合格 21 / 違反 2 / 要確認 5 | 合格 23 / 違反 0 / 要確認 5 |
+| run.json の checks | typecheck と design-rules が failed（lint / test / build は passed） | typecheck / test / build / design-rules すべて passed |
+| 費用 (USD) | 14.22 | 4.96（生成 3.35 + refine 1.61） |
+| 所要 (ms) | 2011574 | 454356（生成 249611 + refine 204745） |
+| ターン数 | 152 | 88（生成 55 + refine 33） |
+
+- 事前見積りは約 11 ドルだったが、実際は 4.96 ドル
+- エージェントのパスは 2 回走った。指摘 3 件が 1 パスで片付いたわけではない
+  - 1 パス目（`experiment:run --mode harness-corrected`、55 ターン / 3.35 ドル）で `business.customer-name` と閉じるボタンの読み上げ名が解消。`CustomerFormDrawer.tsx` の会社名 `TextField` に `isRequired`、`Drawer.CloseTrigger` に `aria-label`（一覧は「追加を閉じる」、詳細は「編集を閉じる」）が入った。`component.table.columns` は「列の値は一致」「tabular列の適用あり」まで進んだが「HeaderとRowが同じ列定義を参照していません」が残り、`22 passed / 1 failed / 5 review`
+  - 2 パス目（`experiment:refine`、33 ターン / 1.61 ドル）が残った 1 件を直した。編集したのは `CustomerListPage.tsx` 1 ファイルだけで、列定義を定数にして Header と Row の両方から参照する形にし、`isRowHeader: true` と `tabular: true` を載せた。ここで `23 passed / 0 failed / 5 review`
+  - `refine` はまず評価だけ走らせ、違反が 0 なら追加パスをせず抜ける作り（`scripts/refine-experiment.mjs`）。今回 `refinement-events.jsonl` が残っているのは、1 パス目のあとに違反が 1 件残っていた証拠
+- AI レビューの所見は baseline / harness と同じで、`a11y.error-recovery` と `state.failure` が concern。レビューへ渡すのが `default` 状態の 2 枚だけなので、エラー状態が写っていないことによるもの。3 アームで同じなので退行ではない
+- 実在する企業名・人名は無い。fixtures の 4 社は架空社名、アドレスはすべて `example.com`
+
+### VALIDATION.md に人が書き足した行（開示）
+- `harness-corrected` の入力は `VALIDATION.md` 1 本という約束なので、機械が書いた内容と人が足した内容を分けて残す
+- 機械が書いたのは `component.table.columns` と `business.customer-name` の 2 件。閉じるボタンの英語読み上げ名を見る設計ルールが無いため、3 件目は自動では出てこない
+- 人が足したのは次の 3 か所。いずれも「どう直すか」ではなく「何が観測されるか」を足したもの
+  - `a11y.control-name` の FAIL ブロック全体（`Drawer.CloseTrigger` にラベルが無いこと）
+  - `component.table.columns` の証跡 1 行（列の id と順序は合っており、欠けているのは `isRowHeader` と `tabular`）
+  - 見出しの件数を 2 failed から 3 failed へ
+- 生成コードは人が触っていない。`VALIDATION.md` は run 後に元へ戻した
+
+### capture が前のターゲットに引きずられていた
+- `pnpm experiment:capture` が harness-corrected で落ちた。閉じるボタンの `boundingBox()` が 30 秒待って失敗する
+- 原因は生成コード側でも読み上げ名でもない。capture は 1 枚のページを使い回してターゲットを順に開くが、4 枚目（詳細のモバイル）と 5 枚目（詳細の `invalid-email`）は route が同じで、変わるのはハッシュ内のクエリだけ。`page.goto` が同一文書内のフラグメント遷移になり、`CustomerDetailPage` が作り直されない。状態は `useState` の初期値だけで決まるので Drawer が開かないまま
+- 3 通りの実測で切り分けた。新しいページで直接開くと dialog は 1 件、capture と同じ順で開くと 0 件、同じ順に `page.reload()` を挟むと 1 件
+- mvp-11 が同じ capture を通っていたのは、あの run のエージェントが `[customerId, detailState]` を依存に持つ `useEffect` で状態を同期していたから。契約が求めていた挙動ではなく偶然
+- `scripts/capture-experiment.mjs` に `page.reload()` を足し、どのターゲットも直前のターゲットに左右されず撮れるようにした。撮る状態が「前に何を撮ったか」で変わるのは検査側の脆さなので、生成コードではなく capture を直した
+
+### Play の状態切り替えが同じ理由で壊れていた
+- 公開中のサイトでも同じことが起きていた。`PlayPage` の iframe は `src` のハッシュだけが変わるため、詳細画面の中で状態を切り替えても画面が作り直されない
+- 実測: `invalid-email` から「編集を開く」へ切り替えてもエラー表示が残り、「削除を確認」へ切り替えても削除ダイアログではなく編集 Drawer が出たままだった。別 route の「通常」を経由すれば直る
+- 既存の E2E は mode の切り替え（HTML エントリが変わる＝本当に読み込み直す）しか見ていなかったので気づけなかった
+- `scripts/verify-site.mjs` に、同一 route のまま `delete-confirm` へ切り替えて `[role='alertdialog']` が出て `drawer-close-trigger` が消えることを確かめる assert を先に足し、落ちることを確認してから直した
+- 直したのはサイト側のコードで、`<iframe key={frameSrc}>` を付けて要素ごと作り直す形にした。生成コードには触っていない。請求書の Play も同じ実装なので一緒に直る
+
+### 基準 Run と既定 pair の切り替え
+- `design/conformance-target.json` を mvp-11/harness-corrected から create-01/harness-corrected へ。`pnpm design:conformance` は `23 passed / 5 review` で緑
+- `scripts/audit-public-data.mjs` と `scripts/preview-experiment.mjs` の既定 pair を mvp-11 から create-01 へ。どちらもコメントで「既定は掲載中の Run に合わせる」としているのに、Phase 4 でサイトを create-01 へ移したあとも mvp-11 のままだった
+- `src/data/runs.ts` の `RunComparison` 型は `reveal` / `checks` / `review` の `corrected` を必須として推論していた。create-01 に修正 Run が入ったことで、修正 Run を持たない invoice-01 が代入できなくなり `tsc` が落ちた。3 か所の `corrected` を任意にした
+- README の件数を mvp-11 の頃と同じ形に戻し、「Harness 初回が 21 pass / 2 fail / 5 review、修正すると 23 pass / 0 fail / 5 review」とした。`experiment:preview` の例にも `--mode harness-corrected` を足した
+- Play の入口（`src/play/atlas.tsx`）が読むのは harness のままにした。invoice-01 も harness を読んでおり、サイトのどの画面にも修正アームを描く仕組みが無いため
+
+### 検証
+- `pnpm demo:check` 緑。`design:conformance` は `Design conformance OK (account-management/create-01/harness-corrected): 23 passed / 5 review`、`test:run` は 31 files / 350 tests、`bundle:check` は 20 assets / 17 MiB
+- `pnpm test:e2e` 緑
+- `pnpm public:audit --experiment account-management --pair create-01` 緑（491 text files / 7 required artifacts）
+- Phase 4 の前半で書いた「`demo:check` が `design:conformance` で止まる」「`public:audit --pair create-01` が落ちる」は、この節で解消した

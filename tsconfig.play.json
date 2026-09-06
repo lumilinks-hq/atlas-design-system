@@ -1,0 +1,13 @@
+{
+  // Play画面は experiments/**/runs/**/source の生成コードを取り込む。
+  // 生成コードは starter/tsconfig.app.json の設定で書かれているため、
+  // それより厳しい noUncheckedIndexedAccess はここでは外す。
+  // starter 側にこのフラグを入れた run が通ったら、この上書きは削除できる。
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.play.tsbuildinfo",
+    "noUncheckedIndexedAccess": false
+  },
+  "include": ["src/play"],
+  "exclude": []
+}

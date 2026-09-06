@@ -1,0 +1,64 @@
+{
+  "$schema": "../../../../../design/schemas/run.schema.json",
+  "id": "create-01-baseline",
+  "experimentId": "experiment.account-management",
+  "condition": "baseline",
+  "status": "completed",
+  "createdAt": "2026-09-05T05:21:05.194Z",
+  "input": {
+    "briefSha256": "1fbd7b2f6ec8eae95b187a1b53385949eb7525a90950d9eb181b16869b730a8d",
+    "starterSha256": "094438302843f8ee5d20f3410af4090e572dec32029ee376048711708dd24cd1",
+    "promptSha256": "9706626dd14d7b23baeb357f5cffef1e3d5a6760c759de7556796c8938aab2d3",
+    "designContractSha256": null
+  },
+  "environment": {
+    "runner": "claude",
+    "model": "claude-opus-5",
+    "cliVersion": "2.1.261 (Claude Code)"
+  },
+  "artifacts": [
+    "events.jsonl",
+    "agent-stderr.log",
+    "changes.diff",
+    "source",
+    "typecheck.log",
+    "lint.log",
+    "test.log",
+    "build.log",
+    "measurements.json",
+    "design-evaluation.json"
+  ],
+  "checks": [
+    {
+      "name": "typecheck",
+      "status": "failed",
+      "exitCode": 2
+    },
+    {
+      "name": "lint",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "test",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "build",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "design-rules",
+      "status": "failed",
+      "exitCode": 1
+    }
+  ],
+  "isolation": {
+    "repoPathMentions": 0,
+    "markerMentions": {
+      "evaluate-experiment": 0
+    }
+  }
+}

@@ -56,6 +56,9 @@ try {
         }
         const url = `http://127.0.0.1:${address.port}/#${target.path}?state=${target.state}`;
         await page.goto(url, { waitUntil: "networkidle" });
+        // 前のターゲットとrouteが同じだと、gotoはハッシュだけの遷移になり画面が作り直されません。
+        // 撮る状態が直前のターゲットに左右されないよう、毎回読み込み直します
+        await page.reload({ waitUntil: "networkidle" });
         if (target.overlay === "component.drawer") {
           const closeTrigger = page.getByRole("button", { name: /閉じる/ }).first();
           const closeBox = await closeTrigger.boundingBox();

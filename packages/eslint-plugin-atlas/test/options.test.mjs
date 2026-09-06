@@ -92,7 +92,6 @@ describe("buildAtlasLintOptions", () => {
     expect(options.forbiddenText).toEqual([
       "Atlas CRM",
       "ワークスペース",
-      "顧客を追加",
       "契約管理",
       "料金管理",
       "利用人数",

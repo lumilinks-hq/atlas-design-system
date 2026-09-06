@@ -96,7 +96,7 @@ const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(imp
 if (isMain) {
   const args = parseArgs(process.argv.slice(2));
   const experiment = resolveExperimentName(args);
-  const pairId = typeof args.pair === "string" ? args.pair : "mvp-11";
+  const pairId = typeof args.pair === "string" ? args.pair : "create-01";
   const requiredArtifacts = listRequiredArtifacts(experimentPaths(experiment).name, pairId);
   const files = (await walk(rootDir)).filter((absolutePath) => {
     const path = relative(rootDir, absolutePath);

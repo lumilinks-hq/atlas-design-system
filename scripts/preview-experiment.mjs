@@ -6,7 +6,7 @@ import { parseArgs, rootDir } from "./lib.mjs";
 import { experimentPaths, resolveExperimentName } from "./workspace-paths.mjs";
 
 const args = parseArgs(process.argv.slice(2));
-const pairId = typeof args.pair === "string" ? args.pair : "mvp-11";
+const pairId = typeof args.pair === "string" ? args.pair : "create-01";
 const mode = typeof args.mode === "string" ? args.mode : "harness-corrected";
 const port = typeof args.port === "string" ? Number(args.port) : 4183;
 const allowedModes = new Set(["baseline", "harness", "harness-corrected"]);

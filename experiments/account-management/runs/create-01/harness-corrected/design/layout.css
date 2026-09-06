@@ -1,0 +1,218 @@
+/*
+ * Atlas layout partials.
+ * 生成アプリと検査ツールが同じクラス名でレイアウトを共有するための正本。
+ * @media の 767px は design/tokens.json の breakpoint.narrow(768px) − 1。
+ * CSSのmedia queryはカスタムプロパティを参照できないためリテラルで書き、
+ * validate-design.mjs が tokens.json との一致を検査する。
+ */
+
+.page-shell {
+  width: min(100% - 32px, var(--dh-content-max));
+  margin: 0 auto;
+}
+
+.page-shell--stack {
+  padding: var(--dh-space-8) 0 var(--dh-space-12);
+}
+
+.page-heading {
+  display: flex;
+  gap: var(--dh-space-6);
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.page-heading__copy {
+  max-width: var(--dh-reading-width);
+}
+
+.page-heading__copy h1 {
+  margin: 0;
+  font-size: var(--dh-type-title);
+  font-weight: 650;
+  line-height: var(--dh-type-line-height-heading);
+  text-wrap: balance;
+}
+
+.page-heading__copy p {
+  margin: var(--dh-space-3) 0 0;
+  color: var(--dh-text-muted);
+  font-size: var(--dh-type-small);
+  line-height: var(--dh-type-line-height-body);
+  text-wrap: pretty;
+}
+
+.page-heading__status {
+  margin-top: var(--dh-space-3);
+}
+
+.page-heading__action {
+  flex-shrink: 0;
+}
+
+.collection-region {
+  display: grid;
+  gap: var(--dh-space-3);
+  margin-top: var(--dh-space-6);
+}
+
+.collection-toolbar {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.search-field {
+  width: 16rem;
+}
+
+.collection-table-wrap {
+  display: block;
+}
+
+.collection-table {
+  width: 100%;
+}
+
+.table-link {
+  display: inline-flex;
+  justify-content: flex-start;
+  white-space: normal;
+  text-align: left;
+}
+
+.table-cell--numeric,
+.numeric-text {
+  font-variant-numeric: tabular-nums;
+}
+
+.collection-list-mobile {
+  display: none;
+  gap: var(--dh-space-4);
+}
+
+.collection-list-mobile__content {
+  display: grid;
+  gap: var(--dh-space-3);
+}
+
+.collection-list-mobile__link {
+  width: 100%;
+  justify-content: center;
+}
+
+.collection-list-mobile__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--dh-space-3);
+  align-items: center;
+  color: var(--dh-text-muted);
+  font-size: var(--dh-type-small);
+  line-height: var(--dh-type-line-height-body);
+}
+
+.detail-page__heading {
+  display: grid;
+  gap: var(--dh-space-4);
+  margin-bottom: var(--dh-space-8);
+}
+
+.detail-grid {
+  display: grid;
+  gap: var(--dh-space-6);
+}
+
+.detail-content {
+  display: grid;
+  gap: var(--dh-space-4);
+}
+
+.drawer-form {
+  display: grid;
+  gap: var(--dh-space-6);
+}
+
+.section-block {
+  display: grid;
+  gap: var(--dh-space-6);
+  padding: var(--dh-space-6);
+  border-radius: var(--dh-radius-base);
+  background: var(--dh-surface);
+  box-shadow: var(--dh-shadow-raised);
+}
+
+.section-block__heading {
+  display: flex;
+  gap: var(--dh-space-4);
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.section-divider {
+  margin: var(--dh-space-6) 0;
+  border: 0;
+  border-top: 1px solid var(--dh-border);
+}
+
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+@media (max-width: 767px) {
+  .page-shell {
+    width: min(100% - 24px, var(--dh-content-max));
+  }
+
+  .page-shell--stack {
+    padding: var(--dh-space-6) 0 var(--dh-space-8);
+  }
+
+  .page-heading {
+    flex-direction: column;
+  }
+
+  .page-heading__action {
+    width: 100%;
+  }
+
+  .page-heading__action .button {
+    width: 100%;
+  }
+
+  .collection-table-wrap {
+    display: none;
+  }
+
+  .collection-list-mobile {
+    display: grid;
+  }
+
+  .collection-toolbar {
+    width: 100%;
+  }
+
+  .search-field {
+    width: 100%;
+  }
+
+  .section-block {
+    padding: var(--dh-space-4);
+  }
+
+  .section-block__heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

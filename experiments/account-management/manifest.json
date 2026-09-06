@@ -42,6 +42,6 @@
       ]
     }
   ],
-  "requiredStates": ["default", "empty", "drawer-open", "invalid-email", "loading", "success", "failure", "delete-confirm"],
+  "requiredStates": ["default", "empty", "create-open", "drawer-open", "invalid-email", "loading", "success", "failure", "delete-confirm"],
   "checks": ["build", "typecheck", "test", "design-rules", "accessibility", "responsive"]
 }

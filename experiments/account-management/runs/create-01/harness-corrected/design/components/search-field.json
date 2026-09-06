@@ -1,0 +1,19 @@
+{
+  "$schema": "../schemas/component.schema.json",
+  "version": "1.0.0",
+  "id": "component.search-field",
+  "name": "SearchField",
+  "implementation": "SearchField",
+  "import": "@heroui/react",
+  "variants": ["primary", "secondary"],
+  "sizes": ["md"],
+  "defaults": { "variant": "primary", "size": "md" },
+  "visual": { "surfaceOwner": "component", "outerShadow": "allowed", "radiusToken": "radius.base" },
+  "requirements": [
+    "検索にはTextFieldではなくSearchFieldを使う",
+    "SearchField.Group内にSearchField.SearchIcon、SearchField.Input、SearchField.ClearButtonを置く",
+    "表示ラベルを省略する一覧ツールバーではSearchFieldへaria-labelを指定する",
+    "入力のplaceholderは検索対象を示し、検索語をクリアする操作へ名前を付ける"
+  ],
+  "relatedRules": ["component.approved", "a11y.control-name", "layout.collection-toolbar"]
+}

@@ -63,11 +63,11 @@ describe("evaluateSource", () => {
 
   it("requires every state listed in the manifest", () => {
     const withoutDeleteConfirm = evaluateSource({
-      app: '"default empty drawer-open invalid-email loading success failure"',
+      app: '"default empty create-open drawer-open invalid-email loading success failure"',
       styles: "",
     });
     const withAllStates = evaluateSource({
-      app: '"default empty drawer-open invalid-email loading success failure delete-confirm"',
+      app: '"default empty create-open drawer-open invalid-email loading success failure delete-confirm"',
       styles: "",
     });
 
@@ -514,7 +514,9 @@ describe("evaluateSource", () => {
       app: `
         <>
         <Toolbar.Root><Link href="/customers">顧客一覧</Link></Toolbar.Root>
+        <Button variant="primary">顧客を追加</Button>
         <Table.Root variant="primary" />
+        <Drawer.Root><Drawer.Dialog /></Drawer.Root>
         <AlertDialog.Root><AlertDialog.Dialog /></AlertDialog.Root>
         </>
       `,

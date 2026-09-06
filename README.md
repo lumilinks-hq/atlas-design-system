@@ -4,7 +4,7 @@
 
 公開サイト: <https://atlas-design-system.kuusai1998.workers.dev>
 
-保存済みの`lint-01`（Claude Opus 5）では、28ルールの検査でBaselineが`12 pass / 11 fail / 5 review`、Harnessが`23 pass / 0 fail / 5 review`でした。見せたいのは初回生成の勝敗ではなく、設計情報を機械判定と修正へ接続できるかどうかです。
+保存済みの`create-01`（Claude Opus 5）では、28ルールの検査でBaselineが`12 pass / 11 fail / 5 review`、Harness初回が`21 pass / 2 fail / 5 review`でした。Harness側へ検査結果を返して修正すると、`23 pass / 0 fail / 5 review`になりました（修正入力の検査結果は機械判定2件に、ルール化されていない閉じるボタンの英語読み上げ名を人が1件書き足しています）。見せたいのは初回生成の勝敗ではなく、設計情報を機械判定と修正へ接続できるかどうかです。
 
 ## ローカルで見る
 
@@ -23,11 +23,12 @@ pnpm dev
 | `/examples/account-management/results` | Baseline／Harnessの生成結果とルール別の検査結果 |
 | `/play/account-management?mode=atlas` | 生成画面の操作 |
 
-保存済みRunの生成ソースは別ポートでそのまま起動できます。状態はURLの`state` query（`default`、`empty`、`drawer-open`、`invalid-email`、`loading`、`success`、`failure`、`delete-confirm`）で再現します。
+保存済みRunの生成ソースは別ポートでそのまま起動できます。状態はURLの`state` query（`default`、`empty`、`create-open`、`drawer-open`、`invalid-email`、`loading`、`success`、`failure`、`delete-confirm`）で再現します。
 
 ```bash
-pnpm experiment:preview --pair lint-01 --mode harness --port 4182
-pnpm experiment:preview --pair lint-01 --mode baseline --port 4181
+pnpm experiment:preview --pair create-01 --mode harness-corrected --port 4183
+pnpm experiment:preview --pair create-01 --mode harness --port 4182
+pnpm experiment:preview --pair create-01 --mode baseline --port 4181
 ```
 
 ## 正本

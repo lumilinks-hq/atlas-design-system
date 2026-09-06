@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 <workspace>/account-management/create-01/harness-corrected
+
+
+ Test Files  2 passed (2)
+      Tests  16 passed (16)
+   Start at  09:30:34
+   Duration  3.49s (transform 95ms, setup 35ms, import 1.66s, tests 2.23s, environment 971ms)
+
+$ vitest run

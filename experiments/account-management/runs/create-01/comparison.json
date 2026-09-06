@@ -1,0 +1,187 @@
+{
+  "pairId": "create-01",
+  "experimentId": "experiment.account-management",
+  "conditionsMatch": true,
+  "blindOrder": {
+    "A": "harness",
+    "B": "baseline"
+  },
+  "reveal": {
+    "baseline": "create-01-baseline",
+    "harness": "create-01-harness",
+    "corrected": "create-01-harness-corrected"
+  },
+  "checks": {
+    "baseline": [
+      {
+        "name": "typecheck",
+        "status": "failed",
+        "exitCode": 2
+      },
+      {
+        "name": "lint",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "test",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "build",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "design-rules",
+        "status": "failed",
+        "exitCode": 1
+      }
+    ],
+    "harness": [
+      {
+        "name": "typecheck",
+        "status": "failed",
+        "exitCode": 2
+      },
+      {
+        "name": "lint",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "test",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "build",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "design-rules",
+        "status": "failed",
+        "exitCode": 1
+      }
+    ],
+    "corrected": [
+      {
+        "name": "typecheck",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "test",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "build",
+        "status": "passed",
+        "exitCode": 0
+      },
+      {
+        "name": "design-rules",
+        "status": "passed",
+        "exitCode": 0
+      }
+    ]
+  },
+  "review": {
+    "baseline": {
+      "reviewedAt": "2026-09-05T06:35:27.044Z",
+      "model": "claude-opus-5",
+      "findings": [
+        {
+          "ruleId": "a11y.control-name",
+          "verdict": "pass",
+          "note": "画面上の操作要素は右上の「顧客を追加」ボタンのみで、テキストラベルが表示されている。アイコンだけの操作は一覧・モバイルいずれにも見当たらない。"
+        },
+        {
+          "ruleId": "a11y.error-recovery",
+          "verdict": "concern",
+          "note": "詳細のスクリーンショットが一覧と同一で、エラー表示や回復手段を確認できる画面が含まれていない。何が起きたかと次の操作を示す領域が画面上に観察できない。"
+        },
+        {
+          "ruleId": "a11y.color-only",
+          "verdict": "pass",
+          "note": "ステータスは「利用中」「商談中」「休眠」と文字が併記され、緑・青・グレーの色は補助に留まっている。モバイルでも同じ文字ラベルが折り返して保持されている。"
+        },
+        {
+          "ruleId": "state.failure",
+          "verdict": "concern",
+          "note": "追加操作の失敗状態や再試行導線が一覧・詳細のどちらにも現れておらず、失敗情報が画面に残る仕組みを確認できない。"
+        },
+        {
+          "ruleId": "color.semantic",
+          "verdict": "pass",
+          "note": "主操作の「顧客を追加」は青のprimaryで、赤などの危険色は使われていない。ステータスバッジも緑・青・グレーで通常操作に危険色は割り当てられていない。"
+        }
+      ]
+    },
+    "harness": {
+      "reviewedAt": "2026-09-05T06:36:01.069Z",
+      "model": "claude-opus-5",
+      "findings": [
+        {
+          "ruleId": "a11y.control-name",
+          "verdict": "pass",
+          "note": "一覧の「顧客を追加」「顧客を確認」、詳細の「顧客一覧へ戻る」「顧客を編集」「顧客を削除」はいずれも可視テキストを持ち、アイコンのみの操作要素は4画面とも見当たらない。検索欄も虫眼鏡アイコンに「企業名で検索」の文字が併記されている。"
+        },
+        {
+          "ruleId": "a11y.error-recovery",
+          "verdict": "concern",
+          "note": "4画面とも正常系のみで、検索結果0件・保存失敗・削除失敗といったエラー表示が一切写っておらず、何が起きたかと次の操作を示す領域が画面上に確認できない。"
+        },
+        {
+          "ruleId": "a11y.color-only",
+          "verdict": "pass",
+          "note": "ステータスは緑「利用中」・青紫「商談中」・グレー「休眠」と、色に加えて必ず状態名の文字が入っている。モバイルの「休眠」は背景色なしでも文字だけで状態が読み取れる。"
+        },
+        {
+          "ruleId": "state.failure",
+          "verdict": "concern",
+          "note": "詳細画面に「顧客を削除」「顧客を編集」という失敗しうる操作があるが、失敗時の永続的なエラー領域や再試行ボタンが画面内に確認できず、Toast以外の回復導線があるか判断できない。"
+        },
+        {
+          "ruleId": "color.semantic",
+          "verdict": "pass",
+          "note": "赤系の淡色は破壊操作である「顧客を削除」だけに使われ、「顧客を追加」「顧客を編集」など通常操作は青系のprimaryで統一されている。"
+        }
+      ]
+    },
+    "corrected": {
+      "reviewedAt": "2026-09-06T00:48:29.281Z",
+      "model": "claude-opus-5",
+      "findings": [
+        {
+          "ruleId": "a11y.control-name",
+          "verdict": "pass",
+          "note": "デスクトップ・モバイルとも「顧客を追加」「顧客を確認」「顧客を編集」「顧客を削除」「顧客一覧へ戻る」はすべて可視テキストを持ち、アイコンのみの操作要素は見当たらない。検索欄は虫眼鏡アイコンとプレースホルダ「企業名で検索」の組み合わせで、可視ラベルはないが操作の意味は文字で読める。"
+        },
+        {
+          "ruleId": "a11y.error-recovery",
+          "verdict": "concern",
+          "note": "一覧・詳細のいずれのスクリーンショットにもエラー表示やその回復導線が写っておらず、検索が0件のときや削除・保存が失敗したときに「何が起きたか」と「次に行う操作」を示す領域が画面上に確認できない。"
+        },
+        {
+          "ruleId": "a11y.color-only",
+          "verdict": "pass",
+          "note": "ステータスは緑「利用中」・紫「商談中」・灰「休眠」のように必ずバッジ内へ状態名の文字が入っており、詳細画面でも基本情報に「ステータス: 利用中」とテキストで再掲されている。"
+        },
+        {
+          "ruleId": "state.failure",
+          "verdict": "concern",
+          "note": "詳細画面の削除・編集は押下後の失敗状態が画面内に残る作りかを確認できる要素がなく、失敗を持続表示するインラインのエラー領域や再試行ボタンがどのスクリーンショットにも存在しない。"
+        },
+        {
+          "ruleId": "color.semantic",
+          "verdict": "pass",
+          "note": "赤系の配色は詳細画面の「顧客を削除」だけに使われ、「顧客を追加」「顧客を編集」といった通常操作は一貫して青のプライマリで表現されている。"
+        }
+      ]
+    }
+  }
+}

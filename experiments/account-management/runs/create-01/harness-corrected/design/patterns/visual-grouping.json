@@ -1,0 +1,135 @@
+{
+  "$schema": "../schemas/pattern.schema.json",
+  "version": "1.0.0",
+  "id": "pattern.visual-grouping",
+  "name": "視覚的グルーピング",
+  "purpose": "関連する要素をまとまりとして見せ、読む前に情報の関係と操作の影響範囲を判断できるようにする",
+  "principles": [
+    {
+      "id": "same-level-same-means",
+      "title": "同じ階層は同じ手段でまとめる",
+      "description": "まとまりを示す手段は余白、矩形、罫線の順に検討し、同じ階層の中では選んだ手段を最後まで揃える"
+    },
+    {
+      "id": "shallow-hierarchy",
+      "title": "階層を深くしない",
+      "description": "セクションとその中のブロックまでの2階層に収め、それ以上を分けたくなったら情報の並べ方自体を見直す"
+    },
+    {
+      "id": "no-mixed-means",
+      "title": "まとまりの手段を混ぜない",
+      "description": "同じ画面で矩形と罫線を併用すると境界の意味が読み取れなくなるため、片方に決めて使い切る"
+    }
+  ],
+  "anatomy": [
+    {
+      "id": "section-heading",
+      "name": "セクション見出し領域",
+      "required": true,
+      "description": "セクションの見出しと、そのセクション全体に効く操作を横に並べる。操作が無い場合は見出しだけを置く"
+    },
+    {
+      "id": "section-body",
+      "name": "セクション本体",
+      "required": true,
+      "description": "見出しが示す範囲の内容。見出しとの間はspace.4（16px）、セクション同士はspace.8（32px）で分ける"
+    },
+    {
+      "id": "block",
+      "name": "ブロック",
+      "required": false,
+      "description": "セクション内をさらに分ける単位。ブロック見出しと内容を持ち、ブロック同士はspace.6（24px）で分ける"
+    }
+  ],
+  "variants": [
+    {
+      "id": "spacing-group",
+      "name": "余白でまとめる",
+      "useWhen": "まとまりの数が少なく、余白の差だけで関係を読み取れる",
+      "avoidWhen": "背景が異なる領域の上に置かれ、余白の差が周囲に埋もれる",
+      "structure": ["セクション間 space.8", "ブロック間 space.6", "見出しと内容 space.4"],
+      "desktop": "セクション間32px、ブロック間24px、見出しと内容16px。線も背景も足さない",
+      "narrow": "同じ値を維持する。幅が足りない場合も余白を削らず縦に積み替える",
+      "layout": {
+        "breakpoint": "breakpoint.narrow",
+        "classes": [".detail-grid", ".detail-content"],
+        "values": {
+          "sectionGap": "space.8",
+          "blockGap": "space.6",
+          "headingGap": "space.4"
+        }
+      }
+    },
+    {
+      "id": "surface-group",
+      "name": "矩形でまとめる",
+      "useWhen": "まとまりごとに操作や状態があり、境界を明確に示す必要がある",
+      "avoidWhen": "狭い画面で矩形が縦に連なり、内側余白の分だけ情報量が落ちる",
+      "structure": ["矩形の内側 space.6", "矩形同士 space.6", "内側のブロック間 space.6"],
+      "desktop": "内側24px、矩形同士24px。背景は画面背景と異なるsurfaceトークン、影はshadow.raisedの1段まで",
+      "narrow": "内側を16pxに縮める。矩形は多用せず、主要なまとまりだけに絞る",
+      "layout": {
+        "breakpoint": "breakpoint.narrow",
+        "classes": [".section-block", ".section-block__heading"],
+        "values": {
+          "padding": "space.6",
+          "blockGap": "space.6",
+          "headingGap": "space.4",
+          "narrowPadding": "space.4",
+          "background": "color.surface",
+          "radius": "radius.base",
+          "elevation": "shadow.raised"
+        }
+      }
+    },
+    {
+      "id": "divider-group",
+      "name": "罫線でまとめる",
+      "useWhen": "余白も矩形も使えず、限られた高さの中で区切りだけを示す",
+      "avoidWhen": "区切りの近くに操作要素があり、線と操作の境界が競合する",
+      "structure": ["線の前 space.6", "線 1px", "線の後 space.6"],
+      "desktop": "上下に24pxの余白を取り、1pxのborderトークン色で引く。最終手段として使う",
+      "narrow": "同じ値を維持する。線を増やすより、まとまりを減らして縦に積み替える",
+      "layout": {
+        "breakpoint": "breakpoint.narrow",
+        "classes": [".section-divider"],
+        "values": {
+          "gapBefore": "space.6",
+          "gapAfter": "space.6",
+          "lineWidth": "1px",
+          "lineColor": "color.border"
+        }
+      }
+    },
+    {
+      "id": "nested-sections",
+      "name": "セクション内のブロック",
+      "useWhen": "1つのセクションが複数の小さなまとまりを含む",
+      "avoidWhen": "3階層目が必要になる。その場合は画面を分けるか情報を並べ替える",
+      "structure": ["セクション見出し", "ブロック見出しと内容", "ブロック間 space.6"],
+      "desktop": "外側のセクションはspace.8で分け、内側のブロックはspace.6で分ける。深さは2階層まで",
+      "narrow": "階層は変えずに1カラムへ積み替え、内側のブロックは矩形をやめて余白で分ける",
+      "layout": {
+        "breakpoint": "breakpoint.narrow",
+        "classes": [".section-block", ".section-block__heading", ".detail-content"],
+        "values": {
+          "sectionGap": "space.8",
+          "blockGap": "space.6",
+          "headingGap": "space.4",
+          "maxDepth": "2"
+        }
+      }
+    }
+  ],
+  "states": ["default", "narrow"],
+  "components": [
+    "component.card",
+    "component.surface",
+    "component.toolbar"
+  ],
+  "rules": [
+    "layout.grouping",
+    "color.semantic",
+    "a11y.control-name"
+  ]
+}

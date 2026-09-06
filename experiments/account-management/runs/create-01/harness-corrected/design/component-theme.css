@@ -1,0 +1,29 @@
+@import "./theme.css";
+
+/* Atlas adapter for HeroUI v3. Keep HeroUI compound selectors intact. */
+:root {
+  --radius: calc(var(--dh-radius-base) / 3);
+  --field-radius: var(--dh-radius-base);
+  --radius-field: var(--dh-radius-base);
+}
+
+.surface,
+.card,
+.table-root--primary,
+.alert-dialog__dialog,
+.drawer__content,
+.list-box-item,
+.select__popover,
+.toast {
+  border-radius: var(--dh-radius-base);
+}
+
+.chip {
+  border-radius: var(--dh-radius-pill);
+}
+
+.close-button,
+.alert-dialog__close-trigger,
+.drawer__close-trigger {
+  border-radius: var(--dh-radius-circle);
+}
