@@ -5,6 +5,7 @@ import { basename, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { rootDir, walk } from "./lib.mjs";
 import { renderTheme } from "./theme.mjs";
+import { buildComponentsApiMarkdown, componentsApiRelativePath } from "./build-components-api.mjs";
 
 const ajv = new Ajv2020({ allErrors: true, strict: true });
 const designDir = resolve(rootDir, "design");
@@ -199,6 +200,11 @@ for (const item of [...patterns, ...examples, ...components]) {
   if (!reachableIds.has(item.id)) {
     throw new Error(`${item.id}: どのmanifest / design参照からも辿れない孤児です。manifestのdesignRefs・screens、またはexample/patternからの参照を追加してください`);
   }
+}
+
+const componentsApi = await readFile(resolve(rootDir, componentsApiRelativePath), "utf8");
+if (componentsApi !== buildComponentsApiMarkdown()) {
+  throw new Error(`${componentsApiRelativePath}が契約と一致しません。node scripts/build-components-api.mjsを実行してください`);
 }
 
 const generatedTheme = await readFile(resolve(rootDir, "src", "generated", "theme.css"), "utf8");

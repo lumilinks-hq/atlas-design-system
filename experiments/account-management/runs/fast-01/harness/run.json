@@ -1,0 +1,59 @@
+{
+  "$schema": "../../../../../design/schemas/run.schema.json",
+  "id": "fast-01-harness",
+  "experimentId": "experiment.account-management",
+  "condition": "harness",
+  "status": "completed",
+  "createdAt": "2026-09-06T18:00:30.529Z",
+  "input": {
+    "briefSha256": "1fbd7b2f6ec8eae95b187a1b53385949eb7525a90950d9eb181b16869b730a8d",
+    "starterSha256": "b2fd1f854c6da08ae860b17aadf78f7886dae7c790e2e563d22f530a3654a8d5",
+    "promptSha256": "b1948c2516b840c66e4c75c420d90bd64e7cc8f1d9c0d49c47f09b49412d9070",
+    "designContractSha256": "ee849ee2d7b487092914e983af8b841e6fe6f2c6e112fa83fcafcdbbbd32227e"
+  },
+  "environment": {
+    "runner": "claude",
+    "model": "claude-opus-5",
+    "cliVersion": "2.1.263 (Claude Code)"
+  },
+  "artifacts": [
+    "events.jsonl",
+    "agent-stderr.log",
+    "changes.diff",
+    "source",
+    "typecheck.log",
+    "lint.log",
+    "test.log",
+    "build.log",
+    "measurements.json",
+    "design-evaluation.json"
+  ],
+  "checks": [
+    {
+      "name": "typecheck",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "test",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "build",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "design-rules",
+      "status": "passed",
+      "exitCode": 0
+    }
+  ],
+  "isolation": {
+    "repoPathMentions": 0,
+    "markerMentions": {
+      "evaluate-experiment": 0
+    }
+  }
+}

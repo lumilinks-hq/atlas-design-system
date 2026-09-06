@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 <workspace>/account-management/fast-01/harness
+
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  03:18:51
+   Duration  2.51s (transform 39ms, setup 13ms, import 774ms, tests 1.22s, environment 441ms)
+
+$ vitest run

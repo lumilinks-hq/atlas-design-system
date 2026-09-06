@@ -315,6 +315,7 @@ Cardは`Card.Header`と`Card.Content`、Drawerは`Drawer.Header`、`Drawer.Body`
 - `design/component-theme.css` — `design/theme.css`を読み込み、Atlas tokenをHeroUI v3へ対応付けるtheme adapter
 - `design/layout.css` — 契約が参照するレイアウトクラスの実装正本。`breakpoint.narrow`のmediaリテラルを含む
 - `design/components/*.json` — HeroUIコンポーネントの許可variantと必須状態
+- `design/components-api.md` — 承認コンポーネントのHeroUI API（import、下位部品、主要prop、最小例）。APIを調べる目的で`node_modules/@heroui/*`や`node_modules/eslint-plugin-atlas`を開かない。ここに無いpropは使わず、契約違反は`pnpm lint`が指摘する
 - `design/patterns/page-layout.json` — Page Layoutのanatomyとvariant
 - `design/patterns/spacing-layout.json` — 余白の段階とvariantごとの数値
 - `design/patterns/visual-grouping.json` — まとまりを示す手段（余白・矩形・罫線）とvariant

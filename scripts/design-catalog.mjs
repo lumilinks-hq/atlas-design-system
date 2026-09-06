@@ -40,6 +40,13 @@ export const atlasResources = [
     mimeType: "text/markdown",
   },
   {
+    id: "design.components-api",
+    name: "HeroUI API sheet for approved components",
+    uri: "atlas://design/components-api",
+    path: "design/components-api.md",
+    mimeType: "text/markdown",
+  },
+  {
     id: "design.tokens",
     name: "Atlas semantic tokens",
     uri: "atlas://design/tokens",
@@ -137,7 +144,7 @@ export function resolveDesignContract({ patterns = [], examples = [], screens = 
 
   const selected = new Map();
   const patternVariants = new Map();
-  for (const id of ["design.quick-reference", "design.tokens", "design.rules", "design.theme", "design.component-theme", "design.layout"]) {
+  for (const id of ["design.quick-reference", "design.components-api", "design.tokens", "design.rules", "design.theme", "design.component-theme", "design.layout"]) {
     const resource = resourcesById.get(id);
     selected.set(resource.uri, resource);
   }

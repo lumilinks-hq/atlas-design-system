@@ -290,3 +290,81 @@ JSX 内 raw color、jsx-a11y、manifest 駆動ルール(customer-routes / custom
 - `pnpm test:e2e` 緑
 - `pnpm public:audit --experiment account-management --pair create-01` 緑（491 text files / 7 required artifacts）
 - Phase 4 の前半で書いた「`demo:check` が `design:conformance` で止まる」「`public:audit --pair create-01` が落ちる」は、この節で解消した
+
+## Phase 5: run の手数を減らす（2026-09-07）
+
+create-01 の `events.jsonl` を分類したところ、harness の 148 手のうち 99 手が API 調査だった。手数を減らす狙いで契約側に 3 つ手を入れ、有料 run 1 本で効果を測った。
+
+### 何を変えたか
+
+- **API シートを作った**。`scripts/build-components-api.mjs` が `design/components/*.json` と `node_modules/@heroui/react` の型定義から `design/components-api.md` を生成する。承認済み 15 部品ごとに import 文、下位コンポーネント、主要 prop と型、variant と size、最小の JSX 例、Atlas 側の制約を 30 行以内で載せる。生成物は commit し、`pnpm design:check` が stale を検出する。`scripts/design-catalog.mjs` に `design.components-api` として登録したので harness の `HARNESS_RESOLVED.json` から辿れる。`DESIGN.md` にも「部品の API は `design/components-api.md` を見る。`node_modules` は探索しない」の 1 行を足した。baseline には渡らない
+- **検証コマンドを 1 本にした**。starter に `pnpm check`（`scripts/check.mjs`）を足し、lint、typecheck、test:run を順に走らせて失敗をまとめて報告する。`prompt.md` と `skills/atlas-design-system/SKILL.md` に「画面が仕上がった時点で一度だけ実行し、編集のたびに個別実行しない」と書いた。`prompt.md` は顧客管理と請求管理の両方を変えたので、次の請求管理の run は invoice-01 と `promptSha256` が変わる。`run-experiment.mjs` の checkCommands は触っていない
+- **starter に `src/test-setup.ts` を置いた**。ResizeObserver、matchMedia、scrollIntoView を補い、vitest の `setupFiles` に登録した。両アームが毎回同じものを書いていた手間が消える。顧客管理と請求管理の両方に入れた
+
+### API シートの例を lint で検証している
+
+例が契約違反の書き方を教えると、run はそれを写して落ちる。そこで `scripts/components-api.test.mjs` に 3 種類の検査を足した。
+
+- 例に出るタグが実在すること。`X.Y` は X の下位一覧に、単独タグは `@heroui/react` の named export にあること
+- 例の `variant` と `size` が承認済みの値で、載せる先のタグも合っていること。Atlas の variant が HeroUI のどの prop に載るかは `componentApiSpecs` が持つ（Alert は `status`、AlertDialog は `AlertDialog.Backdrop`）
+- Drawer、AlertDialog、Table の例を 1 画面に組んで `atlas/focus-management`、`atlas/action-confirmation`、`atlas/link-semantics` を実際に走らせること
+
+いずれも「わざと壊した入力を渡すと落ちる」対の test を置いて、検査が空振りしていないことを確かめてある。この検証で実際に 3 か所直した。Drawer の例に `Drawer.Trigger` が無く `Drawer.CloseTrigger` に表示テキストが入っていた点、Table の例のオブジェクト名が Link でなかった点、AlertDialog の Footer が `AlertDialog.CloseTrigger` で Button を包んでいた点。逆に `AlertDialog.Trigger` の内側に Button を置く形は違反ではない。`action-confirmation.mjs` の `noButton` は Button が無いときに出るので、入れ子は必須。ここは将来「直さない」こと。
+
+### fast-01 の結果（2026-09-07、claude-opus-5、harness のみ）
+
+手数は `events.jsonl` の `tool_use` を分類して数えた。優先順は write > verify > node_modules-types > lint-plugin-source > contract-read > heroui-docs > other で、1 手に 1 ラベルを付ける。
+
+| | create-01 harness | fast-01 harness |
+| --- | --- | --- |
+| tool_use | 148 | 35 |
+| num_turns | 152 | 37 |
+| 所要時間 | 33.5 分 | 12.2 分 |
+| 費用 | 14.22 USD | 4.33 USD |
+| 設計ルール | 21 pass / 2 fail / 5 review | 23 pass / 0 fail / 5 review |
+
+内訳は次のとおり。
+
+| カテゴリ | create-01 | fast-01 |
+| --- | --- | --- |
+| node_modules の型を読む | 59 | 1 |
+| HeroUI skill の doc を読む | 22 | 8 |
+| lint plugin の実装を読む | 18 | 3 |
+| 契約を読む | 20 | 10 |
+| 検証する | 13 | 4 |
+| コードを書く | 9 | 6 |
+| その他 | 7 | 3 |
+
+API 調査（上 3 つの合計）は 99 手から 12 手へ減った。fast-01 は 6 手目で `design/components-api.md` を読み、以降 HeroUI の型定義を探しに `node_modules` へ入っていない。実際に `node_modules` を開いたのは lint ルールの実装を読んだ 30〜32 手目だけである。表の「node_modules の型を読む 1」は 28 手目の `find . -path ./node_modules -prune ...` で、分類がコマンド文字列の部分一致なので拾っているだけで、中身は読んでいない。
+
+品質は落ちていない。fast-01 は修正 run を挟まずに 23 pass / 0 fail / 5 review に達した。これは create-01 が harness（21/2/5）のあと `experiment:refine` を回してようやく届いた水準と同じである。review 5 件の AI 判定も create-01/harness-corrected と完全に一致し、`a11y.control-name`、`a11y.color-only`、`color.semantic` が pass、`a11y.error-recovery` と `state.failure` が concern だった。concern 2 件はどちらもスクリーンショットに正常系しか写っていないことが理由で、両 run に共通する。
+
+ただし create-01 と fast-01 の間では API シート、`pnpm check`、`test-setup.ts` の 3 つを同時に変えており、run は 1 本ずつの N=1 である。効果の切り分けはカテゴリ別の内訳（`node_modules` の型読みが 59 手から 1 手）に頼っている。
+
+### 事前の見積もりとのずれ（訂正）
+
+着手前は「API 調査 40 手、検証 40 手、コード生成 60 手」と見ていたが、分類すると API 調査 99 手、検証 13 手、コード生成 9 手だった。検証とコード生成はもともと手数を食っていない。`pnpm check` の一本化は狙いどおり検証を 13 手から 4 手に減らしたが、効果の大半は API シートによるものである。
+
+harness が Read や Edit を使わず Bash のヒアドキュメントで全文を書き直していた点も、手数の観点では問題ではなかった。harness の書き込みは 9 手、baseline は Write と Edit で 28 手を使っている。全文書き直しのほうが手数は少ない。
+
+### `pnpm check` は baseline にも届く
+
+`prompt.md` は両アーム共通なので、`pnpm check` を使えという指示は baseline にも渡る。starter の `package.json` も共通である。API シートだけが harness 限定で、検証の一本化は条件差にならない。次に baseline を回すときは baseline 側の検証手数も減る前提で比較すること。
+
+### 次に効きそうなところ
+
+- fast-01 の 27 手目から 32 手目までの 6 手は `atlas/link-semantics` の失敗原因を探すのに使われた。Cell の中身を `renderCustomerCell` という別関数へ切り出したため、AST を見る lint ルールが `Table.Cell` 直下の `Link` を見つけられなかった。描画結果は正しい。API シートの Table 節に「Cell へ直接書く（別関数へ切り出すと lint が見つけられない）」と書き足した。ルール側を局所ヘルパーまで追うようにする案もある
+- lint plugin の実装を読む手は 18 手から 3 手に減ったが、まだ残っている。ルールの違反メッセージだけで直し方が決まるようにすれば、この 3 手も消える見込み
+
+### 手を入れなかったもの
+
+- **refine run の入力**。「VALIDATION.md 全文ではなく失敗ルールと証拠と該当ファイルだけを渡せないか」という論点だが、`evaluate-experiment.mjs` の `toMarkdown` はすでに `status === "failed"` だけを書き出しており、各項目に証拠（`src/pages/InvoiceDetailPage.tsx 1:37` のような位置つき）と修正指示と lint ルール ID が入っている。invoice-01 の harness では 11 行 445 バイト、12 件失敗した baseline でも 84 行 5212 バイトである。渡しすぎてはいない。加えて `check-design-conformance.mjs` は保存済み `design-evaluation.json` の `rules` を `JSON.stringify` でバイト比較するため、ルール結果に項目を足すと基準 run の照合が壊れる。変更しない
+- **starter の `scripts/check.mjs` にある `node:process` と `node:console` の明示 import**。当初 `no-undef` に引っかかると見て入れたが、typescript-eslint の recommended が `no-undef` を 0 にしているので実際には不要である。害はないので残したが、読んで不思議に思ったらこの理由。
+- **編集ツールの使い分けを prompt で指定すること**。原因は prompt にない。両アームとも 1 手目から Bash で始めており、baseline は実装に入る 42 手目で Read と Edit に切り替え、harness は 123 手目まで調査が続いたため切り替えないまま終わった。ツール名を書けば Claude 固有の指示になり、CLI 中立という方針から外れる。上に書いたとおり手数の面でも損はしていないので、報告だけに留める
+
+### 検証
+
+- `pnpm demo:check` 緑。`design:conformance` は `23 passed / 5 review` のまま変わっていない。`test:run` は 33 files / 377 tests
+- `pnpm test:e2e` 緑
+- `src/data/runs.ts` と Play は create-01 のまま触っていない。fast-01 はサイトに載せていない
+- `pnpm public:audit` の既定 pair は create-01 なので、fast-01 の成果物は必須アーティファクトに要求されない

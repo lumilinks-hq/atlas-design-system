@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --pretty false",
     "test:run": "vitest run",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "check": "node scripts/check.mjs"
   },
   "dependencies": {
     "@heroui/react": "3.2.4",

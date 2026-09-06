@@ -1,0 +1,282 @@
+diff --git a/src/App.test.tsx b/src/App.test.tsx
+index 44735f7..dcdec72 100644
+--- a/src/App.test.tsx
++++ b/src/App.test.tsx
+@@ -1,5 +1,5 @@
+ import "@testing-library/jest-dom/vitest";
+-import { cleanup, render, screen } from "@testing-library/react";
++import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+ import userEvent from "@testing-library/user-event";
+ import { afterEach, describe, expect, it } from "vitest";
+ import { App } from "./App";
+@@ -11,6 +11,10 @@ afterEach(() => {
+   resetCustomerRecords();
+ });
+ 
++function isDisabled(element: HTMLElement): boolean {
++  return element.hasAttribute("disabled") || element.getAttribute("aria-disabled") === "true";
++}
++
+ describe("account management", () => {
+   it("moves from the customer list to an independent detail route", async () => {
+     const user = userEvent.setup();
+@@ -21,8 +25,9 @@ describe("account management", () => {
+     await user.click(screen.getByRole("link", { name: "株式会社ノーススター" }));
+ 
+     expect(window.location.hash).toBe("#/customers/customer_northstar");
+-    expect(screen.getByRole("heading", { name: "株式会社ノーススター" })).toBeInTheDocument();
++    expect(await screen.findByRole("heading", { name: "株式会社ノーススター" })).toBeInTheDocument();
+     expect(screen.getByRole("link", { name: "顧客一覧へ戻る" })).toBeInTheDocument();
++    expect(screen.queryByRole("heading", { name: "顧客一覧" })).not.toBeInTheDocument();
+   });
+ 
+   it("adds a customer and reports the failure reason instead of throwing", () => {
+@@ -46,4 +51,63 @@ describe("account management", () => {
+     if (!rejected.ok) expect(rejected.reason.length).toBeGreaterThan(0);
+     expect(listCustomerSummaries()).toHaveLength(before + 1);
+   });
++
++  it("shows an empty state when no customer is registered", async () => {
++    window.location.hash = "#/customers?state=empty";
++    render(<App />);
++
++    expect(await screen.findAllByText(/顧客がまだ登録されていません/)).not.toHaveLength(0);
++  });
++
++  it("creates a customer from the collection heading and reflects it in the list", async () => {
++    const user = userEvent.setup();
++    window.location.hash = "#/customers?state=create-open";
++    render(<App />);
++
++    const dialog = await screen.findByRole("dialog");
++    await user.type(within(dialog).getByLabelText("会社名"), "株式会社テストベッド");
++    await user.click(within(dialog).getByRole("button", { name: "保存する" }));
++
++    expect(await screen.findByRole("link", { name: "株式会社テストベッド" })).toBeInTheDocument();
++  });
++
++  it("keeps the entered values and shows the reason when adding fails", async () => {
++    const user = userEvent.setup();
++    window.location.hash = "#/customers?state=failure";
++    render(<App />);
++
++    const dialog = await screen.findByRole("dialog");
++    await user.type(within(dialog).getByLabelText("会社名"), "株式会社テストベッド");
++    await user.click(within(dialog).getByRole("button", { name: "保存する" }));
++
++    expect(await within(dialog).findByText("顧客を追加できませんでした")).toBeInTheDocument();
++    expect(within(dialog).getByLabelText("会社名")).toHaveValue("株式会社テストベッド");
++  });
++
++  it("blocks a double submit while the edit drawer is saving", async () => {
++    window.location.hash = "#/customers/customer_northstar?state=loading";
++    render(<App />);
++
++    const save = await screen.findByRole("button", { name: "保存する" });
++    expect(isDisabled(save)).toBe(true);
++  });
++
++  it("reports an invalid email next to the field", async () => {
++    window.location.hash = "#/customers/customer_northstar?state=invalid-email";
++    render(<App />);
++
++    expect(await screen.findByText(/name@example.com/)).toBeInTheDocument();
++  });
++
++  it("confirms the company name before deleting and returns to the list", async () => {
++    const user = userEvent.setup();
++    window.location.hash = "#/customers/customer_northstar?state=delete-confirm";
++    render(<App />);
++
++    expect(await screen.findByText(/株式会社ノーススターを削除します/)).toBeInTheDocument();
++    await user.click(screen.getByRole("button", { name: "削除する" }));
++
++    await waitFor(() => expect(window.location.hash).toBe("#/customers"));
++    expect(listCustomerSummaries().some(({ id }) => id === "customer_northstar")).toBe(false);
++  });
+ });
+diff --git a/src/App.tsx b/src/App.tsx
+index 0f1f347..2771e3a 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -1,44 +1,22 @@
+-import { HashRouter, Link, Navigate, Route, Routes, useParams } from "react-router-dom";
+-import { getCustomerDetail, listCustomerSummaries } from "./fixtures";
+-
+-function CustomerListPage() {
+-  return (
+-    <main>
+-      <h1>顧客一覧</h1>
+-      <ul>
+-        {listCustomerSummaries().map((customer) => (
+-          <li key={customer.id}>
+-            <Link to={`/customers/${customer.id}`}>{customer.companyName}</Link>
+-          </li>
+-        ))}
+-      </ul>
+-    </main>
+-  );
+-}
+-
+-function CustomerDetailPage() {
+-  const { customerId = "" } = useParams();
+-  const customer = getCustomerDetail(customerId);
+-
+-  if (!customer) return <Navigate replace to="/customers" />;
+-
+-  return (
+-    <main>
+-      <Link to="/customers">顧客一覧へ戻る</Link>
+-      <h1>{customer.companyName}</h1>
+-      <p>brief.mdの要件に沿って、この詳細画面を実装してください。</p>
+-    </main>
+-  );
+-}
++import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
++import { Toast } from "@heroui/react";
++import { CustomerListPage } from "./CustomerListPage";
++import { CustomerDetailPage } from "./CustomerDetailPage";
+ 
+ export function App() {
+   return (
+     <HashRouter>
++      <header className="app-header">
++        <div className="page-shell app-header__inner">
++          <span className="app-header__title">顧客管理</span>
++        </div>
++      </header>
+       <Routes>
+         <Route path="/customers" element={<CustomerListPage />} />
+         <Route path="/customers/:customerId" element={<CustomerDetailPage />} />
+         <Route path="*" element={<Navigate replace to="/customers" />} />
+       </Routes>
++      <Toast.Provider />
+     </HashRouter>
+   );
+ }
+diff --git a/src/styles.css b/src/styles.css
+index 24127eb..7fdafa8 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -1,5 +1,7 @@
+ @import "tailwindcss";
+ @import "@heroui/styles";
++@import "../design/component-theme.css";
++@import "../design/layout.css";
+ 
+ html {
+   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+@@ -9,4 +11,104 @@ body {
+   margin: 0;
+   min-width: 320px;
+   min-height: 100vh;
++  background: var(--dh-background);
++  color: var(--dh-text);
++  font-size: var(--dh-type-body);
++  line-height: var(--dh-type-line-height-body);
++}
++
++/* アプリケーションヘッダー。layout.css が持たない画面固有の面だけを定義する */
++.app-header {
++  border-bottom: 1px solid var(--dh-border);
++  background: var(--dh-surface);
++}
++
++.app-header__inner {
++  display: flex;
++  align-items: center;
++  min-height: 56px;
++}
++
++.app-header__title {
++  font-size: var(--dh-type-heading);
++  font-weight: 650;
++  line-height: var(--dh-type-line-height-heading);
++}
++
++/* 一覧 */
++.collection-table__cell--end {
++  text-align: end;
++}
++
++.collection-empty {
++  margin: 0;
++  padding: var(--dh-space-6) 0;
++  color: var(--dh-text-muted);
++  text-wrap: pretty;
++}
++
++.collection-list-mobile__name {
++  margin: 0;
++  font-size: var(--dh-type-body);
++  font-weight: 650;
++}
++
++/* 詳細 */
++.detail-page__actions {
++  display: flex;
++  gap: var(--dh-space-3);
++  align-items: center;
++}
++
++.detail-item {
++  display: grid;
++  gap: var(--dh-space-1);
++}
++
++.detail-item dt {
++  color: var(--dh-text-muted);
++  font-size: var(--dh-type-small);
++}
++
++.detail-item dd {
++  margin: 0;
++  font-size: var(--dh-type-body);
++}
++
++.detail-note {
++  margin: 0;
++  text-wrap: pretty;
++}
++
++/* オーバーレイの寸法は design/components/*.json の layout が正本 */
++.record-drawer {
++  width: 20rem;
++  max-width: 85vw;
++}
++
++.confirm-dialog {
++  max-width: 28rem;
++}
++
++.confirm-dialog__body {
++  display: grid;
++  gap: var(--dh-space-4);
++}
++
++.confirm-dialog__body p {
++  margin: 0;
++  text-wrap: pretty;
++}
++
++@media (min-width: 640px) {
++  .record-drawer {
++    width: 24rem;
++  }
++}
++
++@media (max-width: 767px) {
++  .detail-page__actions {
++    flex-direction: column;
++    align-items: stretch;
++  }
+ }
+diff --git a/tsconfig.app.tsbuildinfo b/tsconfig.app.tsbuildinfo
+index 66c2190..1b1e71e 100644
+--- a/tsconfig.app.tsbuildinfo
++++ b/tsconfig.app.tsbuildinfo
+@@ -1 +1 @@
+-{"root":["./src/app.test.tsx","./src/app.tsx","./src/fixtures.ts","./src/main.tsx"],"version":"6.0.3"}
+\ No newline at end of file
++{"root":["./src/app.test.tsx","./src/app.tsx","./src/customerdetailpage.tsx","./src/customerlistpage.tsx","./src/customerform.tsx","./src/fixtures.ts","./src/main.tsx","./src/screenstate.ts","./src/test-setup.ts"],"version":"6.0.3"}
+\ No newline at end of file
