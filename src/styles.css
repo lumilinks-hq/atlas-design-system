@@ -442,7 +442,8 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .compare-figure-mobile img { aspect-ratio: 3 / 4; object-fit: cover; object-position: top center; }
 .compare-figure figcaption { display: flex; justify-content: space-between; gap: var(--dh-space-3); margin-top: var(--dh-space-2); color: var(--dh-text-muted); font-size: .8125rem; }
 .compare-figure figcaption a { display: inline-flex; align-items: center; gap: 4px; color: var(--dh-accent); font-weight: 600; text-decoration: none; }
-.compare-foot { display: grid; align-content: end; gap: var(--dh-space-3); }
+.compare-foot { display: flex; flex-direction: column; gap: var(--dh-space-3); }
+.compare-foot > :last-child { margin-top: auto; }
 .compare-summary { display: flex; flex-wrap: wrap; gap: var(--dh-space-4); margin: 0; padding: 0; list-style: none; font-size: .875rem; font-weight: 600; }
 .compare-summary li { display: inline-flex; align-items: center; gap: 4px; }
 .compare-summary strong { font-size: 1.25rem; }
@@ -568,6 +569,6 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
   :focus-visible { outline-color: Highlight; }
 }
 
-.harness-official-link { margin: calc(-1 * var(--dh-space-4)) 0 var(--dh-space-6); font-size: 0.9375rem; }
+.harness-official-link { margin: var(--dh-space-4) 0 0; font-size: 0.9375rem; }
 .harness-official-link a { display: inline-flex; align-items: center; gap: 4px; color: var(--dh-accent); font-weight: 600; text-decoration: none; }
 .harness-official-link a:hover { text-decoration: underline; }
