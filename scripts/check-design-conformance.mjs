@@ -40,7 +40,7 @@ if (
   JSON.stringify(storedEvaluation.rules) !== JSON.stringify(rules)
 ) {
   throw new Error(
-    "保存済みのdesign-evaluation.jsonが現在の契約と一致しません。契約を変えた場合はDEMO_PROGRESS.mdの手順（refine→capture→review→compare）で更新してください。evaluate単独の再実行はreview欄を消すため禁止です",
+    "保存済みのdesign-evaluation.jsonが現在の契約と一致しません。契約を変えた場合はdocs/RELEASING.mdの手順（refine→capture→review→compare）で更新してください。evaluate単独の再実行はreview欄を消すため禁止です",
   );
 }
 
