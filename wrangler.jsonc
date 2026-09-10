@@ -7,5 +7,11 @@
     "not_found_handling": "single-page-application",
     "html_handling": "none"
   },
-  "preview_urls": true
+  "preview_urls": true,
+  "routes": [
+    {
+      "pattern": "demo-ds.design-harness.com",
+      "custom_domain": true
+    }
+  ]
 }

@@ -18,7 +18,7 @@ pnpm test:e2e
 
 ## サイトを公開する
 
-公開先はCloudflare Workers（<https://atlas-design-system.kuusai1998.workers.dev>）。デプロイは`.github/workflows/ci.yml`の`deploy`ジョブが自動で行うため、手で叩く必要はない。
+公開先はCloudflare Workers（<https://demo-ds.design-harness.com/>）。デプロイは`.github/workflows/ci.yml`の`deploy`ジョブが自動で行うため、手で叩く必要はない。
 
 | きっかけ | 動作 |
 | --- | --- |

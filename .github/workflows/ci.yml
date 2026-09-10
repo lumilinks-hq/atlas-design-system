@@ -77,5 +77,5 @@ jobs:
           PREVIEW_URL: ${{ steps.preview.outputs.url }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          body=$(printf 'プレビュー: %s\n\nこのPRの %s をアップロードしたバージョンです。本番 https://atlas-design-system.kuusai1998.workers.dev はmainへマージするまで変わりません。' "$PREVIEW_URL" "${HEAD_SHA:0:7}")
+          body=$(printf 'プレビュー: %s\n\nこのPRの %s をアップロードしたバージョンです。本番 https://demo-ds.design-harness.com/ はmainへマージするまで変わりません。' "$PREVIEW_URL" "${HEAD_SHA:0:7}")
           gh pr comment "$PR_NUMBER" --edit-last --create-if-none --body "$body"

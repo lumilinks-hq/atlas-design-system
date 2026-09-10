@@ -2,7 +2,7 @@
 
 本プロジェクトは、[デザインハーネス](https://design-harness.com/)を用いて設計・検証を行うためのデモ用デザインシステムです。同一のB2B業務画面（顧客管理）を対象に、「設計契約なし（Baseline）」と「Atlasの設計契約を参照（Harness）」の2つの条件でAIに画面を実装させ、その品質の差やフィードバックループによる修正過程を比較・検証します。UIコンポーネント基盤には [HeroUI](https://www.heroui.com/) を採用しています。
 
-公開サイト: <https://atlas-design-system.kuusai1998.workers.dev>
+公開サイト: <https://demo-ds.design-harness.com/>
 
 リポジトリに保存済みの実験データ `create-01`（Claude Opus 5）では、全28ルールの検証において、Baselineが `12 pass / 11 fail / 5 review` であったのに対し、Atlasを参照したHarness初回生成では `21 pass / 2 fail / 5 review` となりました。さらに、Harness側へ機械判定の検査結果をフィードバックして修正させたところ、`23 pass / 0 fail / 5 review` まで改善しました（修正プロンプトには、機械判定によるエラー2件に加え、現時点でルール化されていない「閉じるボタンの英語読み上げ名（aria-label）」に関する人間からの指摘1件を含めています）。
 本プロジェクトが提示したい本質は、初回生成の一発勝負における勝敗ではなく、「設計契約の情報を機械的な判定と自動修正ループへ確実に接続できるかどうか」です。
