@@ -103,28 +103,28 @@ export function HomePage() {
 
       <section aria-labelledby="flow-title">
         <div className="section-heading">
-          <h2 id="flow-title">画面を作るための判断を定義する</h2>
+          <h2 id="flow-title">画面設計の判断基準を定義する</h2>
         </div>
         <ol className="flow-list">
-          <li><Link className="site-card flow-card-link" to="/foundations"><span>01</span><div><h3>デザイントークン</h3><p>色、文字、余白、角丸、影のセマンティックトークン。</p></div><ArrowRight size={18} /></Link></li>
-          <li><Link className="site-card flow-card-link" to="/components"><span>02</span><div><h3>コンポーネント</h3><p>採用するHeroUI部品と、使い方の契約。</p></div><ArrowRight size={18} /></Link></li>
-          <li><Link className="site-card flow-card-link" to="/patterns/page-layout"><span>03</span><div><h3>パターン</h3><p>業務オブジェクトの関係から選ぶ、再利用可能なページ構造。</p></div><ArrowRight size={18} /></Link></li>
-          <li><Link className="site-card flow-card-link" to="/rules"><span>04</span><div><h3>検証ルール</h3><p>実装後に自動検査する設計ルール。</p></div><ArrowRight size={18} /></Link></li>
+          <li><Link className="site-card flow-card-link" to="/foundations"><span>01</span><div><h3>デザイントークン</h3><p>色、文字、余白、角丸、影など、UIの基盤となるセマンティックトークンを定義します。</p></div><ArrowRight size={18} /></Link></li>
+          <li><Link className="site-card flow-card-link" to="/components"><span>02</span><div><h3>コンポーネント</h3><p>採用するHeroUI部品の選定と、利用時のルール・制約を定めます。</p></div><ArrowRight size={18} /></Link></li>
+          <li><Link className="site-card flow-card-link" to="/patterns/page-layout"><span>03</span><div><h3>パターン</h3><p>業務オブジェクトの関係性や目的に応じて選べる、再利用可能なページ構造です。</p></div><ArrowRight size={18} /></Link></li>
+          <li><Link className="site-card flow-card-link" to="/rules"><span>04</span><div><h3>検証ルール</h3><p>実装後に自動検査・検証するための設計ルールを定めます。</p></div><ArrowRight size={18} /></Link></li>
         </ol>
       </section>
 
       <section className="source-section" aria-labelledby="source-title">
         <div className="section-heading">
-          <h2 id="source-title">人とAIが同じ仕様を読む</h2>
-          <p>公開ページ、AIへの入力、自動検証は同じ設計データを参照します。</p>
+          <h2 id="source-title">人とAIが同じ設計仕様を参照する</h2>
+          <p>Webドキュメントの公開、AIへのコンテキスト入力、自動品質検証がすべて共通の設計データを参照します。</p>
         </div>
         <div className="source-list">
-          <div><FileCode2 size={18} /><code>DESIGN.md</code><span>参照ガイド</span></div>
-          <div><Code2 size={18} /><code>design/tokens.json</code><span>設計トークン</span></div>
-          <div><ScanSearch size={18} /><code>design/components/</code><span>利用条件</span></div>
-          <div><LayoutTemplate size={18} /><code>design/patterns/</code><span>画面構造</span></div>
-          <div><FileText size={18} /><code>design/examples/</code><span>機能の構成例</span></div>
-          <div><FlaskConical size={18} /><code>design/rules.json</code><span>検証ルール</span></div>
+          <div><FileCode2 size={18} /><code>DESIGN.md</code><span>設計ガイドライン</span></div>
+          <div><Code2 size={18} /><code>design/tokens.json</code><span>デザイントークン</span></div>
+          <div><ScanSearch size={18} /><code>design/components/</code><span>コンポーネント仕様</span></div>
+          <div><LayoutTemplate size={18} /><code>design/patterns/</code><span>画面レイアウトパターン</span></div>
+          <div><FileText size={18} /><code>design/examples/</code><span>実装サンプル</span></div>
+          <div><FlaskConical size={18} /><code>design/rules.json</code><span>検証ルール定義</span></div>
         </div>
       </section>
     </article>
@@ -136,37 +136,37 @@ const setupMethods = [
     icon: GitFork,
     title: "GitHub",
     status: "初回推奨・公開準備中",
-    description: "リポジトリを複製し、設計データ、検証スクリプト、デモ画面をまとめて手元で動かします。",
+    description: "リポジトリを手元にクローンし、設計データ、検証スクリプト、デモ画面を一括して動作させます。",
     command: `git clone ${repositoryUrl}.git\ncd atlas-design-system\npnpm install --frozen-lockfile\npnpm dev\n\n# 確認\npnpm demo:check`,
-    prerequisite: "Node.js 24とpnpm 11。",
+    prerequisite: "Node.js 24以上とpnpm 11が必要です。",
   },
   {
     icon: Sparkles,
     title: "Skill",
     status: "リポジトリ内で利用可",
-    description: "Atlasの設計判断、HeroUI v3の実装仕様、日本語UI文言の基準をAIエージェントへ渡します。",
+    description: "Atlasの設計方針、HeroUI v3の実装仕様、日本語UI文言の基準をAIエージェントに提供します。",
     command: "node scripts/resolve-design-contract.mjs experiments/account-management/manifest.json\n\n# 確認\npnpm skills:check",
-    prerequisite: "cloneしたリポジトリのルートで実行します。",
+    prerequisite: "クローンしたリポジトリのルートディレクトリで実行します。",
   },
   {
     icon: Plug,
     title: "MCP",
     status: "リポジトリ内で利用可",
-    description: "必要な設計契約をAIエージェントが検索し、実装時に参照できる接続方法です。",
+    description: "AIエージェントが必要な設計仕様を検索し、実装時に直接参照できるようにする接続方式です。",
     command: "pnpm mcp:start\n\n# 確認\npnpm exec vitest run scripts/mcp/server.test.mjs",
-    prerequisite: "stdio接続に対応したMCPクライアント。接続手順は下にあります。",
+    prerequisite: "stdio接続に対応したMCPクライアントが必要です。接続手順は下記を参照してください。",
   },
 ] as const;
 
 const mcpClients = [
   {
     title: "Codex",
-    description: "ユーザー単位で登録します。",
+    description: "ユーザー単位（グローバル設定）として登録します。",
     command: "codex mcp add atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system-demo mcp:start\ncodex mcp get atlas-design-system\n\n# 削除\ncodex mcp remove atlas-design-system",
   },
   {
     title: "Claude Code",
-    description: "プロジェクト単位で登録します。",
+    description: "プロジェクト固有の設定として登録します。",
     command: "claude mcp add --scope project atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system-demo mcp:start\nclaude mcp get atlas-design-system\n\n# 削除\nclaude mcp remove --scope project atlas-design-system",
   },
 ] as const;
@@ -215,7 +215,7 @@ export function GettingStartedPage() {
     <article className="doc-page">
       <PageHeader
         title="導入方法"
-        description="Atlasは、リポジトリ、Skill、MCPの三つの方法で利用できる構成を目指しています。現在利用できる範囲を確認してください。"
+        description="Atlasは、リポジトリのクローン、AIエージェント向けSkill、MCPサーバーの3つの方法で利用できます。用途に合わせて環境を選択してください。"
       />
 
       <section className="setup-grid" aria-label="導入方法の一覧">
@@ -236,7 +236,7 @@ export function GettingStartedPage() {
       <section className="setup-update" aria-labelledby="setup-update-title">
         <div className="section-heading">
           <h2 id="setup-update-title">更新する</h2>
-          <p>どの方法でも、最新を取り込んだあとに各カードの確認コマンドを再実行します。</p>
+          <p>どの導入方法でも、最新の変更を取り込んだ後に各カードの確認コマンドを実行して動作を確認します。</p>
         </div>
         <pre className="setup-code"><code>{`git pull --ff-only\npnpm install --frozen-lockfile`}</code></pre>
       </section>
@@ -244,7 +244,7 @@ export function GettingStartedPage() {
       <section className="client-setup" aria-labelledby="client-setup-title">
         <div className="section-heading">
           <h2 id="client-setup-title">MCPクライアントへ接続する</h2>
-          <p><code>/absolute/path/to/atlas-design-system-demo</code>は、cloneしたディレクトリの絶対パスへ置き換えます。</p>
+          <p><code>/absolute/path/to/atlas-design-system-demo</code> の部分は、クローンしたディレクトリの絶対パスに置き換えて実行してください。</p>
         </div>
         <div className="client-setup-grid">
           {mcpClients.map(({ title, description, command }) => (
@@ -261,19 +261,19 @@ export function GettingStartedPage() {
 }
 
 const implementationStack = [
-  { name: "アプリケーション", value: "React 19.2.8 / TypeScript 6.0.3", description: "画面と設計データを型付きのコンポーネントとして実装します。" },
-  { name: "開発環境", value: "Vite 8.2.2", description: "開発サーバーと公開用ビルドを担います。" },
-  { name: "UIライブラリ", value: "HeroUI 3.2.4", description: "操作部品の実装基盤です。Atlasでは利用できる部品とバリエーションを限定します。" },
-  { name: "書体", value: "Gen Interface JP 0.8.0", description: "本文は16pxを基準にし、見出しにはDisplay書体を使います。" },
-  { name: "アイコン", value: "Lucide React 1.37.0", description: "機能を補助するアイコンを一つのセットに統一します。" },
-  { name: "ルーティング", value: "React Router DOM 7.18.3", description: "ドキュメント、比較デモ、操作画面をURLで分けます。" },
+  { name: "アプリケーション", value: "React 19.2.8 / TypeScript 6.0.3", description: "画面と設計データを、TypeScriptによる型安全なコンポーネントとして実装します。" },
+  { name: "開発環境", value: "Vite 8.2.2", description: "高速な開発サーバーの提供と、公開用バンドルのビルドを担当します。" },
+  { name: "UIライブラリ", value: "HeroUI 3.2.4", description: "UIコンポーネントの実装基盤です。Atlasでは利用可能な部品とバリアントを明確に定義して一貫性を保ちます。" },
+  { name: "書体", value: "Gen Interface JP 0.8.0", description: "本文は可読性の高い16pxを基準とし、見出しには視認性に優れたDisplay書体を採用しています。" },
+  { name: "アイコン", value: "Lucide React 1.37.0", description: "機能や状態を直感的に伝えるため、統一されたLucideアイコンセットを採用しています。" },
+  { name: "ルーティング", value: "React Router DOM 7.18.3", description: "ドキュメント、比較デモ、操作画面をURLごとに明確に分離します。" },
 ] as const;
 
 const designContractStack = [
-  { name: "設計データ", value: "JSON", description: "トークン、コンポーネント、パターン、サンプル、検証ルールを機械可読な形式で管理します。" },
-  { name: "データ検証", value: "JSON Schema / Ajv 8.20.0", description: "設計データの構造と参照先をビルド前に検査します。" },
-  { name: "AIからの参照", value: "Agent Skill / MCP", description: "AIが必要な設計契約を検索し、実装時の入力として使えるようにします。" },
-  { name: "品質確認", value: "Vitest / Testing Library / Playwright / ESLint", description: "型、振る舞い、画面、設計ルールを別々に確認します。" },
+  { name: "設計データ", value: "JSON", description: "トークン、コンポーネント、パターン、サンプル、検証ルールを、機械可読なJSON形式で一元管理します。" },
+  { name: "データ検証", value: "JSON Schema / Ajv 8.20.0", description: "設計データのスキーマ構造や参照関係の妥当性をビルド前に自動検査します。" },
+  { name: "AIからの参照", value: "Agent Skill / MCP", description: "AIエージェントが必要な設計仕様を検索し、コード生成時の入力コンテキストとして参照できるようにします。" },
+  { name: "品質確認", value: "Vitest / Testing Library / Playwright / ESLint", description: "静的型、単体テスト、ブラウザ表示、設計ルールの各観点を独立して網羅的に検証します。" },
 ] as const;
 
 export function TechnicalSpecsPage() {
@@ -281,7 +281,7 @@ export function TechnicalSpecsPage() {
     <article className="doc-page">
       <PageHeader
         title="技術仕様"
-        description="Atlas Design Systemを実装し、AIから参照し、検証するための構成です。バージョンはこのリポジトリで固定している値を示します。"
+        description="Atlas Design Systemの実装、AIからの参照、自動検証を支える技術構成です。バージョンは本リポジトリで固定している値を示しています。"
       />
 
       <section className="spec-section" aria-labelledby="implementation-stack-title">
@@ -328,27 +328,27 @@ export function TechnicalSpecsPage() {
 
 // 技術仕様の「主なファイル」。パスの規則は artifactSourceHref に従う
 export const mainFiles = [
-  { path: "design/tokens.json", note: "色、文字、余白、角丸、影の基準値" },
-  { path: "design/components/*.json", note: "HeroUIコンポーネントの利用条件" },
-  { path: "design/patterns/*.json", note: "再利用できる画面構造" },
-  { path: "design/rules.json", note: "自動検査とレビューのルール" },
-  { path: "skills/atlas-design-system/", note: "AIエージェント向けの実装手順" },
-  { path: "scripts/mcp/server.mjs", note: "設計データを読み出すMCPサーバー" },
+  { path: "design/tokens.json", note: "色、文字、余白、角丸、影などのセマンティックトークン定義" },
+  { path: "design/components/*.json", note: "利用可能なHeroUIコンポーネントの仕様と制約ルール" },
+  { path: "design/patterns/*.json", note: "再利用可能な画面レイアウト・配置パターン" },
+  { path: "design/rules.json", note: "自動検査およびレビュー用の設計ルール定義" },
+  { path: "skills/atlas-design-system/", note: "AIエージェント向けの実装手順と設計参照スキル" },
+  { path: "scripts/mcp/server.mjs", note: "設計データを検索・取得するためのMCPサーバー実装" },
 ] as const;
 
 const contentTokenLabels: Record<string, string> = {
-  maxWidth: "ページ全体の最大幅",
-  readingWidth: "本文を読みやすい幅",
+  maxWidth: "ページ全体の最大表示幅",
+  readingWidth: "長文や本文が読みやすい最大幅",
 };
 
 const breakpointTokenLabels: Record<string, string> = {
-  narrow: "狭い画面へ積み替える幅",
+  narrow: "縦並び（1カラム）へ切り替えるブレークポイント",
 };
 
 export function FoundationsPage() {
   return (
     <article className="doc-page">
-      <PageHeader title="デザイントークン" description="HeroUIのテーマへ対応付ける、プロジェクト固有のセマンティックトークンです。" />
+      <PageHeader title="デザイントークン" description="HeroUIのテーマと連動する、プロダクト固有のセマンティックトークンを定義します。" />
       <section className="token-section">
         <h2>色</h2>
         <div className="swatch-grid">
@@ -373,7 +373,7 @@ export function FoundationsPage() {
       </section>
       <section className="token-section">
         <h2>幅</h2>
-        <p className="token-section-description">ページの最大幅と、狭い画面へ積み替える基準はここで一度だけ決めます。画面ごとに別の値を持ち込みません。</p>
+        <p className="token-section-description">ページの最大幅や、画面幅に応じた縦並び（1カラム）への切り替え基準（ブレークポイント）を共通定義します。画面ごとに個別の値を持ち込まず、この基準に統一します。</p>
         <dl className="measure-token-list">
           {Object.entries(designData.tokens.content).map(([name, value]) => (
             <div key={name}>
@@ -411,7 +411,7 @@ export function FoundationsPage() {
       </section>
       <section className="token-section">
         <h2>影</h2>
-        <p className="token-section-description">Cardは背景から一段持ち上げるためにshadow.raisedを使います。Tableや区切りの構造は境界線と余白で表します。</p>
+        <p className="token-section-description">Cardコンポーネントは背景から1段浮かび上がらせるために shadow.raised を適用します。Tableやセクションの区切りは影に頼らず、境界線と余白で表現します。</p>
         <div className="shadow-preview-list" aria-label="影トークンの実寸プレビュー">
           {Object.entries(designData.tokens.shadow).map(([name, value]) => (
             <figure className="site-card" key={name}>
@@ -422,7 +422,7 @@ export function FoundationsPage() {
                 <strong>{name === "none" ? "影なし" : name === "raised" ? "持ち上がった面" : name === "dragging" ? "ドラッグ中" : name === "overlay" ? "オーバーレイ" : "フローティング"}</strong>
                 <code>shadow.{name}</code>
               </figcaption>
-              <p>{name === "none" ? "Table、影を持たないフラットな領域" : name === "raised" ? "Card" : name === "dragging" ? "ドラッグ中の要素" : name === "overlay" ? "Drawer、Dialog、Popover" : "Toast、画面上に固定する操作"}</p>
+              <p>{name === "none" ? "Tableなど、影を持たないフラットな領域" : name === "raised" ? "Cardなど、背景から1段持ち上げる要素" : name === "dragging" ? "ドラッグ操作中に浮き上がる要素" : name === "overlay" ? "Drawer、Dialog、Popoverなどのモーダル・オーバーレイ" : "Toast通知や、画面上に固定表示する操作要素"}</p>
             </figure>
           ))}
         </div>
@@ -972,8 +972,8 @@ function ComponentExample({ component }: { component: (typeof designData.compone
 }
 
 const surfaceOwnerLabels: Record<string, string> = {
-  component: "コンポーネントが面を持つ",
-  none: "面を持たない",
+  component: "コンポーネント自身が面を保持",
+  none: "面を持たない（フラット）",
 };
 
 const outerShadowLabels: Record<string, string> = {
@@ -985,7 +985,7 @@ const outerShadowLabels: Record<string, string> = {
 export function ComponentsPage() {
   return (
     <article className="doc-page">
-      <PageHeader title="コンポーネント" description="業務画面で利用できるHeroUI部品と、その使い方を定義します。" />
+      <PageHeader title="コンポーネント" description="業務画面で利用可能なHeroUI部品と、その利用ルール・制約を定義します。" />
       <section className="component-contracts" aria-labelledby="component-contracts-title">
         <h2 id="component-contracts-title">利用できる部品</h2>
         <div className="contract-list">
@@ -1002,11 +1002,9 @@ export function ComponentsPage() {
                   <div><p className="meta-label">既定のバリエーション</p><p>{component.defaults.variant}</p></div>
                   <div><p className="meta-label">既定のサイズ</p><p>{component.defaults.size}</p></div>
                   <div>
-                    <p className="meta-label">面と影の扱い</p>
+                    <p className="meta-label">面・影・角丸の仕様</p>
                     <p>
-                      {surfaceOwnerLabels[component.visual.surfaceOwner] ?? component.visual.surfaceOwner}
-                      、外側の影は{outerShadowLabels[component.visual.outerShadow] ?? component.visual.outerShadow}
-                      、角丸は{component.visual.radiusToken}
+                      面構成: {surfaceOwnerLabels[component.visual.surfaceOwner] ?? component.visual.surfaceOwner} / 外側の影: {outerShadowLabels[component.visual.outerShadow] ?? component.visual.outerShadow} / 角丸: {component.visual.radiusToken}
                     </p>
                   </div>
                 </div>
@@ -1060,24 +1058,24 @@ type PatternDocCopy = { principles: string; anatomy: string; variants: string; c
 // パターンごとの導入文。パターンJSONに無い「このページで何を選ぶのか」だけをここに置く
 const patternDocCopy: Partial<Record<PatternSlug, PatternDocCopy>> = {
   "visual-grouping": {
-    principles: "まとまりを示す手段は余白、矩形、罫線の順に検討し、同じ階層では選んだ手段を最後まで揃えます。",
-    anatomy: "セクションと、その中のブロックまでの2階層で組み立てます。",
-    variants: "まとまりの数と、境界をどれだけ強く示す必要があるかで選びます。",
-    contract: "まとまりの判断を生成時に適用する場合は、このパターンIDとファイルを設計契約へ含めます。",
+    principles: "情報のまとまりを表現する際は「余白 → 面（矩形） → 罫線」の優先順で検討し、同じ階層内では表現手段を一貫して統一します。",
+    anatomy: "ページの構成は「セクション」と、その内部の「ブロック」までの最大2階層に抑えて整理します。",
+    variants: "まとまりの数や、境界線をどの程度強調して区切る必要があるかに応じて選びます。",
+    contract: "AIによるコード生成時に視覚的グルーピングのルールを適用する場合は、このパターンIDと設計ファイルを契約に含めます。",
   },
   "mobile-layout": {
-    principles: "狭い画面でも情報と操作を落とさず、縦に読める形へ組み替えるための判断です。",
-    anatomy: "画面上部の現在位置、1カラムの内容、主要操作の3つを必ず置きます。",
-    variants: "積み替えで読めるか、構造ごと作り替える必要があるかで選びます。",
-    contract: "狭い画面の組み替えを生成時に適用する場合は、このパターンIDとファイルを設計契約へ含めます。",
+    principles: "スマートフォンなどの狭い画面でも情報や主要操作を欠落させず、自然に縦スクロールで閲覧・操作できる形へ再構成します。",
+    anatomy: "画面上部のヘッダー（現在地表示）、1カラムに並べたコンテンツ、明確な主要操作の3要素を必ず配置します。",
+    variants: "単純な縦並び（積み替え）で閲覧できるか、カードリスト等へ構造自体を再構築する必要があるかで選びます。",
+    contract: "モバイル向けのレイアウト再構成ルールを適用する場合は、このパターンIDと設計ファイルを契約に含めます。",
   },
 };
 
 const defaultPatternDocCopy: PatternDocCopy = {
-  principles: "画面を作る前に、このパターンで守る判断を決めます。",
-  anatomy: "必要な領域と、その扱いを揃えます。",
-  variants: "画面名ではなく、扱う情報と操作の性質で選びます。",
-  contract: "このパターンを生成時に適用する場合は、パターンIDとファイルを設計契約へ含めます。",
+  principles: "画面を実装する前に、本パターンで遵守すべき設計判断を定めます。",
+  anatomy: "画面に必要な領域と、その役割・配置順序を統一します。",
+  variants: "画面の名称ではなく、扱う情報とユーザー操作の性質に基づいて選択します。",
+  contract: "本パターンを画面生成時に適用する場合は、パターンIDと設計ファイルを契約に含めます。",
 };
 
 // パターンJSONをそのまま見せる汎用ページ。増えたパターンはslugを足すだけで並ぶ
@@ -1156,7 +1154,7 @@ export function PatternDocPage({ slug }: { slug: PatternSlug }) {
       <section className="pattern-section" aria-labelledby={`${slug}-layout`}>
         <div className="section-heading">
           <h2 id={`${slug}-layout`}>実装で使う値</h2>
-          <p>クラスは<code>design/layout.css</code>、値は<code>design/tokens.json</code>にあります。</p>
+          <p>クラスは <code>design/layout.css</code>、値は <code>design/tokens.json</code> に定義されています。</p>
         </div>
         <div className="doc-table-scroll">
           <table className="doc-table doc-table--wide">
@@ -1195,7 +1193,7 @@ export function PatternDocPage({ slug }: { slug: PatternSlug }) {
       <section className="pattern-section" aria-labelledby={`${slug}-contract`}>
         <div className="section-heading">
           <h2 id={`${slug}-contract`}>参照する契約</h2>
-          <p>このパターンを使う画面が満たす、画面状態、コンポーネント、検証ルールです。</p>
+          <p>このパターンを採用する画面が満たすべき、画面状態、コンポーネント、検証ルールです。</p>
         </div>
         <div className="doc-table-scroll">
           <table className="doc-table">
@@ -1249,7 +1247,7 @@ export function PatternPage() {
 
       <section className="pattern-section" aria-labelledby="principles-title">
         <div className="section-heading">
-          <h2 id="principles-title">レイアウトを選ぶ前に決めること</h2>
+          <h2 id="principles-title">レイアウト選択の基本方針</h2>
         </div>
         <div className="principle-list">
           {pattern.principles.map((principle, index) => (
@@ -1261,7 +1259,7 @@ export function PatternPage() {
       <section className="pattern-section anatomy-section" aria-labelledby="anatomy-title">
         <div className="section-heading">
           <h2 id="anatomy-title">ページの基本構造</h2>
-          <p>必要な領域を同じ順序で配置し、画面ごとの学習コストを減らします。</p>
+          <p>共通の構成要素を常に同じ順序で配置することで、画面ごとの操作や閲覧に関する学習コストを低減します。</p>
         </div>
         <div className="anatomy-layout">
           <div className="anatomy-preview" aria-hidden="true">
@@ -1278,7 +1276,7 @@ export function PatternPage() {
       <section className="pattern-section" aria-labelledby="variants-title">
         <div className="section-heading">
           <h2 id="variants-title">業務オブジェクトの関係から選ぶ</h2>
-          <p>画面名ではなく、複数を比較するのか、一つを詳しく見るのかで判断します。</p>
+          <p>画面の種別名ではなく、「複数データを一覧比較するのか」「単一データを詳細に確認するのか」という目的から判断します。</p>
         </div>
         <div className="variant-grid">
           {pattern.variants.map((variant) => {
@@ -1307,19 +1305,19 @@ export function PatternPage() {
 
       <section className="pattern-section" aria-labelledby="pattern-states-title">
         <div className="section-heading">
-          <h2 id="pattern-states-title">どのレイアウトでも用意する画面状態</h2>
-          <p>データが揃った状態だけを設計せず、この状態をレイアウトの中で表示できるようにします。</p>
+          <h2 id="pattern-states-title">すべてのレイアウトで考慮すべき画面状態</h2>
+          <p>データが揃っている通常状態だけでなく、初期状態、読み込み中、空データ、エラーなどの各状態をレイアウト内で適切に表示できるように設計します。</p>
         </div>
         <div className="chip-list">{pattern.states.map((state) => <Chip key={state} size="sm" variant="soft">{state}</Chip>)}</div>
       </section>
 
       <section className="pattern-section responsive-section" aria-labelledby="responsive-title">
         <div className="responsive-icon"><Smartphone size={24} /></div>
-        <div><h2 id="responsive-title">モバイルでは1カラムに積み替える</h2><p>主要情報から順に並べ、テーブルはリストへ切り替えます。横スクロールをレイアウトの前提にしません。</p></div>
+        <div><h2 id="responsive-title">モバイルでは1カラムに積み替える</h2><p>重要度の高い情報から順に縦1カラムへ並べ替え、テーブルはカードリスト形式へ切り替えます。横スクロールに依存しないレイアウトを基本とします。</p></div>
       </section>
 
       <section className="pattern-section example-callout" aria-labelledby="example-title">
-        <div><h2 id="example-title">顧客管理</h2><p>一覧（テーブル）と詳細（1カラム）を別画面として組み合わせた構成を確認できます。</p></div>
+        <div><h2 id="example-title">顧客管理</h2><p>一覧（テーブル形式）と詳細（1カラム形式）を画面遷移で組み合わせた構成例を確認できます。</p></div>
         <Button variant="secondary" onPress={() => navigate("/examples/account-management")}>サンプルを見る <ArrowRight size={16} /></Button>
       </section>
     </article>
@@ -1334,8 +1332,8 @@ export function SpacingPatternPage() {
 
       <section className="pattern-section" aria-labelledby="spacing-principles-title">
         <div className="section-heading">
-          <h2 id="spacing-principles-title">数値より先に、要素の関係を決める</h2>
-          <p>余白は空いた場所を埋める値ではなく、情報のまとまりと読む順序を示すために使います。</p>
+          <h2 id="spacing-principles-title">数値より先に、要素同士の関係性を決める</h2>
+          <p>余白は単なるスペース埋めではなく、情報の関連性や閲覧の順序（視線誘導）を直感的に伝えるために活用します。</p>
         </div>
         <div className="principle-list">
           {spacingPattern.principles.map((principle, index) => (
@@ -1347,7 +1345,7 @@ export function SpacingPatternPage() {
       <section className="pattern-section" aria-labelledby="spacing-grouping-title">
         <div className="section-heading">
           <h2 id="spacing-grouping-title">近い要素を同じまとまりにする</h2>
-          <p>同じまとまりの中は狭く、まとまり同士は広く取ります。グループ間は、グループ内より一段以上大きなトークンを選びます。</p>
+          <p>同一グループ内の要素間は狭く、異なるグループ間は広く取ります。グループ間の余白には、グループ内部の余白よりも1段階以上大きなトークンを指定します。</p>
         </div>
         <div className="spacing-grouping-layout">
           <figure className="site-card spacing-grouping-preview" aria-label="グループ内を8px、グループ間を32px空けた例">
@@ -1373,7 +1371,7 @@ export function SpacingPatternPage() {
       <section className="pattern-section" aria-labelledby="spacing-types-title">
         <div className="section-heading">
           <h2 id="spacing-types-title">間隔と内側の余白を使い分ける</h2>
-          <p>並列な要素同士の距離はgap、枠と内容の距離はpaddingで表します。意味の違う二つを同じ値として扱いません。</p>
+          <p>並列に並ぶ要素同士の間隔は <code>gap</code>、コンテナ枠とコンテンツの距離は <code>padding</code> で表現します。目的の異なる2つの余白を同じ値として混同せず、意味に応じて使い分けます。</p>
         </div>
         <div className="spacing-type-grid">
           <figure className="site-card">
@@ -1390,7 +1388,7 @@ export function SpacingPatternPage() {
       <section className="pattern-section" aria-labelledby="spacing-recipes-title">
         <div className="section-heading">
           <h2 id="spacing-recipes-title">代表的な組み合わせ</h2>
-          <p>個別の値を足し引きする前に、配置する場所に近い組み合わせを選びます。</p>
+          <p>個別に数値を調整する前に、配置する領域や目的に最も適したプリセットの組み合わせを選択します。</p>
         </div>
         <div className="spacing-recipe-list">
           {spacingPattern.variants.map((variant) => {
@@ -1413,11 +1411,11 @@ export function SpacingPatternPage() {
 
       <section className="pattern-section responsive-section" aria-labelledby="spacing-responsive-title">
         <div className="responsive-icon"><Smartphone size={24} /></div>
-        <div><h2 id="spacing-responsive-title">狭い画面では外周のpaddingを縮める</h2><p>左右の外周は32pxから16pxへ縮めます。情報の関係を示すセクション間や要素間のgapは原則として維持し、幅が足りなければ縦に積み替えます。</p></div>
+        <div><h2 id="spacing-responsive-title">モバイル画面では外周のパディングを縮小する</h2><p>モバイル画面では画面左右の外周パディングを32pxから16pxへ縮小します。情報の関係性を示すセクション間や要素間のgapは原則として維持し、幅が不足する場合は縦並びへレイアウトを切り替えます。</p></div>
       </section>
 
       <section className="pattern-section spacing-contract" aria-labelledby="spacing-contract-title">
-        <div><h2 id="spacing-contract-title">デザインハーネスから参照する</h2><p>余白の判断を生成時に適用する場合は、このパターンIDとトークンを設計契約へ含めます。</p></div>
+        <div><h2 id="spacing-contract-title">デザインハーネスから参照する</h2><p>余白設計のルールをAI生成時に適用する場合は、このパターンIDとトークン定義を設計契約に含めます。</p></div>
         <div><code>pattern.spacing-layout</code><code>design/patterns/spacing-layout.json</code></div>
       </section>
     </article>
@@ -1455,7 +1453,7 @@ export function ExamplePage({ slug }: { slug: ExampleSlug }) {
 
       <section className="example-grid" aria-labelledby="composition-title">
         <div>
-          <h2 id="composition-title">Issueを画面構造へ変換する</h2>
+          <h2 id="composition-title">要件（Issue）を画面構造へ変換する</h2>
           <ol className="composition-list">{example.composition.map((item, index) => <li key={item}><span>{index + 1}</span><p>{item}</p></li>)}</ol>
         </div>
         <aside className="contract-reference" aria-label="実装時に参照する契約">
@@ -1468,7 +1466,7 @@ export function ExamplePage({ slug }: { slug: ExampleSlug }) {
             <div className="chip-list">{example.components.map((componentId) => <Chip key={componentId} size="sm" variant="soft">{componentContractName(componentId)}</Chip>)}</div>
           </section>
           <section className="site-card contract-card" aria-labelledby="example-rules-title">
-            <h3 id="example-rules-title">満たす検証ルール</h3>
+            <h3 id="example-rules-title">適合すべき検証ルール</h3>
             <ul className="example-rule-list">
               {example.rules.map((ruleId) => <li key={ruleId}>{ruleContractTitle(ruleId)}<code>{ruleId}</code></li>)}
             </ul>
@@ -1490,7 +1488,7 @@ export function ExamplePage({ slug }: { slug: ExampleSlug }) {
       </section>
 
       <section className="pattern-section harness-contract" aria-labelledby="harness-contract-title">
-        <div><h2 id="harness-contract-title">AIへ参照IDを渡す</h2><p>Issueそのものは変えず、デザインハーネスを適用した場合だけパターン、サンプル、コンポーネント、検証ルールを追加で読みます。</p></div>
+        <div><h2 id="harness-contract-title">AIエージェントへ設計参照IDを提供する</h2><p>開発要件（Issue）の記述自体は変更せず、デザインハーネスを適用する際にのみ、該当するパターン、サンプル、コンポーネント、検証ルールの識別子をコンテキストとして追加提供します。</p></div>
         <div className="site-card handoff-card">
           <table className="reference-table" aria-label="AIへ渡す参照ID">
             <tbody>
@@ -1516,7 +1514,7 @@ export const ruleMethodLabels: Record<string, string> = {
 export function RulesPage() {
   return (
     <article className="doc-page">
-      <PageHeader title="検証ルール" description="Lint、自動検証、AIレビュー、人の判断を混ぜずに管理します。" />
+      <PageHeader title="検証ルール" description="Lint、自動検証、AIレビュー、人の判断の4段階で役割を分担し、多層的に品質を検証します。" />
       <div className="rules-table" role="table" aria-label="検証ルール一覧">
         <div className="rules-row rules-head" role="row"><span>ルール</span><span>確認方法</span><span>重要度</span></div>
         {designData.rules.map((rule) => (

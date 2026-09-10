@@ -202,7 +202,7 @@ export function HarnessPage() {
     <article className="doc-page harness-page">
       <PageHeader
         title="デザインハーネス"
-        description="AIに渡す制約とコンテキスト、生成後の検証、結果の書き戻しを1つのループにします。"
+        description="AIに渡す設計制約とコンテキスト、生成コードの検証、その結果のフィードバック修正をひとつの継続的サイクルとして統合します。"
       />
       <p className="harness-official-link">
         <a href="https://design-harness.com/" target="_blank" rel="noreferrer">
@@ -258,7 +258,7 @@ export function HarnessPage() {
       <section aria-labelledby="method-title" className="harness-section">
         <h2 id="method-title">妥当性を、誰がどう担保するか</h2>
         <div className="method-text">
-          <p>検査の役割を、機械、AI、人の順に分けます。</p>
+          <p>品質検査の役割を、「機械」「AI」「人間」の3段階に明確に分離して担保します。</p>
           <p>
             機械は、<code>design/rules.json</code> のルールで生成物を検査します。{rules.length}件のルールのうち{lintCount}件はESLintで、
             {automaticCount}件は評価スクリプトで自動検証します。承認済みの部品を使っているか、色コードを直接書いていないか、必要な画面状態があるかを、毎回同じ基準で判定します。
@@ -277,7 +277,7 @@ export function HarnessPage() {
       <section aria-labelledby="loop-title" className="harness-section">
         <h2 id="loop-title">デモ画面の生成サイクル</h2>
         <p>
-          検査の違反数は、下のリンク先の比較ページと同じ run（create-01、Claude Opus 5）の初回検査の値です。
+          表示されている検査の違反数は、比較ページで参照している保存済みRun（create-01、Claude Opus 5）の初回検査時の値です。
         </p>
         <HarnessLoop steps={loopSteps} />
         <div className="harness-cta-row">
@@ -345,7 +345,7 @@ export function ResultsPage({ experiment }: { experiment: ExperimentId }) {
     <article className="doc-page results-page">
       <PageHeader
         title="生成結果の比較"
-        description={`同じIssueから、ハーネスなし／ありでAIが生成した${run.subject}です。保存済みRunの画面と検査結果だけを表示し、閲覧時にAIは動きません。`}
+        description={`同じIssueから、ハーネスなし／ありの各条件でAIが生成した${run.subject}の比較です。保存済みRunの画面と検査結果を表示しており、閲覧時にAIによる再生成は行われません。`}
       />
 
       <div className="compare-toolbar">
@@ -371,8 +371,8 @@ export function ResultsPage({ experiment }: { experiment: ExperimentId }) {
         </li>
         <li>{run.environment.cliVersion}</li>
         <li>Model {run.environment.model}</li>
-        {run.comparison.conditionsMatch && <li>同じIssue・同じ環境で生成</li>}
-        <li>人は生成コードを直接修正していない</li>
+        {run.comparison.conditionsMatch && <li>同一Issue・同一環境で生成</li>}
+        <li>人間による生成コードの直接修正なし</li>
       </ul>
 
       <div className="compare-toolbar">
@@ -454,7 +454,7 @@ export function ResultsPage({ experiment }: { experiment: ExperimentId }) {
         <div className="section-heading">
           <h2 id="rules-title">ルールごとの検査結果</h2>
           <p>
-            design/rules.json の{rules.length}件を、両条件の画面に同じ手順で当てた結果です。AIレビューのルールは要確認として残し、所見を人が読みます。
+            design/rules.json の{rules.length}件を、両条件の画面に同じ手順で適用した結果です。AIレビューのルールは要確認として残し、詳細な所見を人間が確認できるようにしています。
           </p>
         </div>
         <div className="compare-table-scroll">
@@ -509,7 +509,7 @@ export function ResultsPage({ experiment }: { experiment: ExperimentId }) {
         <div className="section-heading">
           <h2 id="review-title">AIレビューの所見</h2>
           <p>
-            {run.environment.model} が画面画像を見て残した所見です。合否ではなく、人が判断するための材料として保存しています。
+            {run.environment.model} が画面画像を見て残した所見です。機械的な自動合否判定ではなく、人間が品質を判断するための参考材料として保存しています。
           </p>
         </div>
         <div className="review-grid">

@@ -1,14 +1,15 @@
 # Atlas Design System
 
-[デザインハーネス](https://design-harness.com/)で設計・検証するデモ用デザインシステムです。同じB2B画面（顧客管理）を、設計契約なしのBaselineと、Atlasを参照する条件でAIに実装させ、その差と修正過程を比較します。UI基盤は[HeroUI](https://www.heroui.com/)です。
+本プロジェクトは、[デザインハーネス](https://design-harness.com/)を用いて設計・検証を行うためのデモ用デザインシステムです。同一のB2B業務画面（顧客管理）を対象に、「設計契約なし（Baseline）」と「Atlasの設計契約を参照（Harness）」の2つの条件でAIに画面を実装させ、その品質の差やフィードバックループによる修正過程を比較・検証します。UIコンポーネント基盤には [HeroUI](https://www.heroui.com/) を採用しています。
 
 公開サイト: <https://atlas-design-system.kuusai1998.workers.dev>
 
-保存済みの`create-01`（Claude Opus 5）では、28ルールの検査でBaselineが`12 pass / 11 fail / 5 review`、Harness初回が`21 pass / 2 fail / 5 review`でした。Harness側へ検査結果を返して修正すると、`23 pass / 0 fail / 5 review`になりました（修正入力の検査結果は機械判定2件に、ルール化されていない閉じるボタンの英語読み上げ名を人が1件書き足しています）。見せたいのは初回生成の勝敗ではなく、設計情報を機械判定と修正へ接続できるかどうかです。
+リポジトリに保存済みの実験データ `create-01`（Claude Opus 5）では、全28ルールの検証において、Baselineが `12 pass / 11 fail / 5 review` であったのに対し、Atlasを参照したHarness初回生成では `21 pass / 2 fail / 5 review` となりました。さらに、Harness側へ機械判定の検査結果をフィードバックして修正させたところ、`23 pass / 0 fail / 5 review` まで改善しました（修正プロンプトには、機械判定によるエラー2件に加え、現時点でルール化されていない「閉じるボタンの英語読み上げ名（aria-label）」に関する人間からの指摘1件を含めています）。
+本プロジェクトが提示したい本質は、初回生成の一発勝負における勝敗ではなく、「設計契約の情報を機械的な判定と自動修正ループへ確実に接続できるかどうか」です。
 
-## ローカルで見る
+## ローカルでの起動・確認
 
-Node.js 24とpnpm 11.13.1を使います（`.node-version`、`packageManager`で固定）。
+実行環境には Node.js 24 と pnpm 11.13.1 を使用します（`.node-version` および `packageManager` でバージョンを固定しています）。
 
 ```bash
 pnpm install
@@ -17,13 +18,13 @@ pnpm dev
 
 | URL | 内容 |
 | --- | --- |
-| `/` | デザインシステム |
-| `/getting-started` | 導入方法 |
-| `/harness` | Design Harnessの仕組み |
-| `/examples/account-management/results` | Baseline／Harnessの生成結果とルール別の検査結果 |
-| `/play/account-management?mode=atlas` | 生成画面の操作 |
+| `/` | デザインシステムの概要と設計指針 |
+| `/getting-started` | プロジェクトへの導入手順（GitHub / Skill / MCP） |
+| `/harness` | Design Harnessの仕組み・設計思想 |
+| `/examples/account-management/results` | Baseline と Harness の生成結果・ルール別検証結果の比較 |
+| `/play/account-management?mode=atlas` | 生成された顧客管理画面のインタラクティブな動作確認 |
 
-保存済みRunの生成ソースは別ポートでそのまま起動できます。状態はURLの`state` query（`default`、`empty`、`create-open`、`drawer-open`、`invalid-email`、`loading`、`success`、`failure`、`delete-confirm`）で再現します。
+保存済みRunの生成コードは、独立したポートでそのまま起動して確認できます。各画面の状態は、URLの `state` クエリパラメータ（`default`, `empty`, `create-open`, `drawer-open`, `invalid-email`, `loading`, `success`, `failure`, `delete-confirm`）によって再現可能です。
 
 ```bash
 pnpm experiment:preview --pair create-01 --mode harness-corrected --port 4183
@@ -31,34 +32,35 @@ pnpm experiment:preview --pair create-01 --mode harness --port 4182
 pnpm experiment:preview --pair create-01 --mode baseline --port 4181
 ```
 
-## 正本
+## 正本（Source of Truth）
 
 | パス | 内容 |
 | --- | --- |
-| [`DESIGN.md`](./DESIGN.md) | AIが最初に読む設計方針 |
-| [`design/patterns/`](./design/patterns) | ページ構造、余白、視覚的グルーピング、モバイルの契約 |
-| [`design/examples/account-management.json`](./design/examples/account-management.json) | 顧客管理の構成、状態、業務制約 |
-| [`design/`](./design) | token、HeroUIコンポーネント契約、検証ルール、JSON Schema |
-| [`experiments/account-management/`](./experiments/account-management) | Brief、共通スターター、保存済みRun |
-| [`MVP.md`](./MVP.md) / [`TASKS.md`](./TASKS.md) | デモの仕様と受け入れ条件、実装タスク |
+| [`DESIGN.md`](./DESIGN.md) | AIエージェントが最初に読み込む全体的な設計方針 |
+| [`design/patterns/`](./design/patterns) | ページ構造・余白・視覚的グルーピング・レスポンシブ（モバイル）に関する設計契約 |
+| [`design/examples/account-management.json`](./design/examples/account-management.json) | 顧客管理画面のコンポーネント構成、状態遷移、業務制約の定義 |
+| [`design/`](./design) | デザイントークン、HeroUIコンポーネント契約、検証ルール、JSON Schema定義 |
+| [`experiments/account-management/`](./experiments/account-management) | 実験の前提指示（Brief）、共通スターターコード、保存済みRunデータ |
+| [`MVP.md`](./MVP.md) / [`TASKS.md`](./TASKS.md) | デモの仕様と受け入れ条件、実装タスク一覧 |
 
-## AIから使う
+## AIエージェントからの利用
 
 | 手段 | 場所 | 役割 |
 | --- | --- | --- |
-| Atlas Skill | [`skills/atlas-design-system/`](./skills/atlas-design-system/) | IssueからAtlasに従う画面を実装し、検証結果を修正へ戻す。設計データは複製せずmanifestから解決 |
-| HeroUI Skill | [`skills/heroui-react/`](./skills/heroui-react/) | HeroUI v3公式のAgent Skill。取得元とcommitは`skills/skills.lock.json`で固定 |
-| UI Writing Skill | [`skills/ui-writing/`](./skills/ui-writing/) | 日本語UIテキストの確認基準 |
-| Atlas MCP | [`docs/MCP.md`](./docs/MCP.md) | `pnpm mcp:start`で起動するstdioサーバー。CodexとClaude Codeの接続手順 |
+| Atlas Skill | [`skills/atlas-design-system/`](./skills/atlas-design-system/) | Issueを起点にAtlasの設計契約に従って画面を実装し、検証結果をフィードバックして修正するSkill。設計データは複製せずmanifestから動的に解決します。 |
+| HeroUI Skill | [`skills/heroui-react/`](./skills/heroui-react/) | HeroUI v3 公式のAgent Skill。取得元とコミットハッシュは `skills/skills.lock.json` で固定管理されています。 |
+| UI Writing Skill | [`skills/ui-writing/`](./skills/ui-writing/) | 日本語UIテキストの品質基準・表記ゆれチェックルール |
+| Atlas MCP | [`docs/MCP.md`](./docs/MCP.md) | `pnpm mcp:start` で起動するstdioサーバー。CodexやClaude Codeから設計情報へアクセスするための接続手順を提供します。 |
 
 ```bash
 node scripts/resolve-design-contract.mjs experiments/account-management/manifest.json
 pnpm skills:check
 ```
 
-## 比較を再実行する
+## 比較実験の再実行
 
-認証済みのAIエージェントCLI（既定`codex`、`--runner claude`で切り替え）が必要です。手順と実行順の注意は[`docs/EXPERIMENTS.md`](./docs/EXPERIMENTS.md)にまとめています。生成コードは人が直接直さず、`harness-corrected`として別Runに保存します。
+実験の比較を再実行するには、認証済みのAIエージェントCLI（既定は `codex`、`--runner claude` でClaude Codeに切り替え可能）が必要です。詳しい実行手順や実行順に関する留意点は [`docs/EXPERIMENTS.md`](./docs/EXPERIMENTS.md) にまとめています。
+なお、AIが生成したコードに対して人間が直接手動で修正を加えることはせず、検査フィードバックを与えてAI自身に修正させた結果を `harness-corrected` として別Runに保存・記録します。
 
 ## 検証
 
@@ -67,8 +69,9 @@ pnpm demo:check   # 設計データ、テーマ、保存Run、公開データ、
 pnpm test:e2e     # 実ブラウザで主要ルートと1440px/390pxの表示を確認
 ```
 
-`review`とされた項目は自動合否にせず、画面を見て人が判断します。
+※ 自動検査で `review` と判定された項目は、自動で合否を決定せず、実際の画面レンダリング結果を確認して人間が判断します。
 
 ## 公開時の注意
 
-保存Runにはプロンプト、イベントログ、生成ソース、検証ログが含まれます。保存時にローカルパスやユーザー名、秘密情報らしい文字列をマスクし、`pnpm public:audit`で再検査します。基準と手順は[`docs/PUBLICATION_POLICY.md`](./docs/PUBLICATION_POLICY.md)、[`docs/RELEASING.md`](./docs/RELEASING.md)、[`docs/PRESENTATION_CHECKLIST.md`](./docs/PRESENTATION_CHECKLIST.md)を参照してください。第三者ライセンスは[`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md)にあります。
+保存された実験Runには、プロンプト、イベントログ、生成ソースコード、検証ログが含まれます。機密保護のため、保存時にローカルパスやユーザー名、秘密情報とみなされる文字列を自動マスクし、さらに `pnpm public:audit` で安全性を再検査しています。
+公開に関する基準や詳細な手順については、[`docs/PUBLICATION_POLICY.md`](./docs/PUBLICATION_POLICY.md)、[`docs/RELEASING.md`](./docs/RELEASING.md)、[`docs/PRESENTATION_CHECKLIST.md`](./docs/PRESENTATION_CHECKLIST.md) をご参照ください。サードパーティライセンス表示は [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md) に記載されています。
