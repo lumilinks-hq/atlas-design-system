@@ -88,10 +88,14 @@ export function DocsShell() {
     }
   }, [location.pathname]);
 
-  // BrowserRouter はハッシュ付きリンクで自動スクロールしないので、遷移後に該当見出しへ寄せる
+  // BrowserRouter は遷移時にスクロール位置を変えないので、ハッシュ付きなら該当見出しへ、無ければ先頭へ寄せる
   useEffect(() => {
     const target = location.hash ? document.getElementById(location.hash.slice(1)) : null;
-    target?.scrollIntoView({ block: "start" });
+    if (target) {
+      target.scrollIntoView({ block: "start" });
+      return;
+    }
+    window.scrollTo(0, 0);
   }, [location.pathname, location.hash]);
 
   return (

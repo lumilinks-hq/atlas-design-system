@@ -26,6 +26,17 @@ const statusLabels: Record<string, string> = { passed: "合格", failed: "違反
 afterEach(cleanup);
 
 describe("Atlas Design System demo", () => {
+  it("scrolls to the top when navigating to another page without a hash", async () => {
+    const user = userEvent.setup();
+    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+    render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
+    scrollTo.mockClear();
+    await user.click(within(screen.getByRole("complementary", { name: "ドキュメントナビゲーション" })).getByRole("link", { name: "デザインハーネス" }));
+    expect(screen.getByRole("heading", { name: "デザインハーネス", level: 1 })).toBeInTheDocument();
+    expect(scrollTo).toHaveBeenCalledWith(0, 0);
+    scrollTo.mockRestore();
+  });
+
   it("presents the public site as a demo design system", async () => {
     const user = userEvent.setup();
     render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
