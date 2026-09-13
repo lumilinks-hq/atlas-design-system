@@ -611,14 +611,11 @@ describe("Atlas Design System demo", () => {
     expect(active[0]).toHaveTextContent("生成結果の比較");
   });
 
-  it("shows the build info in the footer with a link to the commit", () => {
+  it("footer は著作権表示だけで、version や commit を出さない", () => {
     render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
-    const footer = screen.getByText("© 2026 Lumilinks inc.").closest("footer");
-    expect(footer).toHaveTextContent(`v${buildInfo.version} · ${buildInfo.commit} · ${buildInfo.builtAt.slice(0, 10)}`);
-    const commit = within(footer as HTMLElement).getByRole("link", { name: buildInfo.commit });
-    expect(commit).toHaveAttribute("href", `${repositoryUrl}/commit/${buildInfo.commit}`);
-    expect(commit).toHaveAttribute("target", "_blank");
-    expect(commit).toHaveAttribute("rel", "noreferrer");
+    const footer = screen.getByText("© 2026 Lumilinks inc.").closest("footer") as HTMLElement;
+    expect(footer).not.toHaveTextContent(buildInfo.version);
+    expect(within(footer).queryByRole("link")).toBeNull();
   });
 
   it("shows a 404 page with noindex for unknown paths and removes the meta on leave", async () => {

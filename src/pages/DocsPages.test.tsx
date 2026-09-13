@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
 import { contrastReport } from "../data/contrast";
 import { designData } from "../data/design";
-import { ComponentsPage, ExamplePage, FoundationsPage, HomePage, RulesPage } from "./DocsPages";
+import { ComponentsPage, ExamplePage, FoundationsPage, RulesPage } from "./DocsPages";
 import { HarnessPage, ResultsPage } from "./HarnessPages";
 
 afterEach(cleanup);
@@ -121,17 +121,6 @@ describe("ComponentsPage", () => {
       expect(code, ruleId).toHaveLength(1);
       expect(code[0]?.closest("a")).toHaveAttribute("href", `/rules#${ruleId}`);
     }
-  });
-});
-
-describe("HomePage の位置づけ表記", () => {
-  it("Design Harness、Atlas、HeroUI の責務と、データが架空であることを明示する", () => {
-    renderPage(<HomePage />);
-    const table = screen.getByRole("table", { name: "Design Harness、Atlas、HeroUI の責務" });
-    expect(within(table).getByText("Design Harness")).toBeInTheDocument();
-    expect(within(table).getByText("Atlas")).toBeInTheDocument();
-    expect(within(table).getByText("HeroUI")).toBeInTheDocument();
-    expect(screen.getByText(/架空/)).toBeInTheDocument();
   });
 });
 

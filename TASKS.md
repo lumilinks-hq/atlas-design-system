@@ -82,7 +82,7 @@ Atlasを次の四つの用途で使える状態にする。
 
 依存: なし
 
-- [x] version、commit、更新日時をサイト上で確認できるようにする
+- [x] version、commit、更新日時をサイト上で確認できるようにする → 2026-09-14 に不要と判断しfooterから削除。versionはGitHub ReleaseとMCPで確認する
 - [x] 404と予期しないエラーの画面を作る（現在は不明なURLを `/` へredirectしており、ErrorBoundaryもない）
 - [x] Previewへ検索エンジンのindex抑止を設定する
 - [x] Analyticsと監視を使う場合は収集範囲を決める（Cloudflare Web Analytics。GitHub Actions の変数 `CF_BEACON_TOKEN` を設定するとビルド時に beacon を注入する。トークンは Cloudflare ダッシュボードで発行が必要で未設定）
@@ -134,7 +134,7 @@ Atlasを次の四つの用途で使える状態にする。
 
 - [x] Atlasを「Design Harnessに基づくデモ用デザインシステム」と一貫して表記する
 - [x] リポジトリ名の表記を統一する（`package.json` は `design-harness-demo`、`wrangler.jsonc` は `atlas-design-system`、`docs/MCP.md` と導入方法ページの例は `atlas-design-system-demo`）
-- [x] Design Harness、Atlas、HeroUIの責務を説明する
+- [x] Design Harness、Atlas、HeroUIの責務を説明する（READMEに記載。サイト上の表は不要と判断し削除）
 - [x] 保存済みRunとライブAIの違いを明示する
 - [x] サンプルデータが架空であることを明示する
 - [x] 自動検証を完成承認と誤解させない
