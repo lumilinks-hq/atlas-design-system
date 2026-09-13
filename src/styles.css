@@ -56,10 +56,6 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .error-message { margin: 0 0 24px; padding: 12px 16px; background: var(--dh-surface-muted, #f5f5f5); border-radius: 8px; white-space: pre-wrap; font-size: .875rem; }
 .error-actions { display: flex; gap: 16px; align-items: center; }
 
-.search-table { width: 100%; margin-top: 32px; border-collapse: collapse; font-size: .9375rem; }
-.search-table th, .search-table td { padding: 10px 12px; border-bottom: 1px solid var(--dh-border, #e5e5e5); text-align: left; vertical-align: top; }
-.search-table th { font-weight: 600; color: var(--dh-text-muted); }
-.search-empty { margin-top: 32px; color: var(--dh-text-muted); }
 /* 概要ページだけ本文幅が広いので、フッターの左端も本文に合わせる */
 .docs-main:has(.home-page) .docs-footer { width: min(100%, 1120px); }
 .mobile-header, .sidebar-scrim { display: none; }
@@ -343,7 +339,18 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .contract-reference .example-rule-list code { margin-top: 2px; font-size: .8125rem; }
 .harness-contract { display: grid; align-items: start; gap: 72px; grid-template-columns: 1fr .9fr; }
 
-.rules-table { margin-top: 56px; border-top: 1px solid var(--dh-border); }
+.roles-table { width: 100%; border-collapse: collapse; margin-top: var(--dh-space-4); font-size: 1rem; line-height: 1.6; }
+.roles-table th, .roles-table td { text-align: left; vertical-align: top; padding: var(--dh-space-3) var(--dh-space-4) var(--dh-space-3) 0; border-bottom: 1px solid var(--dh-border); }
+.roles-table thead th { color: var(--dh-text-muted); font-size: .875rem; font-weight: 600; }
+.roles-table tbody th { white-space: nowrap; font-weight: 600; }
+.roles-table td { color: var(--dh-text-muted); }
+.rules-filters { margin-top: 40px; display: flex; flex-wrap: wrap; gap: var(--dh-space-6); align-items: end; }
+.rules-filter-group { margin: 0; padding: 0; border: 0; display: flex; flex-wrap: wrap; gap: var(--dh-space-3) var(--dh-space-4); }
+.rules-filter-group legend { padding: 0; margin-bottom: var(--dh-space-2); color: var(--dh-text-muted); font-size: .875rem; font-weight: 600; }
+.rules-filter-group label { display: inline-flex; align-items: center; gap: var(--dh-space-2); font-size: .9375rem; cursor: pointer; }
+.rules-filter-group input { accent-color: var(--dh-accent); margin: 0; }
+.rules-filter-count { margin: 0; color: var(--dh-text-muted); font-size: .875rem; }
+.rules-table { margin-top: var(--dh-space-6); border-top: 1px solid var(--dh-border); }
 .rules-row { display: grid; align-items: center; gap: var(--dh-space-6); border-bottom: 1px solid var(--dh-border); padding: var(--dh-space-4) 0; grid-template-columns: minmax(0, 1fr) 120px 84px; }
 .rules-row strong { font-size: 1rem; }
 .rules-row p { margin: var(--dh-space-2) 0 0; color: var(--dh-text-muted); font-size: 1rem; line-height: 1.6; }

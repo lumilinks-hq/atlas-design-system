@@ -6,7 +6,6 @@ const links = [
   { label: "はじめに", to: "/getting-started" },
   { label: "コンポーネント", to: "/components" },
   { label: "デザインルール", to: "/rules" },
-  { label: "検索", to: "/search" },
 ];
 
 export function NotFoundPage() {

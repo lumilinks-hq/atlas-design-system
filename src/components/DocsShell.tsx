@@ -24,7 +24,6 @@ const navigation: Array<{ label: string; items: NavItem[] }> = [
       { label: "デザイントークン", to: "/foundations" },
       { label: "コンポーネント", to: "/components" },
       { label: "検証ルール", to: "/rules" },
-      { label: "検索", to: "/search" },
     ],
   },
   {
@@ -82,7 +81,6 @@ export function DocsShell() {
       "/examples/invoice-management": "例：請求書管理 — Atlas Design System",
       "/examples/invoice-management/results": "生成結果の比較 — Atlas Design System",
       "/rules": "検証ルール — Atlas Design System",
-      "/search": "検索 — Atlas Design System",
     };
     document.title = titles[location.pathname] ?? "Atlas Design System";
     let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');

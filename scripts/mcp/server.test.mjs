@@ -2,7 +2,10 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { afterEach, describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import { createAtlasMcpServer } from "./server.mjs";
+
+const packageVersion = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8")).version;
 
 const connections = [];
 
@@ -20,6 +23,11 @@ async function connect() {
 }
 
 describe("Atlas MCP server", () => {
+  it("package.json と同じ version を名乗る", async () => {
+    const client = await connect();
+    expect(client.getServerVersion()).toMatchObject({ name: "atlas-design-system", version: packageVersion });
+  });
+
   it("explains id formats, return shape, and failure mode in the tool description", async () => {
     const client = await connect();
     const { tools } = await client.listTools();

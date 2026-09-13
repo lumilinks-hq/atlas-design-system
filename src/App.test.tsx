@@ -634,20 +634,12 @@ describe("Atlas Design System demo", () => {
     expect(document.head.querySelector('meta[name="robots"]')).toBeNull();
   });
 
-  it("searches the docs from /search and syncs the query with the URL", async () => {
-    const user = userEvent.setup();
+  it("検索ページを持たず、/search は 404 になりナビゲーションにも出ない", () => {
     render(<MemoryRouter initialEntries={["/search?q=button"]}><App /></MemoryRouter>);
-    expect(screen.getByRole("heading", { level: 1, name: "検索" })).toBeInTheDocument();
-    const input = screen.getByRole("textbox", { name: "検索語" });
-    expect(input).toHaveValue("button");
-    const table = screen.getByRole("table");
-    expect(within(table).getByRole("link", { name: "Button" })).toHaveAttribute("href", "/components#component.button");
-    await user.clear(input);
-    await user.type(input, "component.approved");
-    expect(within(screen.getByRole("table")).getByRole("link", { name: "承認済みHeroUIコンポーネントを使う" })).toHaveAttribute("href", "/rules#component.approved");
+    expect(screen.queryByRole("heading", { level: 1, name: "検索" })).toBeNull();
+    expect(screen.getByRole("heading", { level: 1, name: /ページが見つかりません|404/ })).toBeInTheDocument();
     const sidebar = screen.getByRole("complementary", { name: "ドキュメントナビゲーション" });
-    expect(within(sidebar).getByRole("link", { name: "検索" })).toHaveAttribute("href", "/search");
-    expect(document.querySelectorAll(".nav-item-active")).toHaveLength(1);
+    expect(within(sidebar).queryByRole("link", { name: "検索" })).toBeNull();
   });
 
   it("switches the interactive invoice implementation between Atlas and baseline", async () => {

@@ -1,12 +1,19 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import userEvent from "@testing-library/user-event";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
 import { contrastReport } from "../data/contrast";
 import { designData } from "../data/design";
-import { ComponentsPage, ExamplePage, FoundationsPage, RulesPage } from "./DocsPages";
-import { ResultsPage } from "./HarnessPages";
+import { ComponentsPage, ExamplePage, FoundationsPage, HomePage, RulesPage } from "./DocsPages";
+import { HarnessPage, ResultsPage } from "./HarnessPages";
 
 afterEach(cleanup);
+
+function LocationSpy({ onChange }: { onChange: (search: string) => void }) {
+  const location = useLocation();
+  onChange(location.search);
+  return null;
+}
 
 function renderPage(element: React.ReactElement, path = "/") {
   return render(<MemoryRouter initialEntries={[path]}>{element}</MemoryRouter>);
@@ -117,6 +124,24 @@ describe("ComponentsPage", () => {
   });
 });
 
+describe("HomePage の位置づけ表記", () => {
+  it("Design Harness、Atlas、HeroUI の責務と、データが架空であることを明示する", () => {
+    renderPage(<HomePage />);
+    const table = screen.getByRole("table", { name: "Design Harness、Atlas、HeroUI の責務" });
+    expect(within(table).getByText("Design Harness")).toBeInTheDocument();
+    expect(within(table).getByText("Atlas")).toBeInTheDocument();
+    expect(within(table).getByText("HeroUI")).toBeInTheDocument();
+    expect(screen.getByText(/架空/)).toBeInTheDocument();
+  });
+});
+
+describe("HarnessPage の検証の説明", () => {
+  it("自動検証の合格が完成の承認ではないことを明示する", () => {
+    renderPage(<HarnessPage />);
+    expect(screen.getByText(/完成を承認するものではありません/)).toBeInTheDocument();
+  });
+});
+
 describe("RulesPage", () => {
   it("ルールごとに id アンカーと修正方針を描画する", () => {
     const { container } = renderPage(<RulesPage />);
@@ -137,6 +162,41 @@ describe("RulesPage", () => {
     for (const component of related) {
       expect(within(row).getByRole("link", { name: component.name })).toHaveAttribute("href", `/components#${component.id}`);
     }
+  });
+
+  it("重大度で絞り込むと、その重大度のルールだけを表示する", () => {
+    const { container } = renderPage(<RulesPage />, "/rules?severity=error");
+    const shown = container.querySelectorAll('[role="row"]:not(.rules-head)');
+    const expected = designData.rules.filter((rule) => rule.severity === "error");
+    expect(expected.length).toBeGreaterThan(0);
+    expect(shown.length).toBe(expected.length);
+    expect(screen.getByRole("radio", { name: "error" })).toBeChecked();
+  });
+
+  it("検証方法で絞り込むと、その方法のルールだけを表示する", () => {
+    const { container } = renderPage(<RulesPage />, "/rules?method=ai-review");
+    const shown = container.querySelectorAll('[role="row"]:not(.rules-head)');
+    const expected = designData.rules.filter((rule) => rule.method === "ai-review");
+    expect(expected.length).toBeGreaterThan(0);
+    expect(shown.length).toBe(expected.length);
+    expect(screen.getByRole("radio", { name: "AIレビュー" })).toBeChecked();
+  });
+
+  it("絞り込みの選択が URL クエリに反映される", async () => {
+    let currentSearch = "";
+    render(
+      <MemoryRouter initialEntries={["/rules"]}>
+        <RulesPage />
+        <Routes><Route path="*" element={<LocationSpy onChange={(search) => { currentSearch = search; }} />} /></Routes>
+      </MemoryRouter>,
+    );
+    await userEvent.click(screen.getByRole("radio", { name: "warning" }));
+    expect(currentSearch).toBe("?severity=warning");
+    await userEvent.click(screen.getByRole("radio", { name: "Lint" }));
+    expect(currentSearch).toBe("?severity=warning&method=lint");
+    await userEvent.click(screen.getByRole("radio", { name: "すべての重大度" }));
+    expect(currentSearch).toBe("?method=lint");
+    expect(screen.getByText(/件を表示/)).toBeInTheDocument();
   });
 });
 

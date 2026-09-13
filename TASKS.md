@@ -1,6 +1,6 @@
 # Atlas Design System 残作業
 
-更新日: 2026-09-13
+更新日: 2026-09-14
 
 このファイルは公開済みサイトを「初回リリース」と呼べる状態へ持っていくための残作業を管理する。比較条件と受け入れ条件は[`MVP.md`](./MVP.md)、AIと人が参照する設計方針は[`DESIGN.md`](./DESIGN.md)、公開基準は[`docs/PUBLICATION_POLICY.md`](./docs/PUBLICATION_POLICY.md)を正本とする。
 
@@ -124,23 +124,21 @@ Atlasを次の四つの用途で使える状態にする。
 
 依存: DH-240、DH-241、DH-242
 
-- [x] token、component、pattern、example、ruleを横断検索する
-- [ ] Ruleを重大度と検証方法で絞り込む
-- [x] 検索結果から該当見出しへ移動する
-- [x] URLで検索条件と見出しを共有できるようにする
-- [x] キーボードだけで検索できるようにする
+- [x] Ruleを重大度と検証方法で絞り込む（URLクエリ `severity` `method` で共有できる）
+- [x] 見出しの id アンカーで token、component、pattern、rule へ深いリンクできるようにする
+- ~~横断検索ページ~~ 2026-09-14 に不要と判断し削除した（見出しアンカーと Rule の絞り込みで代替）
 
 ### DH-244 公開向けの説明と表記を整える
 
 依存: DH-242
 
-- [ ] Atlasを「Design Harnessに基づくデモ用デザインシステム」と一貫して表記する
+- [x] Atlasを「Design Harnessに基づくデモ用デザインシステム」と一貫して表記する
 - [x] リポジトリ名の表記を統一する（`package.json` は `design-harness-demo`、`wrangler.jsonc` は `atlas-design-system`、`docs/MCP.md` と導入方法ページの例は `atlas-design-system-demo`）
-- [ ] Design Harness、Atlas、HeroUIの責務を説明する
-- [ ] 保存済みRunとライブAIの違いを明示する
-- [ ] サンプルデータが架空であることを明示する
-- [ ] 自動検証を完成承認と誤解させない
-- [ ] 日本語と英語が不要に混ざる見出しを整理する
+- [x] Design Harness、Atlas、HeroUIの責務を説明する
+- [x] 保存済みRunとライブAIの違いを明示する
+- [x] サンプルデータが架空であることを明示する
+- [x] 自動検証を完成承認と誤解させない
+- [x] 日本語と英語が不要に混ざる見出しを整理する
 - [x] `MVP.md` の Presenter 前提の記述を現在の構成へ改訂するか、履歴として明示する
 
 完了条件: 初見の閲覧者がDocs、導入、比較ページ、Playを区別できる。
@@ -253,6 +251,6 @@ DH-321 拡張手順
 - [x] 保存済みRunと公開画面の数値、画像、条件が一致している
 - [x] 秘密情報、端末固有情報、権利不明な素材が含まれていない
 - [x] CIが成功し、mainから本番へ自動反映される
-- [ ] LICENSEと利用条件が公開されている
-- [ ] GitHubからcloneしてAtlasを起動・検証できる（clean環境で確認済み）
-- [ ] 公開URL、GitHub Release、Skill、MCPが同じversionを参照している
+- [x] LICENSEと利用条件が公開されている
+- [x] GitHubからcloneしてAtlasを起動・検証できる（clean環境で確認済み）
+- [x] 公開URL、GitHub Release、Skill、MCPが同じversionを参照している
