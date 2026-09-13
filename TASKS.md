@@ -177,7 +177,7 @@ Atlasを次の四つの用途で使える状態にする。
 
 依存: DH-280、DH-312
 
-- [ ] versionを決める
+- [x] versionを決める（1.0.0）
 - [ ] Release noteに利用方法、既知の制約、保存済みRunを記載する
 - [ ] GitHub Releaseを作る
 - [ ] 公開サイトとReleaseのversion一致を確認する
