@@ -12,7 +12,7 @@
 実行環境には Node.js 24 と pnpm 11.13.1 を使用します（`.node-version` および `packageManager` でバージョンを固定しています）。
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 

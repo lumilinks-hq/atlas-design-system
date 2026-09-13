@@ -1,4 +1,5 @@
 import { cp, mkdtemp, rm, symlink } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { createServer } from "vite";
@@ -21,6 +22,11 @@ const previewDir = await mkdtemp(resolve(tmpdir(), "atlas-run-preview-"));
 
 await cp(starterDir, previewDir, { recursive: true });
 await cp(sourceDir, resolve(previewDir, "src"), { recursive: true, force: true });
+// harness 系の styles.css は ../design/component-theme.css を import するので、run 内の design/ も置く
+const designDir = resolve(experimentDirs.runsDir, pairId, mode, "design");
+if (existsSync(designDir)) {
+  await cp(designDir, resolve(previewDir, "design"), { recursive: true, force: true });
+}
 await symlink(resolve(rootDir, "node_modules"), resolve(previewDir, "node_modules"), "dir");
 
 const server = await createServer({
