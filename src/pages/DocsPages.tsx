@@ -25,7 +25,7 @@ import {
 import { ArrowRight, Check, ChevronDown, ChevronUp, Code2, Copy, ExternalLink, FileCode2, FileText, FlaskConical, GitFork, LayoutTemplate, Monitor, Plug, ScanSearch, Smartphone, Sparkles } from "lucide-react";
 import { artifactSourceHref, repositoryUrl } from "../data/repository";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   accountManagementTableUsage,
   createAccountManagementTableCodeExample,
@@ -112,6 +112,21 @@ export function HomePage() {
           <li><Link className="site-card flow-card-link" to="/patterns/page-layout"><span>03</span><div><h3>パターン</h3><p>業務オブジェクトの関係性や目的に応じて選べる、再利用可能なページ構造です。</p></div><ArrowRight size={18} /></Link></li>
           <li><Link className="site-card flow-card-link" to="/rules"><span>04</span><div><h3>検証ルール</h3><p>実装後に自動検査・検証するための設計ルールを定めます。</p></div><ArrowRight size={18} /></Link></li>
         </ol>
+      </section>
+
+      <section aria-labelledby="roles-title">
+        <div className="section-heading">
+          <h2 id="roles-title">3つの名前の責務</h2>
+          <p>このサイトの画面や実験に登場する会社名、担当者、請求データはすべて架空です。</p>
+        </div>
+        <table className="roles-table" aria-label="Design Harness、Atlas、HeroUI の責務">
+          <thead><tr><th scope="col">名前</th><th scope="col">責務</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Design Harness</th><td>設計データを機械可読にして、AIの生成と自動検証、人のレビューを同じ基準でつなぐ仕組みです。</td></tr>
+            <tr><th scope="row">Atlas</th><td>Design Harness に基づいて作ったデモ用のデザインシステムです。トークン、コンポーネントの採用範囲、パターン、検証ルールを定めます。</td></tr>
+            <tr><th scope="row">HeroUI</th><td>Atlas が採用する UI コンポーネントライブラリです。部品の実装は HeroUI が持ち、Atlas はどの部品をどう使うかを決めます。</td></tr>
+          </tbody>
+        </table>
       </section>
 
       <section className="source-section" aria-labelledby="source-title">
@@ -1628,13 +1643,56 @@ function relatedComponents(ruleId: string) {
   return designData.components.filter((component) => component.relatedRules.includes(ruleId));
 }
 
+const ruleSeverityOrder = ["error", "warning"];
+
+// 絞り込みの選択肢。value "" は「絞り込まない」
+function RuleFilterGroup({ legend, name, allLabel, options, value, onChange }: {
+  legend: string;
+  name: string;
+  allLabel: string;
+  options: Array<{ value: string; label: string }>;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <fieldset className="rules-filter-group">
+      <legend>{legend}</legend>
+      {[{ value: "", label: allLabel }, ...options].map((option) => (
+        <label key={option.value}>
+          <input type="radio" name={name} value={option.value} checked={value === option.value} onChange={() => onChange(option.value)} />
+          <span>{option.label}</span>
+        </label>
+      ))}
+    </fieldset>
+  );
+}
+
 export function RulesPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const severity = searchParams.get("severity") ?? "";
+  const method = searchParams.get("method") ?? "";
+  const severities = ruleSeverityOrder.filter((value) => designData.rules.some((rule) => rule.severity === value));
+  const methods = Object.keys(ruleMethodLabels).filter((value) => designData.rules.some((rule) => rule.method === value));
+  const visibleRules = designData.rules.filter((rule) => (!severity || rule.severity === severity) && (!method || rule.method === method));
+
+  const updateParam = (key: string, value: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    setSearchParams(next, { replace: true });
+  };
+
   return (
     <article className="doc-page">
       <PageHeader title="検証ルール" description="Lint、自動検証、AIレビュー、人の判断の4段階で役割を分担し、多層的に品質を検証します。" />
+      <div className="rules-filters">
+        <RuleFilterGroup legend="重大度" name="severity" allLabel="すべての重大度" options={severities.map((value) => ({ value, label: value }))} value={severity} onChange={(value) => updateParam("severity", value)} />
+        <RuleFilterGroup legend="検証方法" name="method" allLabel="すべての検証方法" options={methods.map((value) => ({ value, label: ruleMethodLabels[value] ?? value }))} value={method} onChange={(value) => updateParam("method", value)} />
+        <p className="rules-filter-count" aria-live="polite">{designData.rules.length}件中{visibleRules.length}件を表示</p>
+      </div>
       <div className="rules-table" role="table" aria-label="検証ルール一覧">
         <div className="rules-row rules-head" role="row"><span role="columnheader">ルール</span><span role="columnheader">確認方法</span><span role="columnheader">重要度</span></div>
-        {designData.rules.map((rule) => (
+        {visibleRules.map((rule) => (
           <div className="rules-row" role="row" key={rule.id}>
             <div role="cell">
               <strong id={rule.id}>{rule.title}</strong>

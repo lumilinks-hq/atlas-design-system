@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -5,8 +6,11 @@ import * as z from "zod/v4";
 import { atlasResources, readAtlasResource, resolveDesignContract } from "../design-catalog.mjs";
 import "../validate-design.mjs";
 
+// サイトの footer と GitHub Release と同じ package.json の version を名乗る
+const packageVersion = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8")).version;
+
 export function createAtlasMcpServer() {
-  const server = new McpServer({ name: "atlas-design-system", version: "1.0.0" });
+  const server = new McpServer({ name: "atlas-design-system", version: packageVersion });
 
   for (const resource of atlasResources) {
     server.registerResource(

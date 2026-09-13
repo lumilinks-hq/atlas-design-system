@@ -2,7 +2,6 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { DocsShell } from "./components/DocsShell";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { NotFoundPage } from "./pages/NotFoundPage";
-import { SearchPage } from "./pages/SearchPage";
 import {
   ComponentsPage,
   ExamplePage,
@@ -41,7 +40,6 @@ export function App() {
           <Route path="/examples/invoice-management" element={<ExamplePage slug="invoice-management" />} />
           <Route path="/examples/invoice-management/results" element={<ResultsPage experiment="invoice-management" />} />
           <Route path="/rules" element={<RulesPage />} />
-          <Route path="/search" element={<SearchPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
         <Route path="/demo" element={<Navigate to={accountResultsPath} replace />} />
