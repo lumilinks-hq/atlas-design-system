@@ -35,3 +35,37 @@ pnpm run site:preview  # wrangler devでローカル確認
 ```
 
 配信設定は`wrangler.jsonc`にある。`not_found_handling: "single-page-application"`は`/harness`などのルートにindex.htmlを返すため、`html_handling: "none"`は`/play-atlas.html`が末尾スラッシュへリダイレクトされるのを防ぐため。どちらも外すとサイトが壊れる。
+
+## GitHub Release を作る
+
+### バージョン決定の方針
+
+- `package.json` の `version` は SemVer に従う。初回のリリースは `1.0.0`
+- 破壊的変更（公開 URL や保存 Run の形式が変わる）は major、機能追加は minor、修正だけなら patch
+- `design/` 契約の version は [`CHANGELOG.md`](../CHANGELOG.md) の規則で別に上げる。アプリの version と一致させる必要はない
+
+### Release note の書き方
+
+冒頭にアプリの version と契約の version を併記する。その下は `--generate-notes` が作る PR 一覧をそのまま使う。
+
+```markdown
+- package.json version: 1.0.0
+- design/ 契約 version: 1.0.0（CHANGELOG.md）
+```
+
+### 手順
+
+1. PR で `package.json` の `version` を上げ、必要なら `CHANGELOG.md` も更新して main にマージする
+2. main で tag を打ち、Release を作る
+
+```bash
+git switch main && git pull
+gh release create vX.Y.Z --generate-notes --title "vX.Y.Z"
+```
+
+生成された note の先頭に上の version 併記を追記する。`gh release edit vX.Y.Z --notes-file <file>` で差し替えられる。
+
+### main の保護
+
+- main への直接 push は branch 保護で禁止する。変更はすべて PR 経由
+- PR は CI の `verify` Check（`demo:check` と `test:e2e`）の通過が必須。GitHub の Branch protection で `verify` を required status check に設定する

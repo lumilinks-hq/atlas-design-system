@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/component.schema.json",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "id": "component.table",
   "name": "Table",
   "implementation": "Table",
@@ -34,5 +34,11 @@
     "navigation.link-semantics",
     "a11y.color-only",
     "layout.narrow"
-  ]
+  ],
+  "usage": {
+    "when": ["同じ構造のレコードを一覧で比較・選択する画面", "広い画面で列ごとに並べ替えや絞り込みを行う一覧"],
+    "avoid": ["768px 未満の画面。mobile-list を使う", "レコードの詳細を1件だけ見せる場面。Card や詳細画面を使う"]
+  },
+  "accessibility": ["aria-label で一覧の名前を付ける", "Table.Column に見出しを付け、列の意味をスクリーンリーダーに伝える", "行内のリンクは対象名を文言に含める"],
+  "docsUrl": "https://heroui.com/docs/react/components/table"
 }

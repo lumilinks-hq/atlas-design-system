@@ -45,6 +45,27 @@
     },
     "requirements": { "type": "array", "minItems": 1, "items": { "type": "string" } },
     "relatedRules": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+    "usage": {
+      "description": "この部品を使う場面と、使わない場面",
+      "type": "object",
+      "required": ["when", "avoid"],
+      "properties": {
+        "when": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "avoid": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+      },
+      "additionalProperties": false
+    },
+    "accessibility": {
+      "description": "実装時に満たすアクセシビリティ要件",
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "docsUrl": {
+      "description": "HeroUI 公式ドキュメントの URL",
+      "type": "string",
+      "pattern": "^https://heroui\\.com/docs/react/components/[a-z-]+$"
+    },
     "layout": {
       "type": "object",
       "minProperties": 1,

@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/component.schema.json",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "id": "component.card",
   "name": "Card",
   "implementation": "Card",
@@ -17,5 +17,11 @@
     "余白だけで区切れる場合はCardを増やさない",
     "Card.HeaderとCard.Contentを使い、HeroUI標準の内側余白space.4を保つ"
   ],
-  "relatedRules": ["component.approved", "layout.grouping"]
+  "relatedRules": ["component.approved", "layout.grouping"],
+  "usage": {
+    "when": ["詳細画面で1件の要約情報をまとめて見せる場面", "背景から1段持ち上げて注目させたい情報のかたまり"],
+    "avoid": ["一覧の各行を Card にする。Table か mobile-list を使う", "Card の中に Card を入れる。影が重なり階層が崩れる"]
+  },
+  "accessibility": ["見出しを持たせ、Card の内容が何かを先に伝える", "Card 全体をクリック可能にせず、操作は Button や Link に限定する"],
+  "docsUrl": "https://heroui.com/docs/react/components/card"
 }

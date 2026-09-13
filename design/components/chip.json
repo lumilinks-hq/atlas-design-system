@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/component.schema.json",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "id": "component.chip",
   "name": "Chip",
   "implementation": "Chip",
@@ -14,5 +14,11 @@
     "操作要素の代わりに使わない",
     "semantic colorと状態の意味を一致させる"
   ],
-  "relatedRules": ["component.approved", "a11y.color-only", "color.semantic"]
+  "relatedRules": ["component.approved", "a11y.color-only", "color.semantic"],
+  "usage": {
+    "when": ["ステータスなど、短い状態ラベルの表示", "一覧やヘッダーでの補足ラベル"],
+    "avoid": ["操作を持たせる。Button を使う", "長い文章を入れる。数文字の語に留める"]
+  },
+  "accessibility": ["色だけで状態を区別せず、文言でも示す", "装飾目的の Chip は読み上げ順を乱さない位置に置く"],
+  "docsUrl": "https://heroui.com/docs/react/components/chip"
 }

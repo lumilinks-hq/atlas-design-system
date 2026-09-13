@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/component.schema.json",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "id": "component.text-field",
   "name": "TextField",
   "implementation": "TextField",
@@ -15,5 +15,11 @@
     "補足はDescription、入力エラーはFieldErrorで対象の近くに表示する",
     "メールアドレスにはtype=emailと適切なautocompleteを指定する"
   ],
-  "relatedRules": ["component.approved", "a11y.form-label", "a11y.error-recovery"]
+  "relatedRules": ["component.approved", "a11y.form-label", "a11y.error-recovery"],
+  "usage": {
+    "when": ["氏名、メールアドレスなど、自由入力の1行テキスト", "入力形式に合わせて type を切り替える入力"],
+    "avoid": ["候補が決まっている値の入力。Select を使う", "キーワード検索。SearchField を使う"]
+  },
+  "accessibility": ["Label を必ず付け、placeholder だけで用途を示さない", "エラーは FieldError で入力欄の直下に出し、入力欄と関連付ける", "メールアドレスは type=email を使い、適切なキーボードを出す"],
+  "docsUrl": "https://heroui.com/docs/react/components/text-field"
 }

@@ -12,7 +12,7 @@
 実行環境には Node.js 24 と pnpm 11.13.1 を使用します（`.node-version` および `packageManager` でバージョンを固定しています）。
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
@@ -42,6 +42,7 @@ pnpm experiment:preview --pair create-01 --mode baseline --port 4181
 | [`design/`](./design) | デザイントークン、HeroUIコンポーネント契約、検証ルール、JSON Schema定義 |
 | [`experiments/account-management/`](./experiments/account-management) | 実験の前提指示（Brief）、共通スターターコード、保存済みRunデータ |
 | [`MVP.md`](./MVP.md) / [`TASKS.md`](./TASKS.md) | デモの仕様と受け入れ条件、実装タスク一覧 |
+| [`docs/EXTENDING.md`](./docs/EXTENDING.md) | トークン・コンポーネント契約・ルール・Example を追加する手順 |
 
 ## AIエージェントからの利用
 
@@ -75,3 +76,22 @@ pnpm test:e2e     # 実ブラウザで主要ルートと1440px/390pxの表示を
 
 保存された実験Runには、プロンプト、イベントログ、生成ソースコード、検証ログが含まれます。機密保護のため、保存時にローカルパスやユーザー名、秘密情報とみなされる文字列を自動マスクし、さらに `pnpm public:audit` で安全性を再検査しています。
 公開に関する基準や詳細な手順については、[`docs/PUBLICATION_POLICY.md`](./docs/PUBLICATION_POLICY.md)、[`docs/RELEASING.md`](./docs/RELEASING.md)、[`docs/PRESENTATION_CHECKLIST.md`](./docs/PRESENTATION_CHECKLIST.md) をご参照ください。サードパーティライセンス表示は [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md) に記載されています。
+
+## ライセンスと利用条件
+
+コードと `design/` 配下の設計契約は MIT License（[`LICENSE`](./LICENSE)）です。
+
+`experiments/` と `public/` 配下の保存済み Run（プロンプト、イベントログ、生成ソースコード、検証ログ、スクリーンショット）は AI エージェントの生成物で、比較実験の参考資料として公開しています。品質や権利関係を保証するものではないので、再利用するときは内容を確認したうえで自己責任で扱ってください。公開の範囲と基準は [`docs/PUBLICATION_POLICY.md`](./docs/PUBLICATION_POLICY.md) にあります。
+
+## コントリビューション
+
+外部からの Issue と Pull Request はどちらも受け付けていません。不具合報告や質問の窓口も設けていません。
+
+## バージョンとリリース
+
+| 対象 | 管理場所 | 規則 |
+| --- | --- | --- |
+| アプリケーション | `package.json` の `version` | SemVer |
+| 設計契約（`design/`） | [`CHANGELOG.md`](./CHANGELOG.md) | 契約独自の version を別管理 |
+
+GitHub Release の手順は [`docs/RELEASING.md`](./docs/RELEASING.md) を参照してください。

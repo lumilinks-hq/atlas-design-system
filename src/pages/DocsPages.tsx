@@ -34,6 +34,7 @@ import {
   type ExampleSlug,
   type PatternSlug,
 } from "../data/design";
+import { contrastReport } from "../data/contrast";
 import { experimentRuns } from "../data/runs";
 
 const docsToastQueue = new Toast.Queue({
@@ -162,12 +163,12 @@ const mcpClients = [
   {
     title: "Codex",
     description: "ユーザー単位（グローバル設定）として登録します。",
-    command: "codex mcp add atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system-demo mcp:start\ncodex mcp get atlas-design-system\n\n# 削除\ncodex mcp remove atlas-design-system",
+    command: "codex mcp add atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system mcp:start\ncodex mcp get atlas-design-system\n\n# 削除\ncodex mcp remove atlas-design-system",
   },
   {
     title: "Claude Code",
     description: "プロジェクト固有の設定として登録します。",
-    command: "claude mcp add --scope project atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system-demo mcp:start\nclaude mcp get atlas-design-system\n\n# 削除\nclaude mcp remove --scope project atlas-design-system",
+    command: "claude mcp add --scope project atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system mcp:start\nclaude mcp get atlas-design-system\n\n# 削除\nclaude mcp remove --scope project atlas-design-system",
   },
 ] as const;
 
@@ -244,7 +245,7 @@ export function GettingStartedPage() {
       <section className="client-setup" aria-labelledby="client-setup-title">
         <div className="section-heading">
           <h2 id="client-setup-title">MCPクライアントへ接続する</h2>
-          <p><code>/absolute/path/to/atlas-design-system-demo</code> の部分は、クローンしたディレクトリの絶対パスに置き換えて実行してください。</p>
+          <p><code>/absolute/path/to/atlas-design-system</code> の部分は、クローンしたディレクトリの絶対パスに置き換えて実行してください。</p>
         </div>
         <div className="client-setup-grid">
           {mcpClients.map(({ title, description, command }) => (
@@ -345,12 +346,32 @@ const breakpointTokenLabels: Record<string, string> = {
   narrow: "縦並び（1カラム）へ切り替えるブレークポイント",
 };
 
+// トークングループごとの用途と避ける使い方。値は tokens.json から描画する
+function TokenGuidance({ when, avoid }: { when: string; avoid: string }) {
+  return (
+    <div className="component-meta-list">
+      <div><p className="meta-label">用途</p><p>{when}</p></div>
+      <div><p className="meta-label">避ける使い方</p><p>{avoid}</p></div>
+    </div>
+  );
+}
+
+const contrastThresholdLabels: Record<number, string> = {
+  4.5: "文字 4.5:1",
+  3: "非テキスト 3:1",
+};
+
 export function FoundationsPage() {
+  const contrastRows = contrastReport(designData.tokens.color);
   return (
     <article className="doc-page">
       <PageHeader title="デザイントークン" description="HeroUIのテーマと連動する、プロダクト固有のセマンティックトークンを定義します。" />
       <section className="token-section">
-        <h2>色</h2>
+        <h2 id="color">色</h2>
+        <TokenGuidance
+          when="text と textMuted は文字、background と surface と surfaceMuted は面、accent は主操作とリンク、success・warning・danger は状態、focus はフォーカスリングに使います。"
+          avoid="トークンにない色を直接書かないでください。accent を装飾や広い面に使わず、状態色だけで意味を伝えないでください。"
+        />
         <div className="swatch-grid">
           {Object.entries(designData.tokens.color).map(([name, value]) => (
             <div className="site-card swatch" key={name}>
@@ -359,9 +380,39 @@ export function FoundationsPage() {
             </div>
           ))}
         </div>
+        <h3 id="contrast">コントラスト比</h3>
+        <p className="token-section-description">Atlas が保証する前景と背景の組み合わせです。文字は WCAG AA の 4.5:1、focus リングは非テキストの 3:1 を基準に、tokens.json の値から計算しています。</p>
+        <div className="compare-table-scroll" tabIndex={0}>
+          <table className="compare-table" aria-label="コントラスト比">
+            <thead>
+              <tr>
+                <th scope="col">前景</th>
+                <th scope="col">背景</th>
+                <th scope="col">比率</th>
+                <th scope="col">基準</th>
+                <th scope="col">判定</th>
+              </tr>
+            </thead>
+            <tbody>
+              {contrastRows.map((row) => (
+                <tr key={`${row.foreground}/${row.background}`}>
+                  <td><code>{row.foreground}</code></td>
+                  <td><code>{row.background}</code></td>
+                  <td>{row.ratio.toFixed(2)}:1</td>
+                  <td>{contrastThresholdLabels[row.threshold]}</td>
+                  <td>{row.passes ? "AA" : "不合格"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
       <section className="token-section">
-        <h2>余白</h2>
+        <h2 id="space">余白</h2>
+        <TokenGuidance
+          when="要素の間隔と内側の余白に使います。近い関係は space.1〜3、セクションの区切りは space.6〜12 を使います。"
+          avoid="px 値や中間の値を直接書かないでください。同じ関係の要素に異なる余白を混ぜないでください。"
+        />
         <ul className="spacing-preview-list" aria-label="余白トークンの実寸プレビュー">
           {Object.entries(designData.tokens.space).map(([name, value]) => (
             <li key={name}>
@@ -372,8 +423,11 @@ export function FoundationsPage() {
         </ul>
       </section>
       <section className="token-section">
-        <h2>幅</h2>
-        <p className="token-section-description">ページの最大幅や、画面幅に応じた縦並び（1カラム）への切り替え基準（ブレークポイント）を共通定義します。画面ごとに個別の値を持ち込まず、この基準に統一します。</p>
+        <h2 id="content">幅</h2>
+        <TokenGuidance
+          when="maxWidth はページ全体の最大幅、readingWidth は本文や長文の最大幅に使います。"
+          avoid="画面ごとに独自の最大幅を持ち込まないでください。Table を readingWidth に収めないでください。"
+        />
         <dl className="measure-token-list">
           {Object.entries(designData.tokens.content).map(([name, value]) => (
             <div key={name}>
@@ -381,6 +435,15 @@ export function FoundationsPage() {
               <dd>{value}</dd>
             </div>
           ))}
+        </dl>
+      </section>
+      <section className="token-section">
+        <h2 id="breakpoint">ブレークポイント</h2>
+        <TokenGuidance
+          when="画面幅に応じて縦並び（1カラム）へ切り替える基準です。Table から mobile-list への切り替えもこの値で判断します。"
+          avoid="コンポーネントごとに別のブレークポイントを定義しないでください。narrow 未満で横並びを維持しないでください。"
+        />
+        <dl className="measure-token-list">
           {Object.entries(designData.tokens.breakpoint).map(([name, value]) => (
             <div key={name}>
               <dt>{breakpointTokenLabels[name] ?? name}<code>breakpoint.{name}</code></dt>
@@ -390,7 +453,11 @@ export function FoundationsPage() {
         </dl>
       </section>
       <section className="token-section">
-        <h2>角丸</h2>
+        <h2 id="radius">角丸</h2>
+        <TokenGuidance
+          when="base は Card、Button、入力欄などの面。pill は Chip。circle はアバターやアイコンボタンに使います。"
+          avoid="面と内側の要素で角丸の大きさを変えないでください。Table のセルに角丸を付けないでください。"
+        />
         <div className="radius-preview-list">
           {Object.entries(designData.tokens.radius).map(([name, value]) => (
             <figure className="site-card" key={name}>
@@ -410,8 +477,11 @@ export function FoundationsPage() {
         </div>
       </section>
       <section className="token-section">
-        <h2>影</h2>
-        <p className="token-section-description">Cardコンポーネントは背景から1段浮かび上がらせるために shadow.raised を適用します。Tableやセクションの区切りは影に頼らず、境界線と余白で表現します。</p>
+        <h2 id="shadow">影</h2>
+        <TokenGuidance
+          when="Card は shadow.raised、Drawer や Dialog は shadow.overlay、Toast は shadow.floating を使います。"
+          avoid="Table やセクションの区切りに影を使わないでください。境界線と余白で表現します。影を重ねないでください。"
+        />
         <div className="shadow-preview-list" aria-label="影トークンの実寸プレビュー">
           {Object.entries(designData.tokens.shadow).map(([name, value]) => (
             <figure className="site-card" key={name}>
@@ -428,7 +498,11 @@ export function FoundationsPage() {
         </div>
       </section>
       <section className="token-section">
-        <h2>文字</h2>
+        <h2 id="type">文字</h2>
+        <TokenGuidance
+          when="body は本文、small と label は補足やラベル、heading と title は見出しに使います。行間は lineHeightBody と lineHeightHeading を使います。"
+          avoid="トークンにないサイズを直接書かないでください。強調のために本文を heading にしないでください。"
+        />
         <div className="type-preview-list">
           {Object.entries(designData.tokens.type).map(([name, value]) => (
             <figure key={name}>
@@ -446,6 +520,14 @@ export function FoundationsPage() {
             </figure>
           ))}
         </div>
+      </section>
+      <section className="token-section">
+        <h2 id="motion">モーション</h2>
+        <p className="token-section-description">Atlas は motion トークンを定義しない。HeroUI 既定のトランジションを使い、prefers-reduced-motion を尊重する。</p>
+        <TokenGuidance
+          when="Drawer、Dialog、Toast の開閉は HeroUI 既定の動きをそのまま使います。"
+          avoid="独自の duration や easing を定義しないでください。prefers-reduced-motion が有効な環境で動きを強制しないでください。"
+        />
       </section>
     </article>
   );
@@ -936,7 +1018,7 @@ function ComponentExample({ component }: { component: (typeof designData.compone
   return (
     <div className="component-example">
       <div className="component-example-import">
-        <code>{importStatement}</code>
+        <code tabIndex={0}>{importStatement}</code>
         <Button
           aria-label={`${component.name}のコード例をコピー`}
           className="component-copy-button"
@@ -992,11 +1074,17 @@ export function ComponentsPage() {
           {designData.components.map((component) => (
             <article className="component-entry" key={component.id}>
               <header className="component-entry-header">
-                <div className="contract-title"><h2>{component.name}</h2><code>{component.id}</code></div>
+                <div className="contract-title"><h2 id={component.id}>{component.name}</h2><code>{component.id}</code></div>
+                <a className="artifact-source" href={component.docsUrl} target="_blank" rel="noreferrer">
+                  <code>HeroUI 公式ドキュメント</code>
+                  <ExternalLink size={14} aria-hidden="true" />
+                </a>
               </header>
               <ComponentExample component={component} />
               <div className="component-contract-details">
                 <div className="component-meta-list">
+                  <div><p className="meta-label">用途</p><ul className="example-rule-list">{component.usage.when.map((item) => <li key={item}>{item}</li>)}</ul></div>
+                  <div><p className="meta-label">使わない場面</p><ul className="example-rule-list">{component.usage.avoid.map((item) => <li key={item}>{item}</li>)}</ul></div>
                   <div><p className="meta-label">利用できるバリエーション</p><p>{component.variants.join(", ")}</p></div>
                   <div><p className="meta-label">利用できるサイズ</p><p>{component.sizes.join(", ")}</p></div>
                   <div><p className="meta-label">既定のバリエーション</p><p>{component.defaults.variant}</p></div>
@@ -1011,8 +1099,16 @@ export function ComponentsPage() {
                 <div className="component-requirement-list">
                   <ul>{component.requirements.map((item) => <li key={item}><Check size={16} />{item}</li>)}</ul>
                   <div>
+                    <p className="meta-label">アクセシビリティ要件</p>
+                    <ul>{component.accessibility.map((item) => <li key={item}><Check size={16} />{item}</li>)}</ul>
+                  </div>
+                  <div>
                     <p className="meta-label">関連する検証ルール</p>
-                    <div className="chip-list">{component.relatedRules.map((ruleId) => <Chip key={ruleId} size="sm" variant="soft">{ruleId}</Chip>)}</div>
+                    <ul className="example-rule-list">
+                      {component.relatedRules.map((ruleId) => (
+                        <li key={ruleId}><Link to={`/rules#${ruleId}`}>{ruleContractTitle(ruleId)}<code>{ruleId}</code></Link></li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               </div>
@@ -1107,7 +1203,7 @@ export function PatternDocPage({ slug }: { slug: PatternSlug }) {
           <h2 id={`${slug}-anatomy`}>構造</h2>
           <p>{copy.anatomy}</p>
         </div>
-        <div className="doc-table-scroll">
+        <div className="doc-table-scroll" tabIndex={0}>
           <table className="doc-table">
             <thead>
               <tr><th scope="col">領域</th><th scope="col">扱い</th><th scope="col">内容</th></tr>
@@ -1156,7 +1252,7 @@ export function PatternDocPage({ slug }: { slug: PatternSlug }) {
           <h2 id={`${slug}-layout`}>実装で使う値</h2>
           <p>クラスは <code>design/layout.css</code>、値は <code>design/tokens.json</code> に定義されています。</p>
         </div>
-        <div className="doc-table-scroll">
+        <div className="doc-table-scroll" tabIndex={0}>
           <table className="doc-table doc-table--wide">
             <thead>
               <tr>
@@ -1195,7 +1291,7 @@ export function PatternDocPage({ slug }: { slug: PatternSlug }) {
           <h2 id={`${slug}-contract`}>参照する契約</h2>
           <p>このパターンを採用する画面が満たすべき、画面状態、コンポーネント、検証ルールです。</p>
         </div>
-        <div className="doc-table-scroll">
+        <div className="doc-table-scroll" tabIndex={0}>
           <table className="doc-table">
             <thead>
               <tr><th scope="col">項目</th><th scope="col">内容</th></tr>
@@ -1471,6 +1567,22 @@ export function ExamplePage({ slug }: { slug: ExampleSlug }) {
               {example.rules.map((ruleId) => <li key={ruleId}>{ruleContractTitle(ruleId)}<code>{ruleId}</code></li>)}
             </ul>
           </section>
+          <section className="site-card contract-card" aria-labelledby="example-constraints-title">
+            <h3 id="example-constraints-title">この画面の業務制約</h3>
+            <table className="reference-table" aria-label="この画面の業務制約">
+              <tbody>
+                <tr><th scope="row">目的</th><td>{example.purpose}</td></tr>
+                <tr><th scope="row">画面状態</th><td>{example.states.join(", ")}</td></tr>
+                <tr><th scope="row">禁止文言</th><td>{example.lint.forbiddenText.join(", ")}</td></tr>
+                <tr><th scope="row">必須の入力 type</th><td><code>{example.lint.requiredInputType}</code></td></tr>
+                <tr><th scope="row">取り消せない操作</th><td><code>{example.lint.irreversibleActionPattern}</code></td></tr>
+                <tr><th scope="row">戻るリンク</th><td><code>{example.lint.linkSemantics.backLinkPattern}</code></td></tr>
+                <tr><th scope="row">ステータス値</th><td>{example.evaluation.statusValues.join(", ")}</td></tr>
+                <tr><th scope="row">ツールバー名</th><td>{example.evaluation.toolbarAriaLabel}</td></tr>
+                <tr><th scope="row">必須項目</th><td>{example.evaluation.requiredFieldLabel}</td></tr>
+              </tbody>
+            </table>
+          </section>
           <section className="site-card contract-card" aria-labelledby="example-data-title">
             <h3 id="example-data-title">参照する設計データ</h3>
             <ul className="example-data-list">
@@ -1511,21 +1623,38 @@ export const ruleMethodLabels: Record<string, string> = {
   human: "人の判断",
 };
 
+// rules.json は部品を参照しないので、components の relatedRules から逆引きする
+function relatedComponents(ruleId: string) {
+  return designData.components.filter((component) => component.relatedRules.includes(ruleId));
+}
+
 export function RulesPage() {
   return (
     <article className="doc-page">
       <PageHeader title="検証ルール" description="Lint、自動検証、AIレビュー、人の判断の4段階で役割を分担し、多層的に品質を検証します。" />
       <div className="rules-table" role="table" aria-label="検証ルール一覧">
-        <div className="rules-row rules-head" role="row"><span>ルール</span><span>確認方法</span><span>重要度</span></div>
+        <div className="rules-row rules-head" role="row"><span role="columnheader">ルール</span><span role="columnheader">確認方法</span><span role="columnheader">重要度</span></div>
         {designData.rules.map((rule) => (
           <div className="rules-row" role="row" key={rule.id}>
-            <div>
-              <strong>{rule.title}</strong>
+            <div role="cell">
+              <strong id={rule.id}>{rule.title}</strong>
               <div className="rules-identity"><code>{rule.id}</code><span className="rules-category">{rule.category}</span></div>
               <p>{rule.description}</p>
+              <p className="meta-label">修正方針</p>
+              <p>{rule.fix}</p>
+              {relatedComponents(rule.id).length > 0 && (
+                <>
+                  <p className="meta-label">関連コンポーネント</p>
+                  <ul className="example-rule-list">
+                    {relatedComponents(rule.id).map((component) => (
+                      <li key={component.id}><Link to={`/components#${component.id}`}>{component.name}</Link></li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </div>
-            <span>{ruleMethodLabels[rule.method] ?? rule.method}</span>
-            <Chip size="sm" variant="soft">{rule.severity}</Chip>
+            <span role="cell">{ruleMethodLabels[rule.method] ?? rule.method}</span>
+            <span role="cell"><Chip size="sm" variant="soft">{rule.severity}</Chip></span>
           </div>
         ))}
       </div>

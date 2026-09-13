@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/component.schema.json",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "id": "component.select",
   "name": "Select",
   "implementation": "Select",
@@ -15,5 +15,11 @@
     "未選択と選択済みを区別する",
     "エラー時に回復方法を示す"
   ],
-  "relatedRules": ["component.approved", "a11y.form-label", "a11y.error-recovery"]
+  "relatedRules": ["component.approved", "a11y.form-label", "a11y.error-recovery"],
+  "usage": {
+    "when": ["ステータスなど、候補が決まっている値の選択", "候補が5件を超える場合の選択"],
+    "avoid": ["自由入力が必要な値。TextField を使う", "候補が2〜3件で常に見せたい場合。Chip などの常時表示を検討する"]
+  },
+  "accessibility": ["Label を付け、選択肢の意味を伝える", "選択中の値を Select.Value で表示する", "キーボードで開閉と選択ができるようにする"],
+  "docsUrl": "https://heroui.com/docs/react/components/select"
 }

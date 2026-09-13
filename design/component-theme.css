@@ -5,6 +5,11 @@
   --radius: calc(var(--dh-radius-base) / 3);
   --field-radius: var(--dh-radius-base);
   --radius-field: var(--dh-radius-base);
+  /* HeroUI の意味色を Atlas トークンへ寄せる。既定色は文字コントラストが AA を満たさない */
+  --danger: var(--dh-danger);
+  --success: var(--dh-success);
+  --success-soft-foreground: var(--dh-success);
+  --muted: var(--dh-text-muted);
 }
 
 .surface,
@@ -20,6 +25,12 @@
 
 .chip {
   border-radius: var(--dh-radius-pill);
+}
+
+/* HeroUI の soft 前景は color-mix で薄くなり AA を満たさないため、Atlas の意味色をそのまま使う */
+.chip--success.chip--soft {
+  --chip-bg: color-mix(in oklab, var(--dh-success) 10%, var(--dh-surface));
+  --chip-fg: var(--dh-success);
 }
 
 .close-button,

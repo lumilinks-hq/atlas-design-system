@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/component.schema.json",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "id": "component.drawer",
   "name": "Drawer",
   "implementation": "Drawer",
@@ -19,6 +19,12 @@
     "TextFieldのルートへ入力枠や高さを指定せず、枠とpaddingはInputまたはSelect.Triggerだけへ適用する"
   ],
   "relatedRules": ["component.approved", "a11y.focus-management", "state.loading"],
+  "usage": {
+    "when": ["一覧を保ったまま、1件の編集や新規作成を行う場面", "詳細を横から一時的に見せる場面"],
+    "avoid": ["確認だけの短い対話。AlertDialog を使う", "ページ全体の遷移が必要な操作。Link で詳細画面へ移動する"]
+  },
+  "accessibility": ["Drawer.Heading で見出しを付け、開いたときにフォーカスを中へ移す", "Escape で閉じられるようにし、閉じた後は開いたボタンへフォーカスを戻す", "背景はスクロールさせない"],
+  "docsUrl": "https://heroui.com/docs/react/components/drawer",
   "layout": {
     "placement": "right",
     "width": "20rem",
