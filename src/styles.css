@@ -339,11 +339,6 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .contract-reference .example-rule-list code { margin-top: 2px; font-size: .8125rem; }
 .harness-contract { display: grid; align-items: start; gap: 72px; grid-template-columns: 1fr .9fr; }
 
-.roles-table { width: 100%; border-collapse: collapse; margin-top: var(--dh-space-4); font-size: 1rem; line-height: 1.6; }
-.roles-table th, .roles-table td { text-align: left; vertical-align: top; padding: var(--dh-space-3) var(--dh-space-4) var(--dh-space-3) 0; border-bottom: 1px solid var(--dh-border); }
-.roles-table thead th { color: var(--dh-text-muted); font-size: .875rem; font-weight: 600; }
-.roles-table tbody th { white-space: nowrap; font-weight: 600; }
-.roles-table td { color: var(--dh-text-muted); }
 .rules-filters { margin-top: 40px; display: flex; flex-wrap: wrap; gap: var(--dh-space-6); align-items: end; }
 .rules-filter-group { margin: 0; padding: 0; border: 0; display: flex; flex-wrap: wrap; gap: var(--dh-space-3) var(--dh-space-4); }
 .rules-filter-group legend { padding: 0; margin-bottom: var(--dh-space-2); color: var(--dh-text-muted); font-size: .875rem; font-weight: 600; }

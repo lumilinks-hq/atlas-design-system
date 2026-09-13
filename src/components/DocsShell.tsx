@@ -2,7 +2,6 @@ import { Button } from "@heroui/react";
 import { ExternalLink, Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { buildInfo } from "../data/buildInfo";
 import { repositoryUrl } from "../data/repository";
 
 /** alsoActiveOn: そのパスでも同じ項目を選択中として扱う。比較ページは題材を切り替えても1項目のまま */
@@ -172,11 +171,6 @@ export function DocsShell() {
         <Outlet />
         <footer className="docs-footer">
           <p>© 2026 Lumilinks inc.</p>
-          <p className="docs-build">
-            v{buildInfo.version} ·{" "}
-            <a href={`${repositoryUrl}/commit/${buildInfo.commit}`} rel="noreferrer" target="_blank">{buildInfo.commit}</a>
-            {" "}· {buildInfo.builtAt.slice(0, 10)}
-          </p>
         </footer>
       </main>
     </div>

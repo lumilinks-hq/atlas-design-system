@@ -114,21 +114,6 @@ export function HomePage() {
         </ol>
       </section>
 
-      <section aria-labelledby="roles-title">
-        <div className="section-heading">
-          <h2 id="roles-title">3つの名前の責務</h2>
-          <p>このサイトの画面や実験に登場する会社名、担当者、請求データはすべて架空です。</p>
-        </div>
-        <table className="roles-table" aria-label="Design Harness、Atlas、HeroUI の責務">
-          <thead><tr><th scope="col">名前</th><th scope="col">責務</th></tr></thead>
-          <tbody>
-            <tr><th scope="row">Design Harness</th><td>設計データを機械可読にして、AIの生成と自動検証、人のレビューを同じ基準でつなぐ仕組みです。</td></tr>
-            <tr><th scope="row">Atlas</th><td>Design Harness に基づいて作ったデモ用のデザインシステムです。トークン、コンポーネントの採用範囲、パターン、検証ルールを定めます。</td></tr>
-            <tr><th scope="row">HeroUI</th><td>Atlas が採用する UI コンポーネントライブラリです。部品の実装は HeroUI が持ち、Atlas はどの部品をどう使うかを決めます。</td></tr>
-          </tbody>
-        </table>
-      </section>
-
       <section className="source-section" aria-labelledby="source-title">
         <div className="section-heading">
           <h2 id="source-title">人とAIが同じ設計仕様を参照する</h2>
