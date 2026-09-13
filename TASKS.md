@@ -178,9 +178,9 @@ Atlasを次の四つの用途で使える状態にする。
 依存: DH-280、DH-312
 
 - [x] versionを決める（1.0.0）
-- [ ] Release noteに利用方法、既知の制約、保存済みRunを記載する
-- [ ] GitHub Releaseを作る
-- [ ] 公開サイトとReleaseのversion一致を確認する
+- [x] Release noteに利用方法、既知の制約、保存済みRunを記載する
+- [x] GitHub Releaseを作る（v1.0.0、2026-09-14）
+- [x] 公開サイトとReleaseのversion一致を確認する（main の f444aa8 を deploy、footer に v1.0.0）
 
 完了条件: GitHub、Skill、MCP、公開サイトが同じリリースを参照している。
 
