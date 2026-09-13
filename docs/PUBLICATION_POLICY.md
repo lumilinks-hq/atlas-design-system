@@ -12,6 +12,10 @@ Atlasの比較デモは、結果だけでなく生成条件と修正過程を検
 
 イベントログは生成過程の根拠として残す。ただしworkspace（既定は`~/.cache/design-harness/runs/`、`DESIGN_HARNESS_RUNS_DIR`で変更可）にある未加工データは公開せず、`experiments/`へ保存したsanitize済み成果物だけを対象にする。sanitizeはworkspaceの絶対パスを`<workspace>`へ畳む。
 
+## 生成物の扱い
+
+保存 Run に含まれる生成ソースコードや検証ログは AI エージェントの生成物で、参考資料として公開する。コードと `design/` 契約は MIT License だが、生成物の品質や権利関係は保証しない。再利用するときは内容を確認して自己責任で扱う。
+
 ## 公開しないもの
 
 - APIキー、token、Cookie、認証情報

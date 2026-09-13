@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/component.schema.json",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "id": "component.button",
   "name": "Button",
   "implementation": "Button",
@@ -17,5 +17,11 @@
     "操作はonPressで扱い、マウス、タッチ、キーボードを同じ経路にする",
     "非同期処理中はloading状態と二重送信防止を持つ"
   ],
-  "relatedRules": ["component.approved", "a11y.control-name", "state.loading"]
+  "relatedRules": ["component.approved", "a11y.control-name", "state.loading"],
+  "usage": {
+    "when": ["保存、検索、削除など、画面内で処理を実行する操作", "Drawer や AlertDialog を開く操作"],
+    "avoid": ["別ページへ移動する操作。Link を使う", "1画面に primary を複数置く。主操作は1つに絞る"]
+  },
+  "accessibility": ["アイコンだけのボタンには aria-label で操作名を付ける", "処理中は isPending でボタンを無効化し、二重送信を防ぐ", "フォーカスリングは focus トークンを使い、消さない"],
+  "docsUrl": "https://heroui.com/docs/react/components/button"
 }

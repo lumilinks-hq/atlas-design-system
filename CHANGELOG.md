@@ -10,6 +10,18 @@
 
 このファイルが扱うのは契約のversionであり、`package.json`のversionとは別に管理する。
 
+## 1.1.0 - 2026-09-13
+
+互換を保った追加。`design/components/*.json` の `version` を 1.1.0 に上げた。
+
+- `design/schemas/component.schema.json` に任意項目を追加した。
+  - `usage.when`: この部品を使う場面
+  - `usage.avoid`: この部品を使わない場面
+  - `accessibility`: 実装時に満たすアクセシビリティ要件
+  - `docsUrl`: HeroUI 公式ドキュメントの URL（`https://heroui.com/docs/react/components/<slug>`）
+- 15 個のコンポーネント契約すべてに上記 4 項目を記入した。
+- 必須項目、既存項目の意味、ルール、トークン、パターン、サンプルは変更していない。
+
 ## 1.0.0 - 2026-09-02
 
 契約セットの初期リリース。この時点の内容は次のとおり。

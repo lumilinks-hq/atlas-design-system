@@ -14,11 +14,11 @@ cloneしたディレクトリの絶対パスを指定します。
 
 ```bash
 # Codex
-codex mcp add atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system-demo mcp:start
+codex mcp add atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system mcp:start
 codex mcp get atlas-design-system
 
 # Claude Code（プロジェクト単位）
-claude mcp add --scope project atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system-demo mcp:start
+claude mcp add --scope project atlas-design-system -- pnpm --dir /absolute/path/to/atlas-design-system mcp:start
 claude mcp get atlas-design-system
 ```
 

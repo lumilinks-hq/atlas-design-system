@@ -47,6 +47,19 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .docs-main { display: flex; min-height: 100vh; flex-direction: column; margin-inline-start: 280px; }
 .docs-footer { width: min(100%, 1040px); margin: auto auto 0; padding: 0 64px 56px; color: var(--dh-text-muted); font-size: .8125rem; }
 .docs-footer p { margin: 0; }
+.docs-build { margin-top: 4px; }
+.docs-build a { color: inherit; text-decoration: underline; }
+
+.not-found-links { margin: 24px 0 0; padding-left: 20px; }
+.not-found-links li + li { margin-top: 8px; }
+
+.error-message { margin: 0 0 24px; padding: 12px 16px; background: var(--dh-surface-muted, #f5f5f5); border-radius: 8px; white-space: pre-wrap; font-size: .875rem; }
+.error-actions { display: flex; gap: 16px; align-items: center; }
+
+.search-table { width: 100%; margin-top: 32px; border-collapse: collapse; font-size: .9375rem; }
+.search-table th, .search-table td { padding: 10px 12px; border-bottom: 1px solid var(--dh-border, #e5e5e5); text-align: left; vertical-align: top; }
+.search-table th { font-weight: 600; color: var(--dh-text-muted); }
+.search-empty { margin-top: 32px; color: var(--dh-text-muted); }
 /* 概要ページだけ本文幅が広いので、フッターの左端も本文に合わせる */
 .docs-main:has(.home-page) .docs-footer { width: min(100%, 1120px); }
 .mobile-header, .sidebar-scrim { display: none; }
@@ -572,3 +585,6 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .harness-official-link { margin: var(--dh-space-4) 0 0; font-size: 0.9375rem; }
 .harness-official-link a { display: inline-flex; align-items: center; gap: 4px; color: var(--dh-accent); font-weight: 600; text-decoration: none; }
 .harness-official-link a:hover { text-decoration: underline; }
+
+/* React Flow の attribution リンクは既定色がコントラスト不足 */
+.react-flow .react-flow__attribution a { color: var(--dh-text-muted); }

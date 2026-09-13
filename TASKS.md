@@ -1,10 +1,10 @@
-# Atlas Design System 公開までの残作業
+# Atlas Design System 残作業
 
-> 2026-09-03 追記: Presenter（`/demo/runs/account-management`）は廃止し、Design Harnessの説明（`/harness`）と生成結果の比較（`/examples/account-management/results`）へ置き換えた。以下の Presenter、Scene、1280×720 に関する記述は履歴として残している。
+更新日: 2026-09-13
 
-更新日: 2026-09-02
+このファイルは公開済みサイトを「初回リリース」と呼べる状態へ持っていくための残作業を管理する。比較条件と受け入れ条件は[`MVP.md`](./MVP.md)、AIと人が参照する設計方針は[`DESIGN.md`](./DESIGN.md)、公開基準は[`docs/PUBLICATION_POLICY.md`](./docs/PUBLICATION_POLICY.md)を正本とする。
 
-このファイルは現在の実装から公開版へ到達するための残作業を管理する。比較条件と受け入れ条件は[`MVP.md`](./MVP.md)、AIと人が参照する設計方針は[`DESIGN.md`](./DESIGN.md)を正本とする。
+> 2026-09-03 に Presenter（`/demo/runs/account-management`）と Scene 再生を廃止し、Design Harness の説明（`/harness`）と生成結果の比較ページ（`/examples/*/results`）へ置き換えた。PdEConf 2026（2026-09-05）の登壇は終了済み。`MVP.md` に残る Presenter、Scene、1280×720 の記述は履歴として扱う。
 
 ## 目標と役割
 
@@ -13,429 +13,178 @@ Atlasを次の四つの用途で使える状態にする。
 1. 人がデザインシステムの設計判断を読む。
 2. 開発者がGitHubからcloneして比較実験を再現する。
 3. AIエージェントがSkillまたはMCPを通して設計契約を参照する。
-4. カンファレンスやウェビナーで、Issueから生成・検査・結果比較までを説明する。
+4. 生成・検査・修正・結果比較のサイクルを、保存済みRunだけで説明する。
 
 公開サイト内では次の役割を混ぜない。
 
-| 目的 | CTA | 遷移先 |
-| --- | --- | --- |
-| Atlasを導入する | 導入方法を見る | `/getting-started` |
-| 生成結果を触る | 生成された画面を操作する | `/play/account-management` |
-| 比較の仕組みを理解する | 実装比較デモを見る | `/demo/runs/account-management` |
-| 設計判断を読む | Foundations / Components / Patterns / Rules | 各ドキュメント |
+| 目的 | 遷移先 |
+| --- | --- |
+| Atlasを導入する | `/getting-started` |
+| 仕組みを理解する | `/harness` |
+| 生成結果を比較する | `/examples/account-management/results`、`/examples/invoice-management/results` |
+| 生成結果を触る | `/play/account-management`、`/play/invoice-management` |
+| 設計判断を読む | `/foundations`、`/components`、`/patterns/*`、`/rules` |
 
-Explore用LP、ライブAI実行、複数シナリオ、英語対応は初回公開後に扱う。
+## 現在の状態
 
-## 現在できていること
+- 公開URL: https://demo-ds.design-harness.com/ （Cloudflare Workers、独自ドメイン、SPA fallback）
+- リポジトリ: `github.com/lumilinks-hq/atlas-design-system`（public、default branch は `main`、LICENSE 未追加、branch保護なし、Releaseなし）
+- CI: Pull Request と main への push で `pnpm demo:check` と `pnpm test:e2e` を実行し、main は本番へ自動デプロイ、PR は `pr-<番号>` のプレビューURLをコメントする
+- 題材: 顧客管理（account-management）と請求書管理（invoice-management）の2つ
+- 保存済みRun: account-management は `create-01`（比較ページの主軸、Claude Opus 5）、`fast-01`、`mvp-11`、`prelint-01`、`lint-01`。invoice-management は `invoice-01`。公開アセットに含まれるのは `create-01`、`fast-01`、`invoice-01` の3つ
+- 設計契約: component 15件、pattern 2件、example 1件、rule 28件（`CHANGELOG.md` 1.0.0）。ESLint プラグイン `packages/eslint-plugin-atlas` で Lint 検査分を担う
+- AI利用経路: Skill（`skills/atlas-design-system`）とローカル stdio MCP（`pnpm mcp:start`、契約テストあり）
 
-- [x] React、TypeScript、Vite、HeroUIで公開サイトを起動できる
-- [x] `#0d0bb6`をアクセントにしたAtlasテーマを生成できる
-- [x] `DESIGN.md`と`design/`にtoken、component、pattern、example、ruleの正本がある
-- [x] 設計データと保存済みRunを検証できる
-- [x] 同じBriefからBaseline、Harness、Harness修正版を生成・評価できる
-- [x] `mvp-10`の一覧・詳細画面、生成ソース、差分、検証結果、比較結果が保存されている
-- [x] BaselineとHarness修正版をローカルの別ポートで操作できる
-- [x] Presenter modeでIssue、設計適用、生成と検査、結果比較の4場面を再生できる
-- [x] SceneをURL、ボタン、左右キー、リセットで操作できる
-- [x] `pnpm demo:check`で設計、Run、型、Lint、テスト、Buildを確認できる
+## 完了した作業
 
-2026-08-31時点の保存済みRunでは、Baselineは14 passed / 8 failed / 2 review、Harness初回は18 passed / 4 failed / 2 review、Harness修正版は21 passed / 0 failed / 3 review。Harness修正版の型検査、3件の機能テスト、Production build、実ブラウザ検査も成功している。
+詳細な子項目は git 履歴と各ドキュメントに残っているため、ここでは束ねて記録する。
 
-## P0: 利用導線と操作デモ
+- [x] 情報設計とCTA（旧DH-201〜205）: Overview、導入方法、Play、比較ページ、Docsの役割とルートを固定し、CTA名と遷移先を一致させ、遷移テストを追加した。外部リンクには `ExternalLink` アイコンを付けている
+- [x] 導入方法ページ（旧DH-203）: GitHub、Skill、MCPの三つを目的別に説明し、コマンドをコピーできる
+- [x] 生成画面のPlay（旧DH-204）: 両題材でBaselineとHarness修正版を同じURL構造で切り替え、状態をURLで再現できる
+- [x] GitリポジトリとQuick start（旧DH-211、212）: `.gitignore`、公開データ監査、Node.js 24とpnpm 11.13.1の固定、README冒頭のQuick start、GitHub remote設定
+- [x] Skill（旧DH-220〜222）: 責務定義、`SKILL.md`、manifest解決スクリプト、`pnpm skills:check`、Skillあり・なしの比較fixture
+- [x] MCP（旧DH-230〜232）: read-only resource と tool、不正IDのエラー化、`scripts/mcp/server.test.mjs` の契約テスト、CodexとClaude Codeの接続例
+- [x] Table契約の一貫性（旧DH-245）: 契約、表示、コード例、生成画面を同じJSONから生成し、`pnpm design:conformance` で検査する
+- [x] 保存済みRunとの整合（旧DH-250）: metadataからの表示、欠損Artifactでのbuild失敗、比較条件一致の検査
+- [x] 公開データ監査とライセンス確認（旧DH-260、261の一部）: `pnpm runs:sanitize`、`pnpm public:audit`、`THIRD_PARTY_NOTICES.md`
+- [x] Web品質（旧DH-262の一部）: 3幅での横スクロール検査、キーボードとラベルの確認、内部リンク検査、bundle size検査、`scripts/verify-site.mjs` によるE2E
+- [x] README と運用文書（旧DH-263の一部）: Quick start、正本、安全規則、`docs/EXPERIMENTS.md`、`docs/RELEASING.md`、`docs/PUBLICATION_POLICY.md`、`docs/PRESENTATION_CHECKLIST.md`
+- [x] CI、Preview、Production（旧DH-270〜272）: `.github/workflows/ci.yml`、PRごとのプレビューURL、mainからの自動デプロイ、独自ドメイン
+- [x] 請求書管理の題材追加と比較ページの題材切り替え（2026-09-05）
+- [x] ESLint プラグインによる Lint 検査と同一モデル比較（prelint-01 / lint-01、2026-09-04）
+- [x] 日本語可読性とタイポグラフィの改善、ページ遷移時の先頭スクロール（2026-09-10）
 
-### DH-201 情報設計を固定する
+## P0: 公開リポジトリの体裁
 
-依存: なし
-
-- [x] Overview、Getting started、Play、Presenter、Docsの役割とルートを確定する
-- [x] 「今すぐ使ってみる」を廃止し、遷移先が分かるCTAへ置き換える
-- [x] 1画面に強いPrimary CTAを一つだけ置く
-- [x] 登壇デモを導入導線から分離する
-- [x] 生成画面とPresenterを「実装デモ」という一語でまとめない
-
-完了条件: Overviewから「導入」「操作」「比較説明」へ迷わず移動でき、CTA名と遷移先が一致する。
-
-### DH-202 CTAとナビゲーションを修正する
-
-依存: DH-201
-
-- [x] OverviewのPrimary CTAを「導入方法を見る」に変更する
-- [x] Overviewに「実装比較デモを見る」の副導線を置く
-- [x] 実装例ページに「生成された画面を操作する」を置く
-- [x] サイドバーの「登壇デモを見る」はPresenter modeへ維持する
-- [ ] 外部リンクであることを表示する
-- [x] 全CTAの遷移テストを追加する
-
-完了条件: Presenterへ移動するCTAは「登壇デモ」または「実装比較デモ」と表記される。
-
-### DH-203 Getting startedページを作る
-
-依存: DH-201
-
-- [x] `/getting-started`を追加する
-- [x] GitHub、Skill、MCPの三つの導入方法を目的別に説明する
-- [x] 初回推奨をGitHub cloneとして明示する
-- [x] 各方法の前提、導入、確認、更新方法を掲載する
-- [x] 未公開の方法は利用可能に見せない
-- [x] コマンドをコピーできるようにする
-- [x] READMEと手順がずれない検査方法を決める
-
-完了条件: 初見の開発者が自分に合う導入方法を選べる。
-
-### DH-204 生成画面を公開サイト内で操作できるようにする
-
-依存: DH-201
-
-- [x] `/play/account-management`を追加する
-- [x] BaselineとHarness修正版を同じURL構造で切り替えられるようにする
-- [x] 生成ソースのCSSと状態をドキュメントサイトから隔離する
-- [x] Default、Empty、Drawer、メール入力エラー、保存中、成功、失敗をURLから再現できるようにする
-- [x] 入力、確認、保存、失敗後の復旧を操作できるようにする
-- [x] 条件と状態をURLで共有できるようにする
-- [x] 業務画面を読める大きさで表示する
-- [x] モバイルとデスクトップで操作確認する
-
-完了条件: `pnpm experiment:preview`を別ポートで起動しなくても両条件を操作でき、保存済みRunのソースと内容が一致する。
-
-### DH-205 操作デモとPresenterを接続する
-
-依存: DH-202、DH-204
-
-- [x] Presenterの結果画面から該当する操作デモへ移動できるようにする
-- [x] 操作デモから比較説明へ戻れるようにする
-- [x] BaselineとHarness修正版の条件説明を常時確認できるようにする
-- [x] Presenter内では会場向けの情報量を維持する
-
-完了条件: 「説明を見る」と「画面を触る」を往復しても現在の条件を見失わない。
-
-## P0: GitHubから利用できるようにする
-
-### DH-210 公開リポジトリの方針を決める
+### DH-310 ライセンスと利用条件を決める
 
 依存: なし
 
-- [ ] リポジトリ名、owner、公開範囲、default branchを決める
-- [ ] OSSライセンスを選ぶ
-- [x] 保存済みRun、画像、ログ、生成ソースの公開基準を決める
-- [ ] Issue、Pull Request、外部Contributionを受け付ける範囲を決める
-- [ ] versioningとRelease方針を決める
+- [x] OSSライセンスを選び、`LICENSE` を追加する（MIT、著作権 Lumilinks inc.）
+- [x] 生成物と保存済みRunの利用条件をREADMEへ記載する
+- [x] Issue、Pull Request、外部Contributionを受け付ける範囲を決める（どちらも受け付けない。README に明記、Issues タブは無効化）
+- [x] versioningとRelease方針を決める（契約versionは `CHANGELOG.md`、サイトversionは別管理）
 
-完了条件: 公開先と利用条件をREADMEとLICENSEへ書ける。
+完了条件: 公開先と利用条件をREADMEとLICENSEから読める。
 
-### DH-211 GitリポジトリとGitHub公開先を作る
+### DH-311 GitHubの運用設定を整える
 
-依存: DH-210
+依存: DH-310
 
-- [x] 現在の作業フォルダをGitリポジトリとして初期化する
-- [x] `.gitignore`へ生成中workspace、秘密情報、一時ファイルを追加する
-- [ ] GitHubリポジトリを作成してremoteを設定する
-- [x] 初回コミット前に公開データ監査を通す
-- [ ] default branchの保護方針を設定する
+- [x] main branchの保護と必須Check（CI の `verify`）を設定する
+- [x] Issueテンプレートを用意する（受け付けない方針のため不要と判断）
+- [x] Contributionを受け付ける場合だけCONTRIBUTINGと行動規範を追加する（受け付けないため追加しない）
 
-完了条件: 新しい環境からcloneでき、端末固有のファイルが追跡されていない。
+完了条件: 未確認のPRがmainへ直接入らない。
 
-### DH-212 clone後のQuick startを成立させる
+### DH-312 公開サイトの版を確認できるようにする
 
-依存: DH-211
+依存: なし
 
-- [x] Node.jsとpnpmの要求バージョンを固定する
-- [x] `pnpm install`、`pnpm dev`、`pnpm demo:check`をREADME冒頭に整理する
-- [x] Docs、Play、PresenterのURLを記載する
-- [x] 比較再実行にCodex CLI認証が必要であることを分離して説明する
-- [x] 閲覧だけならAPIキー不要であることを明示する
-- [x] clean clone相当の隔離ディレクトリでQuick startを実行する
-
-完了条件: READMEだけで15分以内にサイトと操作デモを起動できる。
-
-## P1: Skillとして利用できるようにする
-
-### DH-220 Atlas Skillの責務を定義する
-
-依存: DH-203、DH-212
-
-- [x] 対象を「Atlasに従う画面実装と検証」に限定する
-- [x] `DESIGN.md`から必要なPattern、Example、Component、Ruleだけを読む順序を定義する
-- [x] 設計データをSkill本文へ複製しない
-- [x] Issue、設計契約、参照が不足する場合の停止条件を定義する
-- [x] 検証結果を次の修正Runへ渡す手順を定義する
-
-完了条件: Skillとデザインシステムの正本が二重管理にならない。
-
-### DH-221 Atlas Skillを実装する
-
-依存: DH-220
-
-- [x] 実行時に`.agents/skills/atlas-design-system/SKILL.md`を配置する
-- [x] 入力、前提、参照順序、実装、検証、完了報告を記述する
-- [x] manifestから参照対象を解決する補助スクリプトを用意する
-- [x] Skillの構造と内部リンクを検証するコマンドを追加する
-- [x] CodexとClaude Codeが同じ正本を読める配置にする
-- [x] Getting startedへ追加方法と使用例を掲載する
-
-完了条件: cleanなconsumerプロジェクトへ追加して実行できる。
-
-### DH-222 Skillの効果を検証する
-
-依存: DH-221
-
-- [x] 同じIssueとstarterでSkillなし・Skillありの比較fixtureを作る
-- [x] 両条件へ同じTypeScript、Test、Build、設計検査を実行する
-- [x] Skillが参照したファイルとルールIDを記録する
-- [x] 失敗時の再実行手順を確認する
-- [ ] Skill追加コマンドをclean環境で検証する
-
-完了条件: 設計ファイルを手動列挙せずAtlasに従う実装を再現できる。
-
-## P1: MCPとして利用できるようにする
-
-### DH-230 MCPの公開範囲と安全境界を決める
-
-依存: DH-203、DH-212
-
-- [x] 初回はローカルstdio MCPとして提供する
-- [x] 設計情報をread-only resourceとして公開する
-- [x] 任意ファイル読み込み、任意コマンド実行、書き込みを許可しない
-- [x] resource URIとschema versionを決める
-- [x] hosted MCPを初回公開から分離する
-
-resource候補: `atlas://design/quick-reference`、`atlas://tokens`、`atlas://components/{id}`、`atlas://patterns/{id}`、`atlas://examples/{id}`、`atlas://rules`。
-
-完了条件: MCPから参照できる情報と安全境界が明文化されている。
-
-### DH-231 MCPサーバーを実装する
-
-依存: DH-230
-
-- [x] resource一覧とresource取得を実装する
-- [x] manifestから必要な契約を解決するread-only toolを実装する
-- [x] 不正ID、参照切れ、schema不一致をエラーにする
-- [x] package scriptから起動できるようにする
-- [x] MCP protocolの契約テストを追加する
-- [x] 設計データ以外のローカル情報をログへ出さない
-
-完了条件: MCPクライアントからJSON正本と同じ設計契約をIDで取得できる。
-
-### DH-232 MCPの接続手順を公開する
-
-依存: DH-231
-
-- [x] Codex用の接続例を掲載する
-- [x] Claude Code用の接続例を掲載する
-- [x] 起動、疎通確認、更新、削除の手順を掲載する
-- [x] Getting startedへ利用場面と制約を掲載する
-- [ ] clean環境で接続例を検証する
-
-完了条件: 記載された設定だけでresource一覧を取得できる。
+- [x] version、commit、更新日時をサイト上で確認できるようにする
+- [x] 404と予期しないエラーの画面を作る（現在は不明なURLを `/` へredirectしており、ErrorBoundaryもない）
+- [x] Previewへ検索エンジンのindex抑止を設定する
+- [x] Analyticsと監視を使う場合は収集範囲を決める（Cloudflare Web Analytics。GitHub Actions の変数 `CF_BEACON_TOKEN` を設定するとビルド時に beacon を注入する。トークンは Cloudflare ダッシュボードで発行が必要で未設定）
 
 ## P1: デザインシステムを参照資料として完成させる
 
 ### DH-240 Foundationsを完成させる
 
-- [ ] Color、Typography、Spacing、Radius、Shadow、Motionを掲載する
-- [ ] token名、値、用途、避ける使い方を表示する
-- [ ] コントラストとフォーカス色の確認結果を掲載する
-- [ ] JSONと表示内容の一致を自動検査する
+現状: `/foundations` に色、余白、幅、角丸、影、文字を掲載済み。
+
+- [x] Motionを掲載する（motion トークンは定義しない方針を明記）
+- [x] token名、値、用途、避ける使い方を表示する
+- [x] コントラストとフォーカス色の確認結果を掲載する
+- [x] JSONと表示内容の一致を自動検査する（`scripts/docs-consistency.test.ts` の範囲を確認して広げる）
 
 ### DH-241 Component契約ページを完成させる
 
 依存: DH-240
 
-- [ ] 採用HeroUIコンポーネントごとの詳細ページを作る
-- [ ] 用途、使わない場面、許可variant、size、stateを掲載する
-- [ ] アクセシビリティ要件、良い例、避ける例を掲載する
-- [ ] 関連token、pattern、ruleを相互リンクする
-- [ ] HeroUI公式ドキュメントへリンクする
+現状: `/components` に各契約の利用できるvariant、既定値、関連ruleを一覧で掲載済み。
+
+- [x] 用途、使わない場面、size、stateを掲載する
+- [x] アクセシビリティ要件、良い例、避ける例を掲載する
+- [x] 関連token、pattern、ruleを相互リンクする（ruleは現在Chip表示のみ）
+- [x] HeroUI公式ドキュメントへリンクする
 
 ### DH-242 Pattern、Example、Ruleページを完成させる
 
 依存: DH-241
 
 - [x] Page layout variantの選択基準を掲載する
-- [ ] 顧客管理の構成、業務制約、必須状態を掲載する
-- [ ] Ruleの重大度、検証方法、修正方針を掲載する
 - [x] 自動検証、AIレビュー、人の判断を区別する
-- [ ] 検査結果から該当Ruleへ直接移動できるようにする
-
-### DH-245 Table契約の一貫性を保証する
-
-依存: DH-241、DH-242
-
-- [x] HeroUI Tableの標準variant、surfaceの責務、角丸tokenをcomponent契約へ定義する
-- [x] 顧客管理Exampleへ列順、見出し、幅、最小幅、揃え、row header、tabular指定を構造化して持たせる
-- [x] 詳細画面への移動はオブジェクト名のLink、編集・削除などの操作はButtonとして区別する
-- [x] 戻るLinkをPageHeading前の見出しグループへ置き、space.4とspace.8の余白を契約化する
-- [x] Componentページのプレビューとコード例を同じExample契約から生成する
-- [x] Harness修正版を同じ契約に従う独立したHeroUI実装へ揃える
-- [x] variant、列定義、外側surface、LinkとButtonの役割のずれを設計評価で失敗にする
-- [x] 戻るLinkの順序、グルーピング、余白のずれを設計評価で失敗にする
-- [x] Harness修正版と保存済み評価結果のずれを`pnpm design:conformance`で検査する
-- [x] Table契約、表示、コード例、生成画面の回帰テストを追加する
-- [x] 比較評価と公開スクリーンショットを更新する
-
-完了条件: Tableの見た目をDocsから複製せず、同じJSON契約を参照した実装と検証によって一致を維持できる。
+- [x] Exampleに必要な画面状態を掲載する
+- [x] 顧客管理と請求書管理の業務制約を掲載する
+- [x] Ruleの修正方針を掲載する（重大度と検証方法は掲載済み）
+- [x] 比較ページの検査結果から該当Ruleへ直接移動できるようにする（現在はページ単位のリンク）
 
 ### DH-243 検索と深いリンクを実装する
 
 依存: DH-240、DH-241、DH-242
 
-- [ ] token、component、pattern、example、ruleを横断検索する
+- [x] token、component、pattern、example、ruleを横断検索する
 - [ ] Ruleを重大度と検証方法で絞り込む
-- [ ] 検索結果から該当見出しへ移動する
-- [ ] URLで検索条件と見出しを共有できるようにする
-- [ ] キーボードだけで検索できるようにする
+- [x] 検索結果から該当見出しへ移動する
+- [x] URLで検索条件と見出しを共有できるようにする
+- [x] キーボードだけで検索できるようにする
 
 ### DH-244 公開向けの説明と表記を整える
 
-依存: DH-202、DH-242
+依存: DH-242
 
 - [ ] Atlasを「Design Harnessに基づくデモ用デザインシステム」と一貫して表記する
+- [x] リポジトリ名の表記を統一する（`package.json` は `design-harness-demo`、`wrangler.jsonc` は `atlas-design-system`、`docs/MCP.md` と導入方法ページの例は `atlas-design-system-demo`）
 - [ ] Design Harness、Atlas、HeroUIの責務を説明する
 - [ ] 保存済みRunとライブAIの違いを明示する
 - [ ] サンプルデータが架空であることを明示する
 - [ ] 自動検証を完成承認と誤解させない
 - [ ] 日本語と英語が不要に混ざる見出しを整理する
+- [x] `MVP.md` の Presenter 前提の記述を現在の構成へ改訂するか、履歴として明示する
 
-完了条件: 初見の閲覧者がDocs、導入、操作デモ、登壇デモを区別できる。
+完了条件: 初見の閲覧者がDocs、導入、比較ページ、Playを区別できる。
 
-## P1: Presenterを再利用可能にする
+## P1: 品質と文書
 
-### DH-250 保存済みRunとの整合性を保証する
+### DH-320 アクセシビリティを仕上げる
 
-依存: DH-204、DH-205
+依存: DH-240
 
-- [x] CLIバージョン、モデル、検査数、画像をRun metadataから表示する
-- [x] Presenter内へ実行結果を手入力しない
-- [x] 欠損Artifactがある場合はBuildを失敗させる
-- [x] BaselineとHarnessの比較条件一致を検査する
-- [x] 画面上の主張と保存ログを照合するレビュー手順を作る
+- [x] 色コントラストと200%拡大を確認する（200% は 720px 幅の横スクロール検査で代替）
+- [x] 自動a11y検査（axe など）を `scripts/verify-site.mjs` へ追加する
 
-### DH-251 会場・ウェビナー表示を検証する
+### DH-321 拡張手順を文書化する
 
-依存: DH-250
+依存: なし
 
-- [x] 16:9と1280×720で各Sceneがスクロールなしに収まることを確認する
-- [x] キーボード、クリック、リセット、途中開始を確認する
-- [x] `prefers-reduced-motion`に対応する
-- [x] ネットワーク切断時も再生できる構成にする
-- [x] 発表前チェックリストを作る
+- [x] Pattern、Rule、Example、Experiment、Runの追加手順を文書化する（Runの更新手順は `docs/RELEASING.md` にある）
+- [x] 別題材を追加するときの比較ページとPlayの登録手順を文書化する
 
-### DH-252 イベント設定を分離する
-
-依存: DH-251
-
-- [ ] イベント名、登壇者、持ち時間を設定ファイルへ分離する
-- [ ] Experiment、Run、Sceneを設定で選べるようにする
-- [ ] PdEConf固有の内容を共通コードへ埋め込まない
-- [ ] 過去イベントの共有URLを壊さない
-- [ ] 別ウェビナー用設定の作り方を文書化する
-
-完了条件: コード変更なしで別イベントの進行へ切り替えられる。
-
-## P1: 公開前の安全・品質
-
-### DH-260 保存済みRunと公開データを監査する
-
-依存: DH-211、DH-250
-
-- [x] `pnpm runs:sanitize`を全公開Runへ実行する
-- [x] ローカルパス、ユーザー名、内部URL、非公開リポジトリ名を検査する
-- [x] APIキー、token、Cookie、認証情報らしい文字列を検査する
-- [x] 人名、メールアドレス、会社名を架空データへ統一する
-- [x] stderrとevents JSONLを公開する必要性を再判断する
-- [x] 画像、フォント、アイコンの出典とライセンスを確認する
-
-### DH-261 ライセンスと第三者通知を整える
-
-依存: DH-210、DH-260
-
-- [ ] プロジェクトのLICENSEを追加する
-- [x] HeroUI、Lucide、フォント、その他依存のライセンスを確認する
-- [x] 必要な第三者通知を追加する
-- [ ] 生成物と保存済みRunの利用条件をREADMEへ記載する
-
-### DH-262 Web品質とアクセシビリティを確認する
-
-依存: DH-204、DH-243、DH-244
-
-- [x] スマートフォン、タブレット、デスクトップで主要ルートを確認する
-- [x] キーボード、フォーカス、見出し、支援技術向けラベルを確認する
-- [ ] 色コントラストと200%拡大を確認する
-- [ ] 404と予期しないエラーの画面を作る
-- [x] 内部リンク切れを検査する
-- [x] 主要ルートのE2Eとアクセシビリティ検査を追加する
-- [x] CSSとJavaScript bundleの大きさを確認する
-
-### DH-263 READMEと運用文書を完成させる
-
-依存: DH-212、DH-222、DH-232、DH-261
-
-- [x] 目的、Quick start、主要ルート、正本、安全規則をREADMEへ整理する
-- [x] GitHub、Skill、MCPの導入方法を相互リンクする
-- [ ] Pattern、Rule、Experiment、Runの追加手順を文書化する
-- [x] 保存済みRunの更新手順とレビュー項目を文書化する
-- [ ] Contributionを受け付ける場合だけCONTRIBUTINGと行動規範を追加する
-- [ ] Issueテンプレートを用意する
-
-完了条件: READMEから利用、実験再現、設計変更、公開手順へ到達できる。
-
-## P1: CI、公開、初回リリース
-
-### DH-270 CIを追加する
-
-依存: DH-211、DH-262
-
-- [x] Pull Requestで`pnpm demo:check`を実行する
-- [x] clean installとlockfile固定を検査する
-- [x] SkillとMCPの契約テストを追加する
-- [x] 公開データ監査とリンク検査を追加する
-- [ ] main branchの必須Checkを設定する
-
-### DH-271 Preview環境を作る
-
-依存: DH-270
-
-- [ ] 静的ホスティング先を決める
-- [ ] SPAの直接URLと404 fallbackを設定する
-- [ ] Pull RequestごとにPreview URLを発行する
-- [ ] PreviewでDocs、Play、PresenterのSmoke Testを実行する
-- [ ] Previewへ検索エンジンのindex抑止を設定する
-
-### DH-272 Productionを公開する
-
-依存: DH-263、DH-271
-
-- [ ] Production URLと独自ドメインの有無を決める
-- [ ] main更新からProductionへ自動反映する
-- [ ] version、commit、更新日時を確認できるようにする
-- [ ] Analyticsと監視を使う場合は収集範囲を決める
-- [ ] 公開後に全主要ルートを外部環境から確認する
+## P1: clean環境の受け入れとリリース
 
 ### DH-280 clean環境の受け入れテストを行う
 
-依存: DH-222、DH-232、DH-272
+依存: DH-310
 
 - [ ] GitHubからcloneしてQuick startを実行する
-- [ ] デザインシステムを閲覧する
-- [ ] BaselineとHarness修正版を操作する
-- [ ] Presenterを4場面再生する
-- [ ] Atlas Skillをconsumerプロジェクトで実行する
-- [ ] MCPを接続して設計契約を取得する
+- [ ] Skill追加コマンドをclean環境で検証する
+- [ ] MCPの接続例をclean環境で検証する
 - [ ] APIキーなしで公開サイトを閲覧する
 - [ ] Codex CLI認証ありで比較実験を再実行する
 
 ### DH-281 初回リリースを作る
 
-依存: DH-280
+依存: DH-280、DH-312
 
 - [ ] versionを決める
 - [ ] Release noteに利用方法、既知の制約、保存済みRunを記載する
 - [ ] GitHub Releaseを作る
-- [ ] Getting startedのリンクを公開URLへ更新する
 - [ ] 公開サイトとReleaseのversion一致を確認する
 
 完了条件: GitHub、Skill、MCP、公開サイトが同じリリースを参照している。
 
-## P2: 初回公開後
+## P2: 初回リリース後
 
 ### DH-301 Explore用LPを作る
 
@@ -444,7 +193,8 @@ resource候補: `atlas://design/quick-reference`、`atlas://tokens`、`atlas://c
 
 ### DH-302 シナリオを追加する
 
-- [ ] 一覧と空状態
+- [x] 一覧と空状態（顧客管理）
+- [x] 請求書管理
 - [ ] 設定変更と権限
 - [ ] 破壊的操作と確認
 - [ ] データ読み込みと失敗時の復旧
@@ -465,30 +215,23 @@ resource候補: `atlas://design/quick-reference`、`atlas://tokens`、`atlas://c
 - [ ] サーバー側で実行環境、入力、時間、利用量を制限する
 - [ ] 失敗時は保存済みRunへ戻せるようにする
 
+### DH-306 実験の妥当性を上げる
+
+- [ ] 条件ごとに複数runを取り、1 run の偶然に依存しない比較にする
+- [ ] Figma / Storybook 連携を扱うかを決める（`MVP.md` では非目標）
+
 ## 推奨実行順
 
 ```text
-DH-201 情報設計
-  ├─ DH-202 CTA修正
-  ├─ DH-203 Getting started
-  └─ DH-204 操作デモ ─ DH-205 Presenter接続
-
-DH-210 公開方針 ─ DH-211 GitHub ─ DH-212 Quick start
-                                     ├─ DH-220〜222 Skill
-                                     └─ DH-230〜232 MCP
-
-DH-240〜244 デザインシステム拡充
-DH-250〜252 Presenter再利用
-DH-260〜263 公開品質
-          ↓
-DH-270 CI ─ DH-271 Preview ─ DH-272 Production
-          ↓
-DH-280 clean環境検証 ─ DH-281 初回リリース
+DH-310 ライセンス ─ DH-311 GitHub運用 ─┐
+DH-312 版の表示・404                     ├─ DH-280 clean環境検証 ─ DH-281 初回リリース
+DH-240〜244 Docs拡充 ─ DH-320 a11y ─────┘
+DH-321 拡張手順
 ```
 
-最初の縦切りは`DH-201 → DH-202 → DH-203 → DH-204 → DH-205`。サイト上の言葉と実体を一致させた後、GitHub、Skill、MCPの順で利用経路を実装する。
+最初に着手するのは `DH-310`。LICENSE がないと clone して使う側の条件が決まらない。
 
-## 初回公開で作らないもの
+## 初回リリースで作らないもの
 
 - AIとのチャット画面
 - 任意コードをブラウザで実行する機能
@@ -497,19 +240,19 @@ DH-280 clean環境検証 ─ DH-281 初回リリース
 - 複数人での共同編集
 - HeroUI全コンポーネントの複製ドキュメント
 - Explore用LPの作り込み
-- 複数シナリオ
 - 英語対応
+- Presenter / スライド再生（廃止済み）
 
-## 初回公開の完了条件
+## 初回リリースの完了条件
 
-- [ ] GitHubからcloneしてAtlasを起動・検証できる
+- [x] 公開サイトからDocs、導入方法、比較ページ、Playへ移動できる
+- [x] BaselineとHarness修正版をブラウザで操作できる
 - [x] Skillを通してAIがAtlasの設計契約を参照できる
 - [x] MCPを通してAtlasの設計契約をread-onlyで取得できる
-- [x] 公開サイトからDocs、導入方法、操作デモ、Presenterへ移動できる
-- [x] BaselineとHarness修正版をブラウザで操作できる
-- [ ] Presenterを別ウェビナーでも再利用できる
 - [x] 設計ページと検証処理が同じ正本を参照している
 - [x] 保存済みRunと公開画面の数値、画像、条件が一致している
 - [x] 秘密情報、端末固有情報、権利不明な素材が含まれていない
-- [ ] clean環境の受け入れテストとCIが成功する
+- [x] CIが成功し、mainから本番へ自動反映される
+- [ ] LICENSEと利用条件が公開されている
+- [ ] GitHubからcloneしてAtlasを起動・検証できる（clean環境で確認済み）
 - [ ] 公開URL、GitHub Release、Skill、MCPが同じversionを参照している

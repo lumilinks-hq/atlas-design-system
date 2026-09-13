@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/component.schema.json",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "id": "component.toolbar",
   "name": "Toolbar",
   "implementation": "Toolbar",
@@ -16,5 +16,11 @@
     "一覧のToolbarはTableと同じCollectionRegionに置き、Tableの直前に配置する",
     "末尾揃えは子要素のauto marginへ依存せず、Toolbarルートをwidth:100%、display:flex、justify-content:flex-endにする"
   ],
-  "relatedRules": ["component.approved", "a11y.control-name", "layout.collection-toolbar"]
+  "relatedRules": ["component.approved", "a11y.control-name", "layout.collection-toolbar"],
+  "usage": {
+    "when": ["一覧画面の上部で、検索と新規作成をまとめて置く場面", "同じ対象に対する複数の操作を横並びにする場面"],
+    "avoid": ["ページのグローバルナビゲーションとして使う", "操作が1つしかない場面。Button 単体で置く"]
+  },
+  "accessibility": ["aria-label で操作対象の名前を付ける", "矢印キーで操作間を移動できるようにする"],
+  "docsUrl": "https://heroui.com/docs/react/components/toolbar"
 }

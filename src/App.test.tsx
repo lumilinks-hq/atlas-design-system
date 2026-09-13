@@ -7,6 +7,7 @@ import { cwd } from "node:process";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
+import { buildInfo } from "./data/buildInfo";
 import { designData } from "./data/design";
 import { artifactSourceHref, repositoryUrl } from "./data/repository";
 import { ruleMethodLabels } from "./pages/DocsPages";
@@ -537,6 +538,12 @@ describe("Atlas Design System demo", () => {
     expect(screen.getByRole("heading", { level: 1, name: "生成結果の比較" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "次へ" })).not.toBeInTheDocument();
   });
+  it("updates the canonical link to the current route", () => {
+    render(<MemoryRouter initialEntries={["/rules"]}><App /></MemoryRouter>);
+    const canonical = document.head.querySelector('link[rel="canonical"]');
+    expect(canonical).toHaveAttribute("href", "https://demo-ds.design-harness.com/rules");
+  });
+
   it("marks only the comparison page as active in the sidebar on the results route", () => {
     render(<MemoryRouter initialEntries={["/examples/account-management/results"]}><App /></MemoryRouter>);
     const active = document.querySelectorAll(".nav-item-active");
@@ -602,6 +609,45 @@ describe("Atlas Design System demo", () => {
     const active = document.querySelectorAll(".nav-item-active");
     expect(active).toHaveLength(1);
     expect(active[0]).toHaveTextContent("生成結果の比較");
+  });
+
+  it("shows the build info in the footer with a link to the commit", () => {
+    render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
+    const footer = screen.getByText("© 2026 Lumilinks inc.").closest("footer");
+    expect(footer).toHaveTextContent(`v${buildInfo.version} · ${buildInfo.commit} · ${buildInfo.builtAt.slice(0, 10)}`);
+    const commit = within(footer as HTMLElement).getByRole("link", { name: buildInfo.commit });
+    expect(commit).toHaveAttribute("href", `${repositoryUrl}/commit/${buildInfo.commit}`);
+    expect(commit).toHaveAttribute("target", "_blank");
+    expect(commit).toHaveAttribute("rel", "noreferrer");
+  });
+
+  it("shows a 404 page with noindex for unknown paths and removes the meta on leave", async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter initialEntries={["/no-such-page"]}><App /></MemoryRouter>);
+    expect(screen.getByRole("heading", { level: 1, name: "ページが見つかりません" })).toBeInTheDocument();
+    expect(screen.getByText("/no-such-page")).toBeInTheDocument();
+    expect(document.head.querySelector('meta[name="robots"]')).toHaveAttribute("content", "noindex");
+    const main = screen.getByRole("main");
+    expect(within(main).getByRole("link", { name: "トップへ戻る" })).toHaveAttribute("href", "/");
+    await user.click(within(main).getByRole("link", { name: "はじめに" }));
+    expect(screen.getByRole("heading", { level: 1, name: "導入方法" })).toBeInTheDocument();
+    expect(document.head.querySelector('meta[name="robots"]')).toBeNull();
+  });
+
+  it("searches the docs from /search and syncs the query with the URL", async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter initialEntries={["/search?q=button"]}><App /></MemoryRouter>);
+    expect(screen.getByRole("heading", { level: 1, name: "検索" })).toBeInTheDocument();
+    const input = screen.getByRole("textbox", { name: "検索語" });
+    expect(input).toHaveValue("button");
+    const table = screen.getByRole("table");
+    expect(within(table).getByRole("link", { name: "Button" })).toHaveAttribute("href", "/components#component.button");
+    await user.clear(input);
+    await user.type(input, "component.approved");
+    expect(within(screen.getByRole("table")).getByRole("link", { name: "承認済みHeroUIコンポーネントを使う" })).toHaveAttribute("href", "/rules#component.approved");
+    const sidebar = screen.getByRole("complementary", { name: "ドキュメントナビゲーション" });
+    expect(within(sidebar).getByRole("link", { name: "検索" })).toHaveAttribute("href", "/search");
+    expect(document.querySelectorAll(".nav-item-active")).toHaveLength(1);
   });
 
   it("switches the interactive invoice implementation between Atlas and baseline", async () => {

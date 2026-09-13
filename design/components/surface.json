@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/component.schema.json",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "id": "component.surface",
   "name": "Surface",
   "implementation": "Surface",
@@ -14,5 +14,11 @@
     "ページ背景と情報領域の階層を作る",
     "不要な影を追加しない"
   ],
-  "relatedRules": ["component.approved", "layout.grouping"]
+  "relatedRules": ["component.approved", "layout.grouping"],
+  "usage": {
+    "when": ["Drawer や Dialog など、面の所有者となる部品の内部", "背景と区別する面が必要で Card の影が不要な場面"],
+    "avoid": ["Card の代わりに使う。影と角丸の仕様は Card に任せる", "Table や一覧の各行に面を付ける"]
+  },
+  "accessibility": ["面自体に role を付けず、内容の見出しで意味を伝える"],
+  "docsUrl": "https://heroui.com/docs/react/components/surface"
 }

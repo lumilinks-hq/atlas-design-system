@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/component.schema.json",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "id": "component.toast",
   "name": "Toast",
   "implementation": "Toast",
@@ -15,5 +15,11 @@
     "説明文は敬体で、結果を動詞まで書く",
     "失敗時は画面内にも回復手段を残す"
   ],
-  "relatedRules": ["component.approved", "a11y.error-recovery", "state.failure"]
+  "relatedRules": ["component.approved", "a11y.error-recovery", "state.failure"],
+  "usage": {
+    "when": ["保存完了など、操作結果の短い通知", "自動で消えてよい情報の通知"],
+    "avoid": ["確認を求める対話。AlertDialog を使う", "長い説明や対処が必要な内容。Alert を使う"]
+  },
+  "accessibility": ["Toast.Title で結果を短く伝え、aria-live で読み上げる", "自動で消える前に閉じられるようにする", "フォーカスを Toast へ奪わない"],
+  "docsUrl": "https://heroui.com/docs/react/components/toast"
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/component.schema.json",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "id": "component.alert-dialog",
   "name": "AlertDialog",
   "implementation": "AlertDialog",
@@ -16,6 +16,12 @@
     "AlertDialog.Rootの起点にはHeroUI Buttonを置き、標準のPressResponderとフォーカス復帰を維持する"
   ],
   "relatedRules": ["component.approved", "action.confirmation"],
+  "usage": {
+    "when": ["削除など、取り消せない操作の最終確認", "操作の続行に判断が必要な場面"],
+    "avoid": ["処理完了の通知。Toast を使う", "入力を伴う編集。Drawer を使う"]
+  },
+  "accessibility": ["AlertDialog.Heading で何を確認するかを伝える", "主操作ボタンは操作名を文言にし、「はい」「OK」にしない", "フォーカスを Dialog 内に閉じ込め、Escape でキャンセルする"],
+  "docsUrl": "https://heroui.com/docs/react/components/alert-dialog",
   "layout": {
     "maxWidth": "28rem",
     "dialogPadding": "space.6"

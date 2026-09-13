@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/component.schema.json",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "id": "component.search-field",
   "name": "SearchField",
   "implementation": "SearchField",
@@ -15,5 +15,11 @@
     "表示ラベルを省略する一覧ツールバーではSearchFieldへaria-labelを指定する",
     "入力のplaceholderは検索対象を示し、検索語をクリアする操作へ名前を付ける"
   ],
-  "relatedRules": ["component.approved", "a11y.control-name", "layout.collection-toolbar"]
+  "relatedRules": ["component.approved", "a11y.control-name", "layout.collection-toolbar"],
+  "usage": {
+    "when": ["一覧をキーワードで絞り込む入力", "Toolbar の先頭に置く検索"],
+    "avoid": ["登録や更新のためのテキスト入力。TextField を使う", "検索対象が1つの列に固定される絞り込み。Select を使う"]
+  },
+  "accessibility": ["aria-label で何を検索するかを付ける", "クリアボタンはキーボードでも操作できるようにする"],
+  "docsUrl": "https://heroui.com/docs/react/components/search-field"
 }

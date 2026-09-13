@@ -23,6 +23,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm demo:check
+        env:
+          VITE_NOINDEX: ${{ github.event_name == 'pull_request' && '1' || '' }}
+          VITE_CF_BEACON_TOKEN: ${{ vars.CF_BEACON_TOKEN }}
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
 
@@ -51,6 +54,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+        env:
+          VITE_NOINDEX: ${{ github.event_name == 'pull_request' && '1' || '' }}
+          VITE_CF_BEACON_TOKEN: ${{ vars.CF_BEACON_TOKEN }}
       - name: 本番へデプロイ
         if: env.HAS_CREDENTIALS == 'true' && github.event_name == 'push'
         run: pnpm exec wrangler deploy

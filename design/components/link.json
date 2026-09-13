@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/component.schema.json",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "id": "component.link",
   "name": "Link",
   "implementation": "Link",
@@ -17,5 +17,11 @@
     "編集、削除、保存など現在の対象を変更する操作にはButtonを使う",
     "リンクはCmd、Ctrl、ミドルクリックで新しいタブへ開ける状態を保つ"
   ],
-  "relatedRules": ["component.approved", "a11y.control-name", "navigation.link-semantics", "layout.back-navigation"]
+  "relatedRules": ["component.approved", "a11y.control-name", "navigation.link-semantics", "layout.back-navigation"],
+  "usage": {
+    "when": ["一覧から詳細へなど、別ページへの移動", "一覧へ戻るなど、戻り先が明確な移動"],
+    "avoid": ["保存や削除など、ページ移動を伴わない処理。Button を使う", "リンク文言を「こちら」「詳細」だけにする。対象名を含める"]
+  },
+  "accessibility": ["リンク文言だけで移動先が分かるようにする", "react-router の遷移は href を持たせ、キーボードで開けるようにする", "外部リンクは target=_blank と rel=noreferrer を付け、外部であることを示す"],
+  "docsUrl": "https://heroui.com/docs/react/components/link"
 }

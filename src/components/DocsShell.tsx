@@ -2,6 +2,7 @@ import { Button } from "@heroui/react";
 import { ExternalLink, Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { buildInfo } from "../data/buildInfo";
 import { repositoryUrl } from "../data/repository";
 
 /** alsoActiveOn: そのパスでも同じ項目を選択中として扱う。比較ページは題材を切り替えても1項目のまま */
@@ -23,6 +24,7 @@ const navigation: Array<{ label: string; items: NavItem[] }> = [
       { label: "デザイントークン", to: "/foundations" },
       { label: "コンポーネント", to: "/components" },
       { label: "検証ルール", to: "/rules" },
+      { label: "検索", to: "/search" },
     ],
   },
   {
@@ -80,8 +82,16 @@ export function DocsShell() {
       "/examples/invoice-management": "例：請求書管理 — Atlas Design System",
       "/examples/invoice-management/results": "生成結果の比較 — Atlas Design System",
       "/rules": "検証ルール — Atlas Design System",
+      "/search": "検索 — Atlas Design System",
     };
     document.title = titles[location.pathname] ?? "Atlas Design System";
+    let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.rel = "canonical";
+      document.head.appendChild(canonical);
+    }
+    canonical.href = `https://demo-ds.design-harness.com${location.pathname === "/" ? "/" : location.pathname}`;
     if (previousPathRef.current !== location.pathname) {
       mainRef.current?.focus({ preventScroll: true });
       previousPathRef.current = location.pathname;
@@ -164,6 +174,11 @@ export function DocsShell() {
         <Outlet />
         <footer className="docs-footer">
           <p>© 2026 Lumilinks inc.</p>
+          <p className="docs-build">
+            v{buildInfo.version} ·{" "}
+            <a href={`${repositoryUrl}/commit/${buildInfo.commit}`} rel="noreferrer" target="_blank">{buildInfo.commit}</a>
+            {" "}· {buildInfo.builtAt.slice(0, 10)}
+          </p>
         </footer>
       </main>
     </div>

@@ -457,7 +457,7 @@ export function ResultsPage({ experiment }: { experiment: ExperimentId }) {
             design/rules.json の{rules.length}件を、両条件の画面に同じ手順で適用した結果です。AIレビューのルールは要確認として残し、詳細な所見を人間が確認できるようにしています。
           </p>
         </div>
-        <div className="compare-table-scroll">
+        <div className="compare-table-scroll" tabIndex={0}>
           <table className="compare-table" aria-label="ルールごとの検査結果">
             <thead>
               <tr>
@@ -476,7 +476,7 @@ export function ResultsPage({ experiment }: { experiment: ExperimentId }) {
                 return (
                   <tr key={rule.id}>
                     <th scope="row">
-                      <span className="compare-rule-title">{rule.title}</span>
+                      <Link className="compare-rule-title" to={`/rules#${rule.id}`}>{rule.title}</Link>
                       <code>{rule.id}</code>
                     </th>
                     <td>{ruleMethodLabels[rule.method] ?? rule.method}</td>
@@ -549,7 +549,7 @@ export function ResultsPage({ experiment }: { experiment: ExperimentId }) {
             評価器は App.tsx から import で辿れるファイルをまとめて検査するので、画面を複数ファイルに分けた run も同じ基準で数えています。
           </p>
         </div>
-        <div className="compare-table-scroll">
+        <div className="compare-table-scroll" tabIndex={0}>
           <table className="compare-table" aria-label="同じモデルでの比較">
             <thead>
               <tr>

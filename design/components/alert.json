@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/component.schema.json",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "id": "component.alert",
   "name": "Alert",
   "implementation": "Alert",
@@ -15,5 +15,11 @@
     "状態を色だけで示さず、Alert.TitleとAlert.Descriptionに状態と内容を文章で書く",
     "失敗を伝える場合は原因と次に行う操作を書き、対象の操作の近くに置く"
   ],
-  "relatedRules": ["component.approved", "a11y.color-only", "a11y.error-recovery", "state.failure"]
+  "relatedRules": ["component.approved", "a11y.color-only", "a11y.error-recovery", "state.failure"],
+  "usage": {
+    "when": ["画面内で継続して見せる注意や補足", "エラーの原因と対処を画面の中で説明する場面"],
+    "avoid": ["処理完了など、一時的な通知。Toast を使う", "確認が必要な操作の対話。AlertDialog を使う"]
+  },
+  "accessibility": ["Alert.Title で要点を先に示す", "色だけに頼らず、種類を文言とアイコンで伝える", "danger の Alert は role=alert で即時に読み上げる"],
+  "docsUrl": "https://heroui.com/docs/react/components/alert"
 }
