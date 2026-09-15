@@ -135,27 +135,47 @@ describe("RulesPage", () => {
   it("ルールごとに id アンカーと修正方針を描画する", () => {
     const { container } = renderPage(<RulesPage />);
     for (const rule of designData.rules) {
-      const row = container.querySelector(`[id="${rule.id}"]`)?.closest('[role="row"]') as HTMLElement;
+      const row = container.querySelector(`[id="${rule.id}"]`)?.closest("article") as HTMLElement;
       expect(row, rule.id).not.toBeNull();
       expect(within(row).getByText("修正方針")).toBeInTheDocument();
       expect(within(row).getByText(rule.fix)).toBeInTheDocument();
     }
   });
 
-  it("関連コンポーネントを逆引きして /components#コンポーネントID へリンクする", () => {
+  it("関連コンポーネントを逆引きして /components#コンポーネントID へリンクする", async () => {
     const { container } = renderPage(<RulesPage />);
     const ruleId = "component.approved";
     const related = designData.components.filter((component) => component.relatedRules.includes(ruleId));
     expect(related.length).toBeGreaterThan(0);
-    const row = container.querySelector(`[id="${ruleId}"]`)?.closest('[role="row"]') as HTMLElement;
+    const row = container.querySelector(`[id="${ruleId}"]`)?.closest("article") as HTMLElement;
+    await userEvent.click(within(row).getByRole("button", { name: "修正方針" }));
     for (const component of related) {
       expect(within(row).getByRole("link", { name: component.name })).toHaveAttribute("href", `/components#${component.id}`);
     }
   });
 
+  it("検証方法ごとの件数をサマリーに表示する", () => {
+    renderPage(<RulesPage />);
+    const summary = screen.getByRole("list", { name: "検証方法ごとの件数" });
+    const items = within(summary).getAllByRole("listitem");
+    expect(items).toHaveLength(3);
+    const automatic = designData.rules.filter((rule) => rule.method === "automatic").length;
+    expect(within(summary).getByText("自動検証").closest("li")).toHaveTextContent(`${automatic}件`);
+  });
+
+  it("重大度を色付きの Chip で表示する", () => {
+    const { container } = renderPage(<RulesPage />);
+    const errorRule = designData.rules.find((rule) => rule.severity === "error")!;
+    const warningRule = designData.rules.find((rule) => rule.severity === "warning")!;
+    const errorCard = container.querySelector(`[id="${errorRule.id}"]`)?.closest("article") as HTMLElement;
+    const warningCard = container.querySelector(`[id="${warningRule.id}"]`)?.closest("article") as HTMLElement;
+    expect(within(errorCard).getByText("error").closest(".chip--danger")).not.toBeNull();
+    expect(within(warningCard).getByText("warning").closest(".chip--warning")).not.toBeNull();
+  });
+
   it("重大度で絞り込むと、その重大度のルールだけを表示する", () => {
     const { container } = renderPage(<RulesPage />, "/rules?severity=error");
-    const shown = container.querySelectorAll('[role="row"]:not(.rules-head)');
+    const shown = container.querySelectorAll("article.rule-card");
     const expected = designData.rules.filter((rule) => rule.severity === "error");
     expect(expected.length).toBeGreaterThan(0);
     expect(shown.length).toBe(expected.length);
@@ -164,7 +184,7 @@ describe("RulesPage", () => {
 
   it("検証方法で絞り込むと、その方法のルールだけを表示する", () => {
     const { container } = renderPage(<RulesPage />, "/rules?method=ai-review");
-    const shown = container.querySelectorAll('[role="row"]:not(.rules-head)');
+    const shown = container.querySelectorAll("article.rule-card");
     const expected = designData.rules.filter((rule) => rule.method === "ai-review");
     expect(expected.length).toBeGreaterThan(0);
     expect(shown.length).toBe(expected.length);

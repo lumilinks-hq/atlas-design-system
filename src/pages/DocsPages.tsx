@@ -5,6 +5,7 @@ import {
   Card,
   Chip,
   Description,
+  Disclosure,
   Drawer,
   FieldError,
   Form,
@@ -18,6 +19,8 @@ import {
   Surface,
   Table,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Toolbar,
   Toast,
   useOverlayState,
@@ -1628,27 +1631,88 @@ function relatedComponents(ruleId: string) {
   return designData.components.filter((component) => component.relatedRules.includes(ruleId));
 }
 
-const ruleSeverityOrder = ["error", "warning"];
+const ruleSeverityOrder = ["error", "warning"] as const;
+const ruleSeverityLabels: Record<string, string> = { error: "違反すると不合格", warning: "要注意" };
+const ruleSeverityColors: Record<string, "danger" | "warning"> = { error: "danger", warning: "warning" };
+const ruleMethodDescriptions: Record<string, string> = {
+  lint: "ESLintがコードを静的に検査します。",
+  automatic: "評価スクリプトが画面と設計データを照合します。",
+  "ai-review": "AIが画面の画像を見て判断します。",
+  human: "人が画面を見て採否を決めます。",
+};
 
 // 絞り込みの選択肢。value "" は「絞り込まない」
-function RuleFilterGroup({ legend, name, allLabel, options, value, onChange }: {
-  legend: string;
-  name: string;
+function RuleFilterGroup({ label, allLabel, options, value, onChange }: {
+  label: string;
   allLabel: string;
   options: Array<{ value: string; label: string }>;
   value: string;
   onChange: (value: string) => void;
 }) {
+  const selected = value || "all";
   return (
-    <fieldset className="rules-filter-group">
-      <legend>{legend}</legend>
-      {[{ value: "", label: allLabel }, ...options].map((option) => (
-        <label key={option.value}>
-          <input type="radio" name={name} value={option.value} checked={value === option.value} onChange={() => onChange(option.value)} />
-          <span>{option.label}</span>
-        </label>
-      ))}
-    </fieldset>
+    <div className="rules-filter-group">
+      <span className="meta-label" id={`rules-filter-${label}`}>{label}</span>
+      <ToggleButtonGroup
+        aria-labelledby={`rules-filter-${label}`}
+        selectionMode="single"
+        disallowEmptySelection
+        size="sm"
+        selectedKeys={[selected]}
+        onSelectionChange={(keys) => {
+          const next = String([...keys][0] ?? "all");
+          onChange(next === "all" ? "" : next);
+        }}
+      >
+        <ToggleButton id="all">{allLabel}</ToggleButton>
+        {options.map((option) => <ToggleButton key={option.value} id={option.value}>{option.label}</ToggleButton>)}
+      </ToggleButtonGroup>
+    </div>
+  );
+}
+
+function RuleCard({ rule }: { rule: (typeof designData.rules)[number] }) {
+  const related = relatedComponents(rule.id);
+  return (
+    <article className="rule-card">
+    <Card className="rule-card-surface">
+      <Card.Header className="rule-card-header">
+        <div className="rule-card-chips">
+          <Chip size="sm" variant="soft" color={ruleSeverityColors[rule.severity] ?? "default"}>{rule.severity}</Chip>
+          <Chip size="sm" variant="tertiary">{ruleMethodLabels[rule.method] ?? rule.method}</Chip>
+          <span className="rules-category">{rule.category}</span>
+        </div>
+        <Card.Title className="rule-card-title"><strong id={rule.id}>{rule.title}</strong></Card.Title>
+        <Card.Description className="rule-card-id"><code>{rule.id}</code></Card.Description>
+      </Card.Header>
+      <Card.Content className="rule-card-content">
+        <p>{rule.description}</p>
+        <Disclosure className="rule-card-disclosure">
+          <Disclosure.Heading>
+            <Disclosure.Trigger>
+              修正方針
+              <Disclosure.Indicator />
+            </Disclosure.Trigger>
+          </Disclosure.Heading>
+          <Disclosure.Content>
+            <Disclosure.Body>
+              <p>{rule.fix}</p>
+              {related.length > 0 && (
+                <>
+                  <p className="meta-label">関連コンポーネント</p>
+                  <ul className="example-rule-list">
+                    {related.map((component) => (
+                      <li key={component.id}><Link to={`/components#${component.id}`}>{component.name}</Link></li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </Disclosure.Body>
+          </Disclosure.Content>
+        </Disclosure>
+      </Card.Content>
+    </Card>
+    </article>
   );
 }
 
@@ -1670,36 +1734,38 @@ export function RulesPage() {
   return (
     <article className="doc-page">
       <PageHeader title="検証ルール" description="Lint、自動検証、AIレビュー、人の判断の4段階で役割を分担し、多層的に品質を検証します。" />
+
+      <ul className="rules-summary" aria-label="検証方法ごとの件数">
+        {methods.map((value) => {
+          const count = designData.rules.filter((rule) => rule.method === value).length;
+          return (
+            <li key={value}>
+              <Card className={`rules-summary-card${method === value ? " rules-summary-card-active" : ""}`}>
+                <Card.Header>
+                  <Card.Title className="rules-summary-label">{ruleMethodLabels[value] ?? value}</Card.Title>
+                  <Card.Description className="rules-summary-count">{count}<small>件</small></Card.Description>
+                </Card.Header>
+                <Card.Content><p>{ruleMethodDescriptions[value]}</p></Card.Content>
+              </Card>
+            </li>
+          );
+        })}
+      </ul>
+
       <div className="rules-filters">
-        <RuleFilterGroup legend="重大度" name="severity" allLabel="すべての重大度" options={severities.map((value) => ({ value, label: value }))} value={severity} onChange={(value) => updateParam("severity", value)} />
-        <RuleFilterGroup legend="検証方法" name="method" allLabel="すべての検証方法" options={methods.map((value) => ({ value, label: ruleMethodLabels[value] ?? value }))} value={method} onChange={(value) => updateParam("method", value)} />
+        <RuleFilterGroup label="重大度" allLabel="すべての重大度" options={severities.map((value) => ({ value, label: value }))} value={severity} onChange={(value) => updateParam("severity", value)} />
+        <RuleFilterGroup label="検証方法" allLabel="すべての検証方法" options={methods.map((value) => ({ value, label: ruleMethodLabels[value] ?? value }))} value={method} onChange={(value) => updateParam("method", value)} />
         <p className="rules-filter-count" aria-live="polite">{designData.rules.length}件中{visibleRules.length}件を表示</p>
       </div>
-      <div className="rules-table" role="table" aria-label="検証ルール一覧">
-        <div className="rules-row rules-head" role="row"><span role="columnheader">ルール</span><span role="columnheader">確認方法</span><span role="columnheader">重要度</span></div>
-        {visibleRules.map((rule) => (
-          <div className="rules-row" role="row" key={rule.id}>
-            <div role="cell">
-              <strong id={rule.id}>{rule.title}</strong>
-              <div className="rules-identity"><code>{rule.id}</code><span className="rules-category">{rule.category}</span></div>
-              <p>{rule.description}</p>
-              <p className="meta-label">修正方針</p>
-              <p>{rule.fix}</p>
-              {relatedComponents(rule.id).length > 0 && (
-                <>
-                  <p className="meta-label">関連コンポーネント</p>
-                  <ul className="example-rule-list">
-                    {relatedComponents(rule.id).map((component) => (
-                      <li key={component.id}><Link to={`/components#${component.id}`}>{component.name}</Link></li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </div>
-            <span role="cell">{ruleMethodLabels[rule.method] ?? rule.method}</span>
-            <span role="cell"><Chip size="sm" variant="soft">{rule.severity}</Chip></span>
-          </div>
+
+      <div className="rules-legend">
+        {severities.map((value) => (
+          <span key={value}><Chip size="sm" variant="soft" color={ruleSeverityColors[value]}>{value}</Chip>{ruleSeverityLabels[value]}</span>
         ))}
+      </div>
+
+      <div className="rules-grid">
+        {visibleRules.map((rule) => <RuleCard key={rule.id} rule={rule} />)}
       </div>
     </article>
   );
