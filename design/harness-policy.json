@@ -1,0 +1,13 @@
+{
+  "$schema": "./schemas/harness-policy.schema.json",
+  "version": "0.1.0",
+  "thresholds": {
+    "fix": 0.8,
+    "pass": 0.2
+  },
+  "maxFixIterations": 2,
+  "requireApproval": ["a11y.color-only", "color.semantic"],
+  "requiredChecks": ["typecheck", "test", "build"],
+  "decidedBy": "design-system-owner",
+  "decidedAt": "2026-09-19"
+}

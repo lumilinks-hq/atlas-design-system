@@ -9,3 +9,13 @@ export const correctionPrompt = [
   "調査用に追加した一時テストやconsole.logは、比較対象の成果物に混ざるため修正完了前に削除してください。",
   "修正後に厳格typecheck、test:run、buildを実行してください。",
 ].join("");
+
+/**
+ * experiment:refine 用。振り分けで VALIDATION.md と違う範囲が決まったときは NEXT_STEP.md を読ませる。
+ * correctionPrompt は「VALIDATION.mdの失敗項目…だけ」と範囲を限るので、NEXT_STEP.md を優先すると明記する
+ * @param {{ withNextStep: boolean }} options
+ */
+export function buildCorrectionPrompt({ withNextStep }) {
+  if (!withNextStep) return correctionPrompt;
+  return `${correctionPrompt}NEXT_STEP.mdがある場合、修正する範囲はVALIDATION.mdよりNEXT_STEP.mdを優先し、追加で修正するルールは直し、修正しないルールには手を付けないでください。`;
+}

@@ -362,27 +362,81 @@ describe("Atlas Design System demo", () => {
     expect(within(methods).getAllByRole("paragraph").length).toBeGreaterThanOrEqual(3);
     expect(methods).toHaveTextContent(`${designData.rules.length}件のルールのうち${lint}件はESLintで、${automatic}件は評価スクリプトで自動検証`);
     expect(methods).toHaveTextContent(`${aiReview}件をレビュー`);
+    expect(methods).toHaveTextContent("Jevの判定がないルールだけ");
     expect(methods).toHaveTextContent(`人に任せているルールは${human}件`);
 
-    const loop = screen.getByRole("region", { name: "デモ画面の生成サイクル" });
-    const loopDiagram = within(loop).getByRole("figure", { name: "デモ画面の生成サイクルの図" });
+    const loop = screen.getByRole("region", { name: "検査結果から次の工程を決める" });
+    const loopDiagram = within(loop).getByRole("figure", { name: "検査結果から次の工程を決める図" });
     const loopTitles = [
-      "Issueを渡す",
-      "制約とコンテキストを渡す",
-      "AIが生成する",
-      "検査する",
-      "検査結果をVALIDATION.mdとして返す",
-      "修正版を再検査する",
+      "人が定める方針・制約・権限",
+      "判断基準",
+      "状態確認",
+      "モデルで判定",
+      "コードで検査",
+      "コードが次の工程を決定",
+      "LLMが生成・修正",
+      "人の判断・追加の根拠",
+      "条件を満たせば次工程へ",
+      "現在の状態",
     ];
     for (const title of loopTitles) {
       expect(await within(loopDiagram).findByText(title)).toBeInTheDocument();
     }
-    expect(await within(loopDiagram).findByText(`違反 ${harnessEvaluation.summary.failed}件`)).toBeInTheDocument();
+    expect(within(loopDiagram).queryByText(/違反 \d+件/)).not.toBeInTheDocument();
+    const loopTable = within(loop).getByRole("grid", { name: "図の項目とファイル" });
+    expect(within(loopTable).getByRole("rowheader", { name: "コードが次の工程を決定" })).toBeInTheDocument();
+    expect(within(loopTable).getByRole("link", { name: "scripts/harness-dispatch.mjs" })).toBeInTheDocument();
+    expect(within(loopTable).getByRole("link", { name: "scripts/judges/" })).toBeInTheDocument();
+    expect(within(loopTable).getByRole("link", { name: "design/harness-policy.json" })).toBeInTheDocument();
+    // decisions.json は Run ごとに人が書くファイルで、リポジトリにはまだない
+    expect(within(loopTable).getByText("decisions.json")).toBeInTheDocument();
+    expect(within(loopTable).queryByRole("link", { name: "decisions.json" })).not.toBeInTheDocument();
+    expect(within(loopTable).getByText(/pnpm experiment:decide で記録/)).toBeInTheDocument();
+    expect(within(loopTable).queryByText(/未実装/)).not.toBeInTheDocument();
+    expect(loop).toHaveTextContent("pnpm experiment:next");
+    // refine は振り分けの「修正」で動く。公開中の Run はその前に作ったもの
+    expect(loop).toHaveTextContent("振り分けが「修正」のときだけ");
+    expect(loop).toHaveTextContent("この振り分けを入れる前に作ったもの");
+    expect(loop).not.toHaveTextContent("まだ使っていません");
     expect(within(loop).queryByRole("list")).not.toBeInTheDocument();
     expect(screen.queryByText(/Figma|Storybook/)).not.toBeInTheDocument();
     expect(screen.queryByText("Agent-ready")).not.toBeInTheDocument();
     expect(screen.queryByRole("list", { name: /の実行検査$/ })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "生成結果の比較を見る" })).toHaveAttribute("href", "/examples/account-management/results");
+  });
+
+  it("explains how Jev judges the rules that code alone cannot decide", async () => {
+    render(<MemoryRouter initialEntries={["/harness"]}><App /></MemoryRouter>);
+
+    const judge = screen.getByRole("region", { name: "モデルで判定する仕組み" });
+    const figure = within(judge).getByRole("figure", { name: "Jevで判定して次の工程を決める図" });
+    const titles = [
+      "Runのソースコード",
+      "コードで検査",
+      "部品と文言を抜き出す",
+      "LLMが画面画像をレビュー",
+      "コードで決める",
+      "Jevに聞く",
+      "判定の記録",
+      "コードが次の工程を決定",
+      "修正",
+      "人の判断",
+      "通過",
+    ];
+    for (const title of titles) {
+      expect(await within(figure).findByText(title)).toBeInTheDocument();
+    }
+    const table = within(judge).getByRole("grid", { name: "Jevの図の項目とファイル" });
+    expect(within(table).getByRole("rowheader", { name: "Jevに聞く" })).toBeInTheDocument();
+    expect(within(table).getByRole("link", { name: "scripts/judges/jev.mjs" })).toHaveAttribute(
+      "href",
+      `${repositoryUrl}/blob/main/scripts/judges/jev.mjs`,
+    );
+    expect(within(table).getByRole("link", { name: "experiments/*/runs/*/*/judgments.json" })).toBeInTheDocument();
+    expect(within(table).getByText(/pnpm experiment:judge --write/)).toBeInTheDocument();
+    expect(judge).toHaveTextContent("TYPESAFE_API_KEY");
+    expect(judge).toHaveTextContent("0.8以上なら修正");
+    expect(within(judge).queryByRole("list")).not.toBeInTheDocument();
   });
 
   it("links each harness artifact path to its source on GitHub", async () => {
@@ -444,9 +498,9 @@ describe("Atlas Design System demo", () => {
     }
   });
 
-  it("links from the demo cycle section to the technical specifications", () => {
+  it("links from the next step section to the technical specifications", () => {
     render(<MemoryRouter initialEntries={["/harness"]}><App /></MemoryRouter>);
-    const loop = screen.getByRole("region", { name: "デモ画面の生成サイクル" });
+    const loop = screen.getByRole("region", { name: "検査結果から次の工程を決める" });
     expect(within(loop).getByRole("link", { name: "技術仕様（設計契約と検証）を見る" })).toHaveAttribute(
       "href",
       "/technical-specifications#design-contract-stack-title",

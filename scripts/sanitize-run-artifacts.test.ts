@@ -11,6 +11,15 @@ describe("run artifact sanitizer", () => {
     expect(sanitizeText(text)).not.toContain("secret.token");
   });
 
+  it("TypeSafeの鍵は形が決まっていないので、手元に設定された値そのものを伏せる", () => {
+    const options = { env: { TYPESAFE_API_KEY: "tsk-0123456789abcdef" }, username: "testuser" };
+
+    expect(sanitizeText("key=tsk-0123456789abcdef end", options)).toBe("key=<redacted-typesafe-key> end");
+    // 空や短すぎる値で普通の文字列を消さない
+    expect(sanitizeText("abc", { env: { TYPESAFE_API_KEY: "" }, username: "testuser" })).toBe("abc");
+    expect(sanitizeText("abc", { env: { TYPESAFE_API_KEY: "b" }, username: "testuser" })).toBe("abc");
+  });
+
   it("workspaceのパスを<home>より先に<workspace>へ置き換える", () => {
     const runs = join(homedir(), ".cache", "design-harness", "runs");
     const text = `cd ${runs}/account-management/iso-check/harness && pnpm lint`;

@@ -29,6 +29,7 @@ async function validate(schemaName, value, label) {
 
 const tokens = await json(resolve(designDir, "tokens.json"));
 const rulesDocument = await json(resolve(designDir, "rules.json"));
+const harnessPolicy = await json(resolve(designDir, "harness-policy.json"));
 const componentFiles = (await walk(resolve(designDir, "components"))).filter((path) => path.endsWith(".json"));
 const patternFiles = (await walk(resolve(designDir, "patterns"))).filter((path) => path.endsWith(".json"));
 const exampleFiles = (await walk(resolve(designDir, "examples"))).filter((path) => path.endsWith(".json"));
@@ -38,6 +39,7 @@ const examples = await Promise.all(exampleFiles.map(json));
 
 await validate("tokens.schema.json", tokens, "tokens.json");
 await validate("rules.schema.json", rulesDocument, "rules.json");
+await validate("harness-policy.schema.json", harnessPolicy, "harness-policy.json");
 for (const [index, component] of components.entries()) {
   await validate("component.schema.json", component, basename(componentFiles[index]));
 }
@@ -54,6 +56,12 @@ const patternIds = new Set(patterns.map((pattern) => pattern.id));
 if (ruleIds.size !== rulesDocument.rules.length) throw new Error("rules.json: rule IDが重複しています");
 if (componentIds.size !== components.length) throw new Error("design/components: component IDが重複しています");
 if (patternIds.size !== patterns.length) throw new Error("design/patterns: pattern IDが重複しています");
+if (harnessPolicy.thresholds.pass >= harnessPolicy.thresholds.fix) {
+  throw new Error("harness-policy.json: thresholds.pass は thresholds.fix より小さくしてください");
+}
+for (const ruleId of harnessPolicy.requireApproval) {
+  if (!ruleIds.has(ruleId)) throw new Error(`harness-policy.json: 存在しないrule ${ruleId} を参照しています`);
+}
 
 const tableComponent = components.find((component) => component.id === "component.table");
 const radiusTokenIds = new Set(Object.keys(tokens.radius).map((name) => `radius.${name}`));

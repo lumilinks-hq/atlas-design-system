@@ -1,0 +1,181 @@
+{
+  "$schema": "../../../../../design/schemas/judgments.schema.json",
+  "judge": "jev",
+  "judgments": [
+    {
+      "ruleId": "a11y.control-name",
+      "probability": 0.04,
+      "evidenceSufficient": true,
+      "note": "最大は pages/CustomerListPage.tsx:112 Link「{customer.companyName}」（0.04）。コードで 12 件、Jev で 1 件を判定",
+      "details": [
+        {
+          "subject": "pages/CustomerListPage.tsx:112 Link「{customer.companyName}」",
+          "probability": 0.04
+        },
+        {
+          "subject": "components/CustomerCreateModal.tsx:89 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "components/CustomerCreateModal.tsx:92 Button「追加中 追加する」",
+          "probability": 0
+        },
+        {
+          "subject": "components/CustomerDeleteDialog.tsx:70 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "components/CustomerDeleteDialog.tsx:73 Button「削除中 削除する」",
+          "probability": 0
+        },
+        {
+          "subject": "components/CustomerEditDrawer.tsx:106 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "components/CustomerEditDrawer.tsx:109 Button「保存中 保存する」",
+          "probability": 0
+        },
+        {
+          "subject": "components/CustomerFormFields.tsx:61 Select.Trigger",
+          "probability": 0
+        },
+        {
+          "subject": "pages/CustomerDetailPage.tsx:85 Link「顧客一覧へ戻る」",
+          "probability": 0
+        },
+        {
+          "subject": "pages/CustomerDetailPage.tsx:100 Button「編集」",
+          "probability": 0
+        },
+        {
+          "subject": "pages/CustomerDetailPage.tsx:103 Button「削除」",
+          "probability": 0
+        },
+        {
+          "subject": "pages/CustomerListPage.tsx:72 Button「顧客を追加」",
+          "probability": 0
+        },
+        {
+          "subject": "pages/CustomerListPage.tsx:94 Button「顧客を追加」",
+          "probability": 0
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-19T07:52:01.903Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "a11y.error-recovery",
+      "probability": 0.853,
+      "evidenceSufficient": true,
+      "note": "最大は customerService.ts:76 文言「変更を保存できませんでした。」（0.853）。コードで 0 件、Jev で 11 件を判定",
+      "details": [
+        {
+          "subject": "customerService.ts:76 文言「変更を保存できませんでした。」",
+          "probability": 0.853
+        },
+        {
+          "subject": "components/CustomerFormFields.tsx:52 FieldError「{errors.email}」",
+          "probability": 0.456
+        },
+        {
+          "subject": "components/CustomerFormFields.tsx:31 FieldError「{errors.companyName}」",
+          "probability": 0.419
+        },
+        {
+          "subject": "components/CustomerDeleteDialog.tsx:57 Alert「顧客を削除できませんでした」",
+          "probability": 0.395
+        },
+        {
+          "subject": "components/CustomerEditDrawer.tsx:90 Alert「変更を保存できませんでした」",
+          "probability": 0.196
+        },
+        {
+          "subject": "components/CustomerCreateModal.tsx:73 Alert「顧客を追加できませんでした」",
+          "probability": 0.137
+        },
+        {
+          "subject": "fixtures.ts:111 文言「顧客の追加に失敗しました。時間をおいて再試行してください。」",
+          "probability": 0.059
+        },
+        {
+          "subject": "fixtures.ts:199 文言「削除に失敗しました。時間をおいて再試行してください。」",
+          "probability": 0.049
+        },
+        {
+          "subject": "fixtures.ts:162 文言「変更の保存に失敗しました。時間をおいて再試行してください。」",
+          "probability": 0.039
+        },
+        {
+          "subject": "components/customerForm.ts:21 文言「会社名を入力してください。」",
+          "probability": 0.004
+        },
+        {
+          "subject": "components/customerForm.ts:26 文言「メールアドレスは name@example.com の形式で入力してください。」",
+          "probability": 0.003
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-19T07:52:01.903Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "a11y.color-only",
+      "probability": 0.05,
+      "evidenceSufficient": true,
+      "note": "最大は components/StatusChip.tsx:12 Chip「{status}」（0.05）。コードで 0 件、Jev で 1 件を判定",
+      "details": [
+        {
+          "subject": "components/StatusChip.tsx:12 Chip「{status}」",
+          "probability": 0.05
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-19T07:52:01.903Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "state.failure",
+      "probability": 0.092,
+      "evidenceSufficient": true,
+      "note": "最大は components/CustomerDeleteDialog.tsx:32 失敗時の処理（if）（0.092）。コードで 0 件、Jev で 3 件を判定",
+      "details": [
+        {
+          "subject": "components/CustomerDeleteDialog.tsx:32 失敗時の処理（if）",
+          "probability": 0.092
+        },
+        {
+          "subject": "components/CustomerCreateModal.tsx:44 失敗時の処理（if）",
+          "probability": 0.089
+        },
+        {
+          "subject": "components/CustomerEditDrawer.tsx:63 失敗時の処理（if）",
+          "probability": 0.082
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-19T07:52:01.903Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "color.semantic",
+      "probability": 0.05,
+      "evidenceSufficient": true,
+      "note": "最大は pages/CustomerDetailPage.tsx:103 Button「削除」（0.05）。コードで 0 件、Jev で 2 件を判定。CSS やクラスで付けた色は見ていない",
+      "details": [
+        {
+          "subject": "pages/CustomerDetailPage.tsx:103 Button「削除」",
+          "probability": 0.05
+        },
+        {
+          "subject": "components/CustomerDeleteDialog.tsx:73 Button「削除中 削除する」",
+          "probability": 0.03
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-19T07:52:01.903Z",
+      "iteration": 0
+    }
+  ]
+}

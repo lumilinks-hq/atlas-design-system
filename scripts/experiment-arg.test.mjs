@@ -16,6 +16,9 @@ const cliScripts = [
   "compare-experiment.mjs",
   "evaluate-experiment.mjs",
   "finalize-experiment.mjs",
+  "harness-decide.mjs",
+  "harness-dispatch.mjs",
+  "judge-experiment.mjs",
   "measure-experiment.mjs",
   "preview-experiment.mjs",
   "refine-experiment.mjs",
@@ -68,6 +71,7 @@ describe("buildCaptureTargets", () => {
       "-mobile",
       "-detail-mobile",
       "-invalid-email",
+      "-failure",
     ]);
   });
 
@@ -78,16 +82,24 @@ describe("buildCaptureTargets", () => {
       "/customers",
       "/customers/customer_northstar",
       "/customers/customer_northstar",
+      "/customers/customer_northstar",
     ]);
   });
 
-  it("既定状態は全モード、入力検証の状態は修正Runだけを撮る", () => {
+  it("既定状態は全モード、入力検証の状態は修正Runだけを撮る（Drawerの閉じるボタンを確かめるため）", () => {
     const byState = Object.fromEntries(targets.map((target) => [target.suffix, target]));
     expect(byState[""].state).toBe("default");
     expect(byState[""].modes).toEqual(["baseline", "harness", "harness-corrected"]);
     expect(byState["-invalid-email"].state).toBe("invalid-email");
     expect(byState["-invalid-email"].modes).toEqual(["harness-corrected"]);
     expect(byState["-invalid-email"].overlay).toBe("component.drawer");
+  });
+
+  it("失敗状態はDrawerを持つ画面で全モードを撮る。レビューの材料をモードでそろえるため", () => {
+    const failure = targets.find((target) => target.state === "failure");
+    expect(failure).toMatchObject({ screenId: "detail", suffix: "-failure", modes: ["baseline", "harness", "harness-corrected"] });
+    // 失敗の表示がDrawerの中とは限らないので、閉じるボタンは確かめない
+    expect(failure.overlay).toBeUndefined();
   });
 
   it("デスクトップとモバイルの2つのviewportで撮る", () => {
@@ -101,13 +113,14 @@ describe("buildCaptureTargets", () => {
       "mobile",
       "mobile",
       "desktop",
+      "desktop",
     ]);
   });
 
-  it("Drawerを持たない画面には入力検証の撮影を割り当てない", () => {
+  it("Drawerを持たない画面には入力検証と失敗状態の撮影を割り当てない", () => {
     const plain = buildCaptureTargets(
       { screens: [{ id: "collection", route: "/things" }] },
-      { requiredStates: ["default", "invalid-email"] },
+      { requiredStates: ["default", "invalid-email", "failure"] },
     );
 
     expect(plain.map((target) => target.suffix)).toEqual(["", "-mobile"]);

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "decisions.schema.json",
+  "title": "Decisions",
+  "description": "Run ごとの人の判断。追記していき、同じルールでは最後の判断を使う",
+  "type": "object",
+  "required": ["decisions"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ruleId", "decision", "reason", "decidedBy", "decidedAt"],
+        "properties": {
+          "ruleId": { "type": "string", "minLength": 1 },
+          "decision": {
+            "description": "accept は採用（通過）、reject は差し戻し（修正）、defer は保留（人の判断のまま）",
+            "enum": ["accept", "reject", "defer"]
+          },
+          "reason": { "type": "string", "minLength": 1 },
+          "decidedBy": { "type": "string", "minLength": 1 },
+          "decidedAt": { "type": "string", "minLength": 20 },
+          "iteration": {
+            "description": "判断したときの修正回数。差し戻しはこの回数より後に修正をかけると使い終わる。ない場合は 0",
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,149 @@
+{
+  "$schema": "../../../../../design/schemas/judgments.schema.json",
+  "judge": "jev",
+  "judgments": [
+    {
+      "ruleId": "a11y.control-name",
+      "probability": 0,
+      "evidenceSufficient": true,
+      "note": "最大は CustomerEditDrawer.tsx:114 Drawer.Trigger「顧客を編集」（0）。コードで 9 件、Jev で 0 件を判定",
+      "details": [
+        {
+          "subject": "CustomerEditDrawer.tsx:114 Drawer.Trigger「顧客を編集」",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerEditDrawer.tsx:118 Drawer.CloseTrigger「閉じる」",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerEditDrawer.tsx:174 Select.Trigger",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerEditDrawer.tsx:192 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerEditDrawer.tsx:195 Button「保存中 保存」",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerListPage.tsx:102 SearchField.ClearButton「検索条件を消す」",
+          "probability": 0
+        },
+        {
+          "subject": "DeleteCustomerDialog.tsx:44 Button「顧客を削除」",
+          "probability": 0
+        },
+        {
+          "subject": "DeleteCustomerDialog.tsx:70 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "DeleteCustomerDialog.tsx:73 Button「削除する」",
+          "probability": 0
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-19T07:52:16.698Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "a11y.error-recovery",
+      "probability": 0.706,
+      "evidenceSufficient": true,
+      "note": "最大は CustomerEditDrawer.tsx:28 文言「メールアドレスの形式が正しくありません。」（0.706）。コードで 0 件、Jev で 8 件を判定",
+      "details": [
+        {
+          "subject": "CustomerEditDrawer.tsx:28 文言「メールアドレスの形式が正しくありません。」",
+          "probability": 0.706
+        },
+        {
+          "subject": "DeleteCustomerDialog.tsx:58 Alert「削除できませんでした」",
+          "probability": 0.432
+        },
+        {
+          "subject": "CustomerEditDrawer.tsx:127 Alert「保存できませんでした」",
+          "probability": 0.274
+        },
+        {
+          "subject": "CustomerEditDrawer.tsx:145 FieldError「{COMPANY_NAME_ERROR}」",
+          "probability": 0.221
+        },
+        {
+          "subject": "CustomerEditDrawer.tsx:166 FieldError「{EMAIL_ERROR}」",
+          "probability": 0.211
+        },
+        {
+          "subject": "fixtures.ts:98 文言「削除に失敗しました。時間をおいて再試行してください。」",
+          "probability": 0.049
+        },
+        {
+          "subject": "customerStore.ts:25 文言「保存に失敗しました。通信状況を確認してから、もう一度保存してください。」",
+          "probability": 0.039
+        },
+        {
+          "subject": "CustomerEditDrawer.tsx:27 文言「会社名を入力してください。」",
+          "probability": 0.004
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-19T07:52:16.698Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "a11y.color-only",
+      "probability": 0.07,
+      "evidenceSufficient": true,
+      "note": "最大は CustomerStatusChip.tsx:23 Chip「{status}」（0.07）。コードで 0 件、Jev で 1 件を判定",
+      "details": [
+        {
+          "subject": "CustomerStatusChip.tsx:23 Chip「{status}」",
+          "probability": 0.07
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-19T07:52:16.698Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "state.failure",
+      "probability": 0.109,
+      "evidenceSufficient": true,
+      "note": "最大は DeleteCustomerDialog.tsx:30 失敗時の処理（if）（0.109）。コードで 0 件、Jev で 2 件を判定",
+      "details": [
+        {
+          "subject": "DeleteCustomerDialog.tsx:30 失敗時の処理（if）",
+          "probability": 0.109
+        },
+        {
+          "subject": "CustomerEditDrawer.tsx:104 失敗時の処理（if）",
+          "probability": 0.08
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-19T07:52:16.698Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "color.semantic",
+      "probability": 0.03,
+      "evidenceSufficient": true,
+      "note": "最大は DeleteCustomerDialog.tsx:44 Button「顧客を削除」（0.03）。コードで 0 件、Jev で 2 件を判定。CSS やクラスで付けた色は見ていない",
+      "details": [
+        {
+          "subject": "DeleteCustomerDialog.tsx:44 Button「顧客を削除」",
+          "probability": 0.03
+        },
+        {
+          "subject": "DeleteCustomerDialog.tsx:73 Button「削除する」",
+          "probability": 0.03
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-19T07:52:16.698Z",
+      "iteration": 0
+    }
+  ]
+}

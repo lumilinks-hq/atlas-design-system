@@ -422,22 +422,29 @@ code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; fo
 .method-text { display: grid; gap: var(--dh-space-3); max-width: 44rem; margin-top: var(--dh-space-6); line-height: 1.8; }
 .method-text p { margin: 0; }
 .method-text code { font-size: .875em; }
-.harness-loop { margin: var(--dh-space-6) 0 0; }
-.harness-loop-canvas {
-  height: 368px;
+.harness-next, .harness-judge { margin: var(--dh-space-6) 0 0; }
+.harness-next-canvas, .harness-judge-canvas {
+  aspect-ratio: 900 / 564;
   border: 1px solid var(--dh-border);
   border-radius: var(--dh-radius-base);
   background: var(--dh-surface-muted);
   --xy-background-color: transparent;
   --xy-edge-stroke: var(--dh-accent);
   --xy-edge-stroke-width: 1.5;
+  --xy-edge-label-color: var(--dh-text);
+  --xy-edge-label-background-color: var(--dh-surface);
 }
-.harness-loop-narrow .harness-loop-canvas { height: 1010px; }
-.harness-loop-step { display: grid; box-sizing: border-box; width: 100%; height: 128px; align-content: start; gap: var(--dh-space-2); border: 1px solid var(--dh-border); border-radius: var(--dh-radius-base); background: var(--dh-surface); padding: var(--dh-space-4); color: var(--dh-text); }
-.harness-loop-step-head { display: flex; align-items: center; justify-content: space-between; gap: var(--dh-space-2); }
-.harness-loop-step-number { color: var(--dh-accent); font-size: .875rem; font-weight: 700; letter-spacing: .04em; }
-.harness-loop-step-title { font-size: .9375rem; font-weight: 600; line-height: 1.5; }
-.harness-loop-badge { font-size: .75rem; font-weight: 700; }
+.harness-next-narrow .harness-next-canvas { aspect-ratio: 420 / 732; max-height: 820px; margin-inline: auto; }
+.harness-judge-canvas { aspect-ratio: 900 / 612; }
+.harness-judge-narrow .harness-judge-canvas { aspect-ratio: 420 / 696; max-height: 780px; margin-inline: auto; }
+.harness-next-canvas .react-flow__edge-text, .harness-judge-canvas .react-flow__edge-text { font-size: 12px; font-weight: 600; }
+.harness-next-canvas .react-flow__edge-textbg, .harness-judge-canvas .react-flow__edge-textbg { stroke: var(--dh-border); stroke-width: 1; }
+.harness-next-step { display: grid; box-sizing: border-box; width: 100%; height: 100%; place-items: center; border: 1px solid var(--dh-border); border-radius: var(--dh-radius-base); background: var(--dh-surface); padding: var(--dh-space-2) var(--dh-space-3); color: var(--dh-text); font-size: .9375rem; font-weight: 600; line-height: 1.4; text-align: center; word-break: auto-phrase; }
+.harness-next-step-accent { border-color: var(--dh-accent); background: var(--dh-accent-soft); color: var(--dh-accent); }
+.harness-next-step-pill { border-radius: 999px; font-size: .875rem; }
+.harness-next-items { margin-top: var(--dh-space-6); }
+.harness-next-items [role="rowheader"], .harness-next-items td { word-break: auto-phrase; }
+.harness-next-detail { display: grid; gap: 4px; justify-items: start; }
 .result-pass, .check-pass, .status-passed { color: var(--dh-success); }
 .result-fail, .check-fail, .status-failed, .status-verdict-concern { color: var(--dh-danger); }
 .check-skip { color: var(--dh-text-muted); }

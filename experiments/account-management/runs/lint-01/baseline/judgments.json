@@ -1,0 +1,138 @@
+{
+  "$schema": "../../../../../design/schemas/judgments.schema.json",
+  "judge": "jev",
+  "judgments": [
+    {
+      "ruleId": "a11y.control-name",
+      "probability": 0.04,
+      "evidenceSufficient": true,
+      "note": "最大は App.tsx:174 Link「{customer.companyName}」（0.04）。コードで 8 件、Jev で 1 件を判定",
+      "details": [
+        {
+          "subject": "App.tsx:174 Link「{customer.companyName}」",
+          "probability": 0.04
+        },
+        {
+          "subject": "App.tsx:307 Link「顧客一覧へ戻る」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:315 Button「編集」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:318 Button「削除」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:419 Select.Trigger",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:436 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:439 Button「保存中… 保存する」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:471 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:474 Button「削除中… 削除する」",
+          "probability": 0
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-19T07:52:08.371Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "a11y.error-recovery",
+      "probability": 0.451,
+      "evidenceSufficient": true,
+      "note": "最大は App.tsx:346 Alert「顧客を削除できませんでした。」（0.451）。コードで 0 件、Jev で 8 件を判定",
+      "details": [
+        {
+          "subject": "App.tsx:346 Alert「顧客を削除できませんでした。」",
+          "probability": 0.451
+        },
+        {
+          "subject": "App.tsx:467 文言「顧客情報と対応メモはすべて失われ、削除を取り消すことはできません。」",
+          "probability": 0.428
+        },
+        {
+          "subject": "App.tsx:410 ErrorMessage「{visibleErrors.email}」",
+          "probability": 0.202
+        },
+        {
+          "subject": "App.tsx:388 ErrorMessage「{visibleErrors.companyName}」",
+          "probability": 0.177
+        },
+        {
+          "subject": "App.tsx:336 Alert「顧客情報を保存できませんでした。 入力内容はそのまま残しています。もう一度保存し…」",
+          "probability": 0.058
+        },
+        {
+          "subject": "fixtures.ts:98 文言「削除に失敗しました。時間をおいて再試行してください。」",
+          "probability": 0.049
+        },
+        {
+          "subject": "App.tsx:219 文言「会社名を入力してください。」",
+          "probability": 0.004
+        },
+        {
+          "subject": "App.tsx:221 文言「メールアドレスは「name@example.com」の形式で入力してください。」",
+          "probability": 0.002
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-19T07:52:08.371Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "a11y.color-only",
+      "probability": 0.05,
+      "evidenceSufficient": true,
+      "note": "最大は App.tsx:119 Chip「{status}」（0.05）。コードで 0 件、Jev で 1 件を判定",
+      "details": [
+        {
+          "subject": "App.tsx:119 Chip「{status}」",
+          "probability": 0.05
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-19T07:52:08.371Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "state.failure",
+      "evidenceSufficient": false,
+      "note": "ソースに判定する箇所がない。モデルには聞いていない",
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-19T07:52:08.371Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "color.semantic",
+      "probability": 0.05,
+      "evidenceSufficient": true,
+      "note": "最大は App.tsx:318 Button「削除」（0.05）。コードで 0 件、Jev で 2 件を判定。CSS やクラスで付けた色は見ていない",
+      "details": [
+        {
+          "subject": "App.tsx:318 Button「削除」",
+          "probability": 0.05
+        },
+        {
+          "subject": "App.tsx:474 Button「削除中… 削除する」",
+          "probability": 0.03
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-19T07:52:08.371Z",
+      "iteration": 0
+    }
+  ]
+}

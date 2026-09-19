@@ -27,8 +27,11 @@ export function resolveMaskedUsername(options = {}) {
  * @returns {string}
  */
 export function sanitizeText(value, options = {}) {
+  // TypeSafeの鍵は形が公開されていないので、手元に設定された値そのものを伏せる。短い値は普通の文字列を消すので使わない
+  const typesafeKey = (options.env ?? process.env).TYPESAFE_API_KEY;
+  const keyMasked = typeof typesafeKey === "string" && typesafeKey.length >= 8 ? value.replaceAll(typesafeKey, "<redacted-typesafe-key>") : value;
   // workspaceはホーム配下にあるので、<home>より先に<workspace>へ畳む
-  const output = value
+  const output = keyMasked
     .replaceAll(rootDir, "<repo>")
     .replaceAll(runsRootDir(options.env), "<workspace>")
     .replace(/\/Users\/[A-Za-z0-9._-]+/g, "<home>")
