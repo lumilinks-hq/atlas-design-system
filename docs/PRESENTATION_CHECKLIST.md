@@ -4,7 +4,7 @@
 
 - Node.js 24とpnpm 11.13.1で`pnpm install --frozen-lockfile`を実行する
 - `pnpm demo:check`と`pnpm test:e2e`を通す
-- `/harness`でデザインハーネスの4層のループ図（React Flow）が矢印4本付きで表示され、層をクリックすると下のファイル表（ファイル／役割）が切り替わること、「デモ画面の生成サイクル」が6ステップの図（React Flow）で矢印5本付きで表示され、04と06に違反数（初回4件→修正版0件）が出ることを確認する
+- `/harness`でデザインハーネスの4層のループ図（React Flow）が矢印4本付きで表示され、層をクリックすると下のファイル表（ファイル／役割）が切り替わること、「検査結果から次の工程を決める」の図（React Flow）が10項目・矢印12本で表示され、分岐の矢印に「要修正」「判断・根拠不足」「必須条件・承認確認」のラベルが付き、下の表（図の項目／ファイルと役割）が出ることを確認する
 - `/examples/account-management/results`で一覧・詳細・モバイルの画面切替と、ルールごとの検査結果を確認する
 - `/play/account-management?mode=atlas&state=invalid-email`でDrawerと入力エラーを確認する
 - Baselineへ切り替えても`state`が維持されることを確認する

@@ -38,6 +38,30 @@ pnpm runs:sanitize --pair "$PAIR_ID"
 - `experiment:evaluate`は`review`欄を含めて評価ファイルを作り直す。必ずreviewより前に実行し、review後に再実行しない
 - `experiment:compare`は最後に実行する。所見を`comparison.json`へ転記する
 
+## 修正と人の判断
+
+`experiment:refine`は、検査の結果から次の工程を「修正」「人の判断」「次工程へ」に振り分け（[`HARNESS_LOOP.md`](./HARNESS_LOOP.md)）、修正のときだけAIに修正を依頼する。1回の実行で修正は1回。続けるときは結果を見て再実行する。
+
+- 修正の上限は`design/harness-policy.json`の`maxFixIterations`（2回）。上限で止まると終了コードは1
+- 修正しないルールや追加で直すルールがあれば、workspaceに`NEXT_STEP.md`を置いてAIに渡す
+- 振り分けの結果はRunの`next-step.json`に残る
+- refineの中ではAIレビューの判定がないので、reviewのルールは「人の判断」になる。capture と review のあと、次のコマンドで振り分け直す
+
+```bash
+# 次の工程を表示する（ファイルは書かない）
+pnpm experiment:next --pair "$PAIR_ID" --mode harness-corrected
+
+# ソースをJevで判定する（表示だけ）。--writeでjudgments.jsonに追記する。鍵は.env.exampleをまねて.envに書く
+pnpm experiment:judge --pair "$PAIR_ID" --mode harness-corrected
+
+# 人の判断を decisions.json に記録する。--by には役割名を書く（OSのユーザー名は拒否される）
+pnpm experiment:decide --pair "$PAIR_ID" --rule state.failure --decision accept --reason "失敗の表示は要件どおり" --by design-system-owner
+```
+
+`--decision`は`accept`（採用）、`reject`（差し戻し）、`defer`（保留）。差し戻しは次の修正で使い終わる。
+
+captureは既定の画面に加えて、失敗した状態の詳細画面（`<mode>-failure.png`）を全モードで撮る。reviewはこの画像も渡す。
+
 ## 生成コードを人が直さない
 
 生成コードを人が直接直すと比較条件が崩れます。修正は`VALIDATION.md`を入力にした`harness-corrected`として別Runへ保存します。公開前の確認で新しい設計違反が見つかった場合も`pnpm experiment:refine`で追加の修正イベントとして保存します。

@@ -1,0 +1,134 @@
+{
+  "$schema": "../../../../../design/schemas/judgments.schema.json",
+  "judge": "jev",
+  "judgments": [
+    {
+      "ruleId": "a11y.control-name",
+      "probability": 1,
+      "evidenceSufficient": true,
+      "note": "最大は CustomerFormDrawer.tsx:92 Drawer.CloseTrigger（1）。コードで 13 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
+      "details": [
+        {
+          "subject": "CustomerFormDrawer.tsx:92 Drawer.CloseTrigger",
+          "probability": 1
+        },
+        {
+          "subject": "CustomerDetailPage.tsx:88 Link「顧客一覧へ戻る」",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerDetailPage.tsx:115 AlertDialog.Trigger「顧客を削除」",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerDetailPage.tsx:116 Button「顧客を削除」",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerDetailPage.tsx:145 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerDetailPage.tsx:148 Button「削除する」",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerFormDrawer.tsx:88 Drawer.Trigger「{triggerLabel}」",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerFormDrawer.tsx:152 Select.Trigger",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerFormDrawer.tsx:169 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerFormDrawer.tsx:172 Button「保存する」",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerListPage.tsx:120 SearchField.ClearButton",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerListPage.tsx:148 Link「{customer.companyName}」",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerListPage.tsx:190 Link「{`${customer.companyName}の詳細を確認`}」",
+          "probability": 0
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:09:53.888Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "a11y.color-only",
+      "probability": 0,
+      "evidenceSufficient": true,
+      "note": "最大は CustomerDetailPage.tsx:95 Chip「{customer.status}」（0）。コードで 3 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
+      "details": [
+        {
+          "subject": "CustomerDetailPage.tsx:95 Chip「{customer.status}」",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerListPage.tsx:157 Chip「{customer.status}」",
+          "probability": 0
+        },
+        {
+          "subject": "CustomerListPage.tsx:182 Chip「{customer.status}」",
+          "probability": 0
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:09:53.888Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "state.failure",
+      "probability": 0.192,
+      "evidenceSufficient": true,
+      "note": "最大は CustomerDetailPage.tsx:51 失敗時の処理（if）（0.192）。コードで 0 件、Jev で 3 件を判定",
+      "details": [
+        {
+          "subject": "CustomerDetailPage.tsx:51 失敗時の処理（if）",
+          "probability": 0.192
+        },
+        {
+          "subject": "CustomerListPage.tsx:74 失敗時の処理（if）",
+          "probability": 0.183
+        },
+        {
+          "subject": "CustomerDetailPage.tsx:68 失敗時の処理（if）",
+          "probability": 0.096
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:09:53.888Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "color.semantic",
+      "probability": 0.03,
+      "evidenceSufficient": true,
+      "note": "最大は CustomerDetailPage.tsx:116 Button「顧客を削除」（0.03）。コードで 0 件、Jev で 2 件を判定。CSS やクラスで付けた色は見ていない",
+      "details": [
+        {
+          "subject": "CustomerDetailPage.tsx:116 Button「顧客を削除」",
+          "probability": 0.03
+        },
+        {
+          "subject": "CustomerDetailPage.tsx:148 Button「削除する」",
+          "probability": 0.03
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:09:53.888Z",
+      "iteration": 0
+    }
+  ]
+}

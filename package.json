@@ -37,6 +37,9 @@
     "experiment:measure": "node scripts/measure-experiment.mjs",
     "experiment:review": "node scripts/review-experiment.mjs",
     "experiment:refine": "node scripts/refine-experiment.mjs",
+    "experiment:next": "node scripts/harness-dispatch.mjs",
+    "experiment:decide": "node scripts/harness-decide.mjs",
+    "experiment:judge": "node --env-file-if-exists=.env scripts/judge-experiment.mjs",
     "experiment:capture": "node scripts/capture-experiment.mjs",
     "experiment:preview": "node scripts/preview-experiment.mjs",
     "demo:check": "pnpm design:check && pnpm theme:check && pnpm design:conformance && pnpm runs:check && pnpm skills:check && pnpm public:audit && pnpm links:check && pnpm typecheck && pnpm lint && pnpm test:run && pnpm build && pnpm bundle:check"
@@ -65,6 +68,7 @@
     "@types/node": "26.4.0",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
+    "@typesafe-ai/sdk": "0.6.0",
     "@vitejs/plugin-react": "6.1.1",
     "eslint": "10.9.1",
     "eslint-plugin-atlas": "workspace:*",

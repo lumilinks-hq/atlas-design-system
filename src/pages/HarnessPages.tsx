@@ -14,13 +14,13 @@ import {
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { HarnessCycle } from "../components/HarnessCycle";
-import { HarnessLoop, type LoopStep } from "../components/HarnessLoop";
+import { HarnessJudge } from "../components/HarnessJudge";
+import { HarnessNextStep } from "../components/HarnessNextStep";
 import { designData } from "../data/design";
 import { artifactSourceHref } from "../data/repository";
 import {
   experimentRunList,
   experimentRuns,
-  harnessEvaluation,
   type ExperimentId,
   type ExperimentRun,
   type RunCheck,
@@ -166,9 +166,47 @@ const layers = [
 // inRepository が false のものは Run ごとの生成物で、リポジトリには入っていない
 type LayerArtifact = { path: string; note: string; inRepository?: boolean };
 
-export const harnessArtifacts: readonly LayerArtifact[] = layers.flatMap(
-  (layer): readonly LayerArtifact[] => layer.artifacts,
-);
+// 「検査結果から次の工程を決める」図の項目と、それを受け持つファイル
+const nextStepItems: readonly (LayerArtifact & { item: string })[] = [
+  { item: "判断基準", path: "design/harness-policy.json", note: "しきい値、修正回数の上限、人の承認が要るルール" },
+  { item: "モデルで判定", path: "scripts/judges/", note: "文脈や意味の判定。Jevが違反の確率を返す（下の「モデルで判定する仕組み」）" },
+  { item: "コードで検査", path: "scripts/evaluate-experiment.mjs", note: "数値、必須項目、完了条件。design/rules.json による自動検証" },
+  { item: "コードが次の工程を決定", path: "scripts/harness-dispatch.mjs", note: "pnpm experiment:next で振り分けの結果を表示" },
+  { item: "LLMが生成・修正", path: "scripts/refine-experiment.mjs", note: "pnpm experiment:refine で、振り分けが修正のときだけ修正版を保存" },
+  {
+    item: "人の判断・追加の根拠",
+    path: "decisions.json",
+    note: "Runごとの採用、差し戻し、保留。pnpm experiment:decide で記録",
+    inRepository: false,
+  },
+  { item: "現在の状態", path: "experiments/*/runs/", note: "成果物、根拠、検査結果をRunごとに保存" },
+];
+
+// 「Jevで判定して次の工程を決める図」の項目と、それを受け持つファイル
+const judgeItems: readonly (LayerArtifact & { item: string })[] = [
+  { item: "Runのソースコード", path: "experiments/*/runs/*/*/source/", note: "生成された画面のコード" },
+  { item: "コードで検査", path: "scripts/evaluate-experiment.mjs", note: "design/rules.json による自動検証" },
+  { item: "部品と文言を抜き出す", path: "scripts/judges/evidence.mjs", note: "ボタンやリンクの名前、エラー表示の文言、状態の表示" },
+  {
+    item: "コードで決める",
+    path: "scripts/judges/questions.mjs",
+    note: "操作の名前と状態表示の文字があるか。閉じるボタンの aria-label は design/components-api.md で必須",
+  },
+  {
+    item: "Jevに聞く",
+    path: "scripts/judges/jev.mjs",
+    note: "TypeSafeのjev-1.13.0で、危険色の使い方と失敗時の扱いを判定。鍵 TYPESAFE_API_KEY はNodeのスクリプトだけで使う",
+  },
+  { item: "LLMが画面画像をレビュー", path: "scripts/review-experiment.mjs", note: "Jevの判定がないルールだけで使う" },
+  { item: "判定の記録", path: "experiments/*/runs/*/*/judgments.json", note: "pnpm experiment:judge --write でRunごとに追記" },
+  { item: "コードが次の工程を決定", path: "scripts/harness-dispatch.mjs", note: "しきい値は design/harness-policy.json" },
+];
+
+export const harnessArtifacts: readonly LayerArtifact[] = [
+  ...layers.flatMap((layer): readonly LayerArtifact[] => layer.artifacts),
+  ...nextStepItems,
+  ...judgeItems,
+];
 
 function ArtifactPath({ artifact }: { artifact: LayerArtifact }) {
   if (artifact.inRepository === false) return <code>{artifact.path}</code>;
@@ -185,18 +223,58 @@ const artifactColumns = [
   { id: "note", label: "役割", isRowHeader: false, width: "60%", minWidth: 144, align: "start" },
 ] as const;
 
+// 狭い画面で 3 列だとファイル名が細かく折れるので、ファイルと役割は 1 つのセルに縦に並べる
+const nextStepColumns = [
+  { id: "item", label: "図の項目", isRowHeader: true, width: "32%", minWidth: 112, align: "start" },
+  { id: "detail", label: "ファイルと役割", isRowHeader: false, width: "68%", minWidth: 176, align: "start" },
+] as const;
+
+function DiagramItems({ label, items }: { label: string; items: readonly (LayerArtifact & { item: string })[] }) {
+  return (
+    <Table.Root className="harness-artifacts harness-next-items" aria-label={label} variant="primary">
+      <Table.ScrollContainer>
+        <Table.Content aria-label={label}>
+          <Table.Header columns={nextStepColumns}>
+            {(column) => (
+              <Table.Column
+                id={column.id}
+                isRowHeader={column.isRowHeader}
+                width={column.width}
+                minWidth={column.minWidth}
+                data-align={column.align}
+              >
+                {column.label}
+              </Table.Column>
+            )}
+          </Table.Header>
+          <Table.Body items={items}>
+            {(item) => (
+              <Table.Row id={item.item} columns={nextStepColumns}>
+                {(column) => (
+                  <Table.Cell data-align={column.align}>
+                    {column.id === "item" ? (
+                      item.item
+                    ) : (
+                      <span className="harness-next-detail">
+                        <ArtifactPath artifact={item} />
+                        <span>{item.note}</span>
+                      </span>
+                    )}
+                  </Table.Cell>
+                )}
+              </Table.Row>
+            )}
+          </Table.Body>
+        </Table.Content>
+      </Table.ScrollContainer>
+    </Table.Root>
+  );
+}
+
 export function HarnessPage() {
   const [selectedLayerId, setSelectedLayerId] = useState<string>(layers[0].id);
   const selectedLayer = layers.find((layer) => layer.id === selectedLayerId) ?? layers[0];
   const selectedArtifacts: readonly LayerArtifact[] = selectedLayer.artifacts;
-  const loopSteps: LoopStep[] = [
-    { id: "issue", number: "01", title: "Issueを渡す" },
-    { id: "context", number: "02", title: "制約とコンテキストを渡す" },
-    { id: "generate", number: "03", title: "AIが生成する" },
-    { id: "verify", number: "04", title: "検査する", failed: harnessEvaluation.summary.failed },
-    { id: "feedback", number: "05", title: "検査結果をVALIDATION.mdとして返す" },
-    { id: "reverify", number: "06", title: "修正版を再検査する" },
-  ];
 
   return (
     <article className="doc-page harness-page">
@@ -264,8 +342,8 @@ export function HarnessPage() {
             {automaticCount}件は評価スクリプトで自動検証します。承認済みの部品を使っているか、色コードを直接書いていないか、必要な画面状態があるかを、毎回同じ基準で判定します。
           </p>
           <p>
-            AIは画面の画像を見て、色だけで状態を伝えていないか、エラーから回復できるかなど、値の照合では決められない
-            {aiReviewCount}件をレビューします。
+            AIは、色だけで状態を伝えていないか、エラーから回復できるかなど、値の照合では決められない{aiReviewCount}
+            件をレビューします。コードから抜き出した部品と文言をJevが判定し、Jevの判定がないルールだけLLMが画面の画像を見ます。
           </p>
           <p>
             自動検証とAIレビューが「要確認」にした項目は、合否を機械で決めず、人が画面を見て判断します。判定そのものを人に任せているルールは
@@ -278,11 +356,20 @@ export function HarnessPage() {
       </section>
 
       <section aria-labelledby="loop-title" className="harness-section">
-        <h2 id="loop-title">デモ画面の生成サイクル</h2>
-        <p>
-          表示されている検査の違反数は、比較ページで参照している保存済みRun（create-01、Claude Opus 5）の初回検査時の値です。
-        </p>
-        <HarnessLoop steps={loopSteps} />
+        <h2 id="loop-title">検査結果から次の工程を決める</h2>
+        <div className="method-text">
+          <p>
+            コードの検査とモデルの判定をもとに、コードが次の工程を「修正」「人の判断」「次工程へ」のどれかに決めます。振り分けの基準（しきい値、修正回数の上限、人の承認が要るルール）は、人が{" "}
+            <code>design/harness-policy.json</code> に書きます。
+          </p>
+          <p>
+            <code>pnpm experiment:refine</code> は、振り分けが「修正」のときだけAIに修正を依頼し、それ以外は止まります。人の判断は{" "}
+            <code>pnpm experiment:decide</code> で記録し、次の工程は <code>pnpm experiment:next</code>{" "}
+            で確かめます。修正の途中ではモデルの判定を取り直さないので、判定が要るルールは人の判断に回ります。公開しているRunは、この振り分けを入れる前に作ったものです。
+          </p>
+        </div>
+        <HarnessNextStep />
+        <DiagramItems label="図の項目とファイル" items={nextStepItems} />
         <div className="harness-cta-row">
           <Link className="harness-cta" to={resultsPath}>
             生成結果の比較を見る <ArrowRight size={16} aria-hidden="true" />
@@ -291,6 +378,27 @@ export function HarnessPage() {
             技術仕様（設計契約と検証）を見る <ArrowRight size={16} aria-hidden="true" />
           </Link>
         </div>
+      </section>
+
+      <section aria-labelledby="judge-title" className="harness-section">
+        <h2 id="judge-title">モデルで判定する仕組み</h2>
+        <div className="method-text">
+          <p>
+            値の照合では決められないルールは、TypeSafeのJevに判定させます。Jevは画像を見ず、テキストの質問に「はい」の確率を返すモデルです。
+          </p>
+          <p>
+            コードがRunのソースから部品と文言を抜き出し、操作に名前があるか、状態表示に文字があるかのように、コードで決まるものはその場で0か1にします。Jevに聞くのは、危険色を破壊的でない操作に使っていないかと、操作が失敗したときに画面へ何も残らないかの2件だけです。ルールごとに一番高い確率を記録します。
+          </p>
+          <p>
+            最初はAIレビューの5件すべてをJevに聞いていましたが、保存済み13本の結果を見て2件に絞りました。名前や文字の有無はコードで決まり、実行時に決まる文言はJevからは読めず、確率が中間に集まるだけだったためです。
+          </p>
+          <p>
+            確率が0.8以上なら修正、0.2以下なら通過、その間と材料が足りないときは人の判断です。鍵の <code>TYPESAFE_API_KEY</code>{" "}
+            はNodeのスクリプトだけで使い、ブラウザには渡しません。
+          </p>
+        </div>
+        <HarnessJudge />
+        <DiagramItems label="Jevの図の項目とファイル" items={judgeItems} />
       </section>
     </article>
   );

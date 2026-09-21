@@ -1,0 +1,134 @@
+{
+  "$schema": "../../../../../design/schemas/judgments.schema.json",
+  "judge": "jev",
+  "judgments": [
+    {
+      "ruleId": "a11y.control-name",
+      "probability": 0,
+      "evidenceSufficient": true,
+      "note": "最大は App.tsx:192 Link「{customer.companyName}」（0）。コードで 13 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
+      "details": [
+        {
+          "subject": "App.tsx:192 Link「{customer.companyName}」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:216 Link「{customer.companyName}」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:286 SearchField.ClearButton「検索条件をクリア」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:515 Link「顧客一覧に戻る」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:535 Button「顧客を編集」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:541 Drawer.CloseTrigger「編集画面を閉じる」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:614 Select.Trigger",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:631 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:634 Button「保存中 保存」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:644 Button「顧客を削除」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:650 AlertDialog.CloseTrigger「削除確認を閉じる」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:660 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:663 Button「削除中 削除する」",
+          "probability": 0
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:10:20.126Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "a11y.color-only",
+      "probability": 0,
+      "evidenceSufficient": true,
+      "note": "最大は App.tsx:199 Chip.Root「{customer.status}」（0）。コードで 4 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
+      "details": [
+        {
+          "subject": "App.tsx:199 Chip.Root「{customer.status}」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:228 Chip.Root「{customer.status}」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:525 Chip.Root「{customer.status}」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:698 Chip.Root「{customer.status}」",
+          "probability": 0
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:10:20.126Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "state.failure",
+      "probability": 0.154,
+      "evidenceSufficient": true,
+      "note": "最大は App.tsx:495 失敗時の処理（if）（0.154）。コードで 0 件、Jev で 2 件を判定",
+      "details": [
+        {
+          "subject": "App.tsx:495 失敗時の処理（if）",
+          "probability": 0.154
+        },
+        {
+          "subject": "App.tsx:462 失敗時の処理（if）",
+          "probability": 0.115
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:10:20.126Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "color.semantic",
+      "probability": 0.03,
+      "evidenceSufficient": true,
+      "note": "最大は App.tsx:644 Button「顧客を削除」（0.03）。コードで 0 件、Jev で 2 件を判定。CSS やクラスで付けた色は見ていない",
+      "details": [
+        {
+          "subject": "App.tsx:644 Button「顧客を削除」",
+          "probability": 0.03
+        },
+        {
+          "subject": "App.tsx:663 Button「削除中 削除する」",
+          "probability": 0.03
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:10:20.126Z",
+      "iteration": 0
+    }
+  ]
+}

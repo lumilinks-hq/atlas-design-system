@@ -31,6 +31,8 @@ export function substituteRouteParams(route, sampleParams = {}) {
  * 撮影対象を並べる。ファイル名は `${mode}${suffix}.png`。
  * 先頭の画面はsuffixなし、以降は `-${screen.id}` を付ける。
  * requiredStates の `invalid-` で始まる状態は、Drawerを重ねる画面の入力検証として修正Runだけ撮る。
+ * `failure` は同じ画面で全モードを撮る。レビューに渡す画像をモードでそろえるため。
+ * 失敗の表示がDrawerの中とは限らないので、閉じるボタンは確かめない。
  * @param {{ screens?: { id: string, route: string, sampleParams?: Record<string, string>, overlays?: { component: string }[] }[] }} contract
  * @param {{ requiredStates?: string[] }} [options]
  */
@@ -66,6 +68,16 @@ export function buildCaptureTargets(contract, { requiredStates = [] } = {}) {
         viewport: captureViewports[0],
         modes: ["harness-corrected"],
         overlay: overlay.component,
+      });
+    }
+    if (requiredStates.includes("failure")) {
+      targets.push({
+        screenId: screen.id,
+        state: "failure",
+        path: paths[index],
+        suffix: "-failure",
+        viewport: captureViewports[0],
+        modes: allModes,
       });
     }
   }

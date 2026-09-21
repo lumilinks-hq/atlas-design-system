@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "harness-policy.schema.json",
+  "title": "Harness policy",
+  "description": "検査結果から次の工程（修正、人の判断、次工程へ）を選ぶ基準。人が書く",
+  "type": "object",
+  "required": ["version", "thresholds", "maxFixIterations", "requireApproval", "requiredChecks", "decidedBy", "decidedAt"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "thresholds": {
+      "description": "モデルが返す違反の確率の境目。fix 以上は修正、pass 以下は通過、その間は人の判断",
+      "type": "object",
+      "required": ["fix", "pass"],
+      "properties": {
+        "fix": { "type": "number", "minimum": 0, "maximum": 1 },
+        "pass": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "maxFixIterations": {
+      "description": "修正をかける回数の上限。達したら修正せず人の判断に回す",
+      "type": "integer",
+      "minimum": 0
+    },
+    "requireApproval": {
+      "description": "モデルの判定が通過でも、人の承認を求めるルール ID",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "requiredChecks": {
+      "description": "次工程へ進む前に通っている必要がある実行時の検査（run.json の checks の name）",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "decidedBy": { "type": "string", "minLength": 1 },
+    "decidedAt": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+  },
+  "additionalProperties": false
+}

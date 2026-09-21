@@ -14,6 +14,29 @@ export function selectReviewRuleIds(rulesDocument) {
   return rulesDocument.rules.filter((rule) => rule.method === "ai-review").map((rule) => rule.id);
 }
 
+const reviewStates = new Set(["default", "failure"]);
+const stateLabels = { default: "既定の状態", failure: "失敗した状態" };
+
+/**
+ * 撮影対象のうち、レビューへ渡す画面を選ぶ。既定の状態と失敗状態を渡す
+ * @param {ReturnType<typeof buildCaptureTargets>} targets
+ * @param {string} mode
+ */
+export function selectReviewTargets(targets, mode) {
+  return targets.filter((target) => reviewStates.has(target.state) && target.modes.includes(mode));
+}
+
+/**
+ * どの画像が何の画面かをプロンプトに書く。モデルによってはファイル名が見えないので、順番も書く
+ * @param {{ screenId: string, state: string, suffix: string, viewport: { name: string } }[]} targets
+ * @param {string} mode
+ */
+export function formatReviewImages(targets, mode) {
+  return targets
+    .map((target, index) => `${index + 1}. ${mode}${target.suffix}.png: ${target.screenId} 画面、${target.viewport.name}、${stateLabels[target.state] ?? target.state}`)
+    .join("\n");
+}
+
 const findingsSchema = z.object({
   findings: z.array(z.object({ ruleId: z.string(), verdict: z.enum(["pass", "concern"]), note: z.string() })),
 });
@@ -41,12 +64,12 @@ async function reviewRun({ pairId, mode, experiment = defaultExperimentName }) {
   const outputDir = resolve(experimentDirs.runsDir, pairId, mode);
   const screenshotsDir = resolve(experimentDirs.publicRunsDir, pairId);
   const evaluationPath = resolve(outputDir, "design-evaluation.json");
-  // 撮影側と同じ一覧から名前を作る。既定状態の画面だけをレビューへ渡す
+  // 撮影側と同じ一覧から名前を作る。既定の状態と失敗状態の画面をレビューへ渡す
   const contract = resolveManifest(experimentDirs.manifestPath);
-  const images = buildCaptureTargets(contract)
-    .filter((target) => target.state === "default" && target.modes.includes(mode))
-    .map((target) => resolve(screenshotsDir, `${mode}${target.suffix}.png`))
-    .filter((path) => existsSync(path));
+  const manifest = JSON.parse(await readFile(resolve(rootDir, experimentDirs.manifestPath), "utf8"));
+  const targets = selectReviewTargets(buildCaptureTargets(contract, { requiredStates: manifest.requiredStates ?? [] }), mode)
+    .filter((target) => existsSync(resolve(screenshotsDir, `${mode}${target.suffix}.png`)));
+  const images = targets.map((target) => resolve(screenshotsDir, `${mode}${target.suffix}.png`));
   if (!existsSync(evaluationPath) || images.length === 0) {
     return { skipped: true, reason: !existsSync(evaluationPath) ? "design-evaluation.jsonなし" : "スクリーンショットなし" };
   }
@@ -59,7 +82,8 @@ async function reviewRun({ pairId, mode, experiment = defaultExperimentName }) {
     .map((rule) => `- ${rule.id}: ${rule.title}\n  ${rule.description}`)
     .join("\n");
   const prompt = [
-    "添付のスクリーンショット（一覧・詳細、デスクトップ・モバイル）を、次のデザインルールに照らしてレビューしてください。",
+    "添付のスクリーンショットを、次のデザインルールに照らしてレビューしてください。画像は次の順です。",
+    formatReviewImages(targets, mode),
     ruleText,
     "各ルールについて verdict は pass か concern のどちらかとし、根拠を画面上の観察として1〜2文で書いてください。",
     '出力は次のJSONのみとします: {"findings":[{"ruleId":"...","verdict":"pass|concern","note":"..."}]}',

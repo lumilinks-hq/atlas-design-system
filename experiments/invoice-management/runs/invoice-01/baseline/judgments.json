@@ -1,0 +1,110 @@
+{
+  "$schema": "../../../../../design/schemas/judgments.schema.json",
+  "judge": "jev",
+  "judgments": [
+    {
+      "ruleId": "a11y.control-name",
+      "probability": 0,
+      "evidenceSufficient": true,
+      "note": "最大は pages/InvoiceDetailPage.tsx:154 Link「請求書一覧へ戻る」（0）。コードで 10 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
+      "details": [
+        {
+          "subject": "pages/InvoiceDetailPage.tsx:154 Link「請求書一覧へ戻る」",
+          "probability": 0
+        },
+        {
+          "subject": "pages/InvoiceDetailPage.tsx:201 Button「通知を閉じる」",
+          "probability": 0
+        },
+        {
+          "subject": "pages/InvoiceEditDrawer.tsx:42 Button「編集」",
+          "probability": 0
+        },
+        {
+          "subject": "pages/InvoiceEditDrawer.tsx:101 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "pages/InvoiceEditDrawer.tsx:109 Button「保存しています 保存」",
+          "probability": 0
+        },
+        {
+          "subject": "pages/InvoiceListPage.tsx:45 Button「通知を閉じる」",
+          "probability": 0
+        },
+        {
+          "subject": "pages/InvoiceListPage.tsx:84 Link「{invoice.invoiceNumber}」",
+          "probability": 0
+        },
+        {
+          "subject": "pages/VoidInvoiceDialog.tsx:24 Button「無効化」",
+          "probability": 0
+        },
+        {
+          "subject": "pages/VoidInvoiceDialog.tsx:71 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "pages/VoidInvoiceDialog.tsx:78 Button「無効化しています 再試行 無効化する」",
+          "probability": 0
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:10:28.222Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "a11y.color-only",
+      "probability": 0,
+      "evidenceSufficient": true,
+      "note": "最大は components/StatusChip.tsx:8 Chip「{status}」（0）。コードで 1 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
+      "details": [
+        {
+          "subject": "components/StatusChip.tsx:8 Chip「{status}」",
+          "probability": 0
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:10:28.222Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "state.failure",
+      "probability": 0.2,
+      "evidenceSufficient": true,
+      "note": "最大は pages/InvoiceDetailPage.tsx:105 失敗時の処理（if）（0.2）。コードで 0 件、Jev で 2 件を判定",
+      "details": [
+        {
+          "subject": "pages/InvoiceDetailPage.tsx:105 失敗時の処理（if）",
+          "probability": 0.2
+        },
+        {
+          "subject": "pages/InvoiceDetailPage.tsx:135 失敗時の処理（if）",
+          "probability": 0.123
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:10:28.222Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "color.semantic",
+      "probability": 0.36,
+      "evidenceSufficient": true,
+      "note": "最大は pages/VoidInvoiceDialog.tsx:24 Button「無効化」（0.36）。コードで 0 件、Jev で 2 件を判定。CSS やクラスで付けた色は見ていない",
+      "details": [
+        {
+          "subject": "pages/VoidInvoiceDialog.tsx:24 Button「無効化」",
+          "probability": 0.36
+        },
+        {
+          "subject": "pages/VoidInvoiceDialog.tsx:78 Button「無効化しています 再試行 無効化する」",
+          "probability": 0.29
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:10:28.222Z",
+      "iteration": 0
+    }
+  ]
+}

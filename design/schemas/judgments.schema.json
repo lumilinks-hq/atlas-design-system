@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "judgments.schema.json",
+  "title": "Judgments",
+  "description": "Run ごとのモデルの判定。evaluate では消えない。同じルールでは最後の判定を使い、LLM レビューの所見より優先する",
+  "type": "object",
+  "required": ["judge", "judgments"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "judge": {
+      "description": "判定器の名前。scripts/judges/ の adapter 名",
+      "type": "string",
+      "minLength": 1
+    },
+    "judgments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ruleId", "model", "judgedAt", "iteration"],
+        "properties": {
+          "ruleId": { "type": "string", "minLength": 1 },
+          "probability": {
+            "description": "ルールに違反している確率。細目があれば、その最大値",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "verdict": { "enum": ["pass", "concern"] },
+          "evidenceSufficient": {
+            "description": "false なら、ソースから判定に使う箇所を取り出せなかった。モデルには聞いていない",
+            "type": "boolean"
+          },
+          "note": { "type": "string" },
+          "details": {
+            "description": "操作要素やメッセージなど、1 箇所ごとの違反の確率",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["subject", "probability"],
+              "properties": {
+                "subject": { "type": "string", "minLength": 1 },
+                "probability": { "type": "number", "minimum": 0, "maximum": 1 }
+              },
+              "additionalProperties": false
+            }
+          },
+          "model": {
+            "description": "判定したモデルの ID。エイリアスでなく版まで書く",
+            "type": "string",
+            "minLength": 1
+          },
+          "judgedAt": { "type": "string", "minLength": 20 },
+          "iteration": {
+            "description": "判定したときの修正回数。これより後に修正をかけた判定は使わない",
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

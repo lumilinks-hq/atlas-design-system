@@ -1,0 +1,95 @@
+{
+  "$schema": "../../../../../design/schemas/judgments.schema.json",
+  "judge": "jev",
+  "judgments": [
+    {
+      "ruleId": "a11y.control-name",
+      "probability": 0,
+      "evidenceSufficient": true,
+      "note": "最大は App.tsx:174 Link「{customer.companyName}」（0）。コードで 9 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
+      "details": [
+        {
+          "subject": "App.tsx:174 Link「{customer.companyName}」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:307 Link「顧客一覧へ戻る」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:315 Button「編集」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:318 Button「削除」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:419 Select.Trigger",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:436 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:439 Button「保存中… 保存する」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:471 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "App.tsx:474 Button「削除中… 削除する」",
+          "probability": 0
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:10:17.862Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "a11y.color-only",
+      "probability": 0,
+      "evidenceSufficient": true,
+      "note": "最大は App.tsx:119 Chip「{status}」（0）。コードで 1 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
+      "details": [
+        {
+          "subject": "App.tsx:119 Chip「{status}」",
+          "probability": 0
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:10:17.862Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "state.failure",
+      "evidenceSufficient": false,
+      "note": "ソースに判定する箇所がない。モデルには聞いていない",
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:10:17.862Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "color.semantic",
+      "probability": 0.04,
+      "evidenceSufficient": true,
+      "note": "最大は App.tsx:318 Button「削除」（0.04）。コードで 0 件、Jev で 2 件を判定。CSS やクラスで付けた色は見ていない",
+      "details": [
+        {
+          "subject": "App.tsx:318 Button「削除」",
+          "probability": 0.04
+        },
+        {
+          "subject": "App.tsx:474 Button「削除中… 削除する」",
+          "probability": 0.03
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:10:17.862Z",
+      "iteration": 0
+    }
+  ]
+}

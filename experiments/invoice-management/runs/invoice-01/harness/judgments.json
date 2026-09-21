@@ -1,0 +1,130 @@
+{
+  "$schema": "../../../../../design/schemas/judgments.schema.json",
+  "judge": "jev",
+  "judgments": [
+    {
+      "ruleId": "a11y.control-name",
+      "probability": 0,
+      "evidenceSufficient": true,
+      "note": "最大は InvoiceDetailPage.tsx:164 Link「請求書一覧へ戻る」（0）。コードで 12 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
+      "details": [
+        {
+          "subject": "InvoiceDetailPage.tsx:164 Link「請求書一覧へ戻る」",
+          "probability": 0
+        },
+        {
+          "subject": "InvoiceDetailPage.tsx:180 Drawer.Trigger「請求書を編集」",
+          "probability": 0
+        },
+        {
+          "subject": "InvoiceDetailPage.tsx:184 Drawer.CloseTrigger「編集を閉じる」",
+          "probability": 0
+        },
+        {
+          "subject": "InvoiceDetailPage.tsx:235 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "InvoiceDetailPage.tsx:238 Button「変更を保存」",
+          "probability": 0
+        },
+        {
+          "subject": "InvoiceDetailPage.tsx:248 AlertDialog.Trigger「請求書を無効化」",
+          "probability": 0
+        },
+        {
+          "subject": "InvoiceDetailPage.tsx:249 Button「請求書を無効化」",
+          "probability": 0
+        },
+        {
+          "subject": "InvoiceDetailPage.tsx:274 Button「キャンセル」",
+          "probability": 0
+        },
+        {
+          "subject": "InvoiceDetailPage.tsx:277 Button「無効化する」",
+          "probability": 0
+        },
+        {
+          "subject": "InvoiceListPage.tsx:65 SearchField.ClearButton",
+          "probability": 0
+        },
+        {
+          "subject": "InvoiceListPage.tsx:98 Link「{invoice.invoiceNumber}」",
+          "probability": 0
+        },
+        {
+          "subject": "InvoiceListPage.tsx:145 Link「{`${invoice.invoiceNumber}の請求書を確認`}」",
+          "probability": 0
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:10:28.850Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "a11y.color-only",
+      "probability": 0,
+      "evidenceSufficient": true,
+      "note": "最大は StatusChip.tsx:12 Chip「{status}」（0）。コードで 4 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
+      "details": [
+        {
+          "subject": "StatusChip.tsx:12 Chip「{status}」",
+          "probability": 0
+        },
+        {
+          "subject": "StatusChip.tsx:18 Chip「{status}」",
+          "probability": 0
+        },
+        {
+          "subject": "StatusChip.tsx:24 Chip「{status}」",
+          "probability": 0
+        },
+        {
+          "subject": "StatusChip.tsx:30 Chip「{status}」",
+          "probability": 0
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:10:28.850Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "state.failure",
+      "probability": 0.097,
+      "evidenceSufficient": true,
+      "note": "最大は InvoiceDetailPage.tsx:149 失敗時の処理（if）（0.097）。コードで 0 件、Jev で 2 件を判定",
+      "details": [
+        {
+          "subject": "InvoiceDetailPage.tsx:149 失敗時の処理（if）",
+          "probability": 0.097
+        },
+        {
+          "subject": "InvoiceDetailPage.tsx:132 失敗時の処理（if）",
+          "probability": 0.067
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:10:28.850Z",
+      "iteration": 0
+    },
+    {
+      "ruleId": "color.semantic",
+      "probability": 0.05,
+      "evidenceSufficient": true,
+      "note": "最大は InvoiceDetailPage.tsx:249 Button「請求書を無効化」（0.05）。コードで 0 件、Jev で 2 件を判定。CSS やクラスで付けた色は見ていない",
+      "details": [
+        {
+          "subject": "InvoiceDetailPage.tsx:249 Button「請求書を無効化」",
+          "probability": 0.05
+        },
+        {
+          "subject": "InvoiceDetailPage.tsx:277 Button「無効化する」",
+          "probability": 0.05
+        }
+      ],
+      "model": "jev-1.13.0",
+      "judgedAt": "2026-09-20T11:10:28.850Z",
+      "iteration": 0
+    }
+  ]
+}
