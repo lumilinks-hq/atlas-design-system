@@ -17,7 +17,7 @@
 | --- | --- | --- |
 | 方針・制約・権限、判断基準 | `design/rules.json`（severity と method） | しきい値、修正回数の上限、承認が要る項目 |
 | コードで検査 | `scripts/evaluate-experiment.mjs`、`scripts/measure-experiment.mjs` | なし |
-| モデルで判定 | `scripts/review-experiment.mjs`（画面画像）、`scripts/judges/`（段階 3。Jev でソースを判定） | `a11y.error-recovery` は 13 本中 11 本が人の判断になる（実行時に決まる文言が見えない）。refine の中ではまだ呼ばない |
+| モデルで判定 | `scripts/review-experiment.mjs`（画面画像）、`scripts/judges/`（段階 3。Jev でソースを判定） | `a11y.error-recovery` は Jev から外し、画像レビューと人の判断に戻した（実行時に決まる文言が見えない）。refine の中ではまだ呼ばない |
 | コードが次の工程を決定 | `scripts/harness-dispatch.mjs`（段階 1）。refine が使う（段階 2） | なし |
 | 要修正 → LLM が修正 → 再検査 | `refine-experiment.mjs`、`correction-prompt.mjs` | 1 回の実行で修正は 1 回。続けるには人が再実行する |
 | 判断・根拠不足 → 人の判断・追加の根拠 | `decisions.json` と `pnpm experiment:decide`（段階 2）。失敗状態の画面も撮る。判定の確率と材料不足は `pnpm experiment:judge`（段階 3） | なし |
@@ -101,7 +101,7 @@
 
 保存済み Run での期待値:
 
-- failed が 0 の 4 本（create-01/harness-corrected、fast-01/harness、lint-01/harness、mvp-11/harness-corrected）は人の判断。`a11y.error-recovery` と `state.failure` が concern のため
+- failed が 0 の 4 本（create-01/harness-corrected、fast-01/harness、lint-01/harness、mvp-11/harness-corrected）は人の判断。`a11y.error-recovery` が画像レビューで concern のため（このルールは Jev に聞かない）
 - failed がある 9 本は修正
 - 次工程へ進む Run は保存済みの中にない。合成した入力でだけ確かめる
 
@@ -153,7 +153,7 @@ evaluate は `design-evaluation.json` の `review` を消すので、refine の�
 
 - `scripts/judges/` に adapter を置き、`index.mjs` の `resolveJudge(id)` で引く。`jev`（TypeSafe の Jev）と `review`（画面画像の LLM レビューの所見を写すだけ。比べるために使う）
 - `pnpm experiment:judge --pair <pair> [--mode <mode>] [--judge jev|review] [--write]`。既定は jev。mode を省くと 3 つとも見る
-- 判定するのは `design-evaluation.json` で review になったルール。振り分けがモデルの判定を見るのはこれだけ。Jev が扱わないルール（`component.variants` など）は「判定していない」と表示する
+- 判定するのは `design-evaluation.json` で review になったルール。振り分けがモデルの判定を見るのはこれだけ。判定器が扱わないルール（`component.variants`、`a11y.error-recovery` など）は「判定していない」と表示する
 - 既定では表示だけ。`--write` で `judgments.json` に追記し、次の工程を表示する。`run.json` は書き換えない
 - review 版は `--write` を使えない。振り分けは所見を `design-evaluation.json` から直接読むので、写すと二重になる
 - `judgments.json` には 1 つの判定器の結果だけを入れる。別の判定器で書こうとすると止める
@@ -164,17 +164,14 @@ evaluate は `design-evaluation.json` の `review` を消すので、refine の�
 
 - ソースを丸ごと渡さない。`evidence.mjs` が JSX から操作要素、文字列、失敗時の処理を取り出し、`questions.mjs` がルールごとに質問を作る
 - 1 箇所につき 1 回呼ぶ。質問はすべて「yes なら違反」の向きにそろえ、英語で書く。state には日本語の文言をそのまま入れる
-- コードで決まるものは聞かない。aria-label がある、文字がある、部品の既定の名前がある（`SearchField.ClearButton`）、Field の Label が名前になる（`Select.Trigger`）。これらは確率 0 の細目として残す
+- コードで決まるものは聞かない。`a11y.control-name` と `a11y.color-only` は全部コードで決める。aria-label がある、文字がある、部品の既定の名前がある（`SearchField.ClearButton`）、Field の Label が名前になる（`Select.Trigger`）、`{…}` や spread で文字を渡している。これらは確率 0 の細目として残し、見ていないものは note に書く
 - ルールの確率は細目の最大。`details` に箇所ごとの確率を残す
-- `a11y.error-recovery` は「エラーの表示か」×「回復の手順がないか」。`state.failure` は「操作の失敗か」×「toast だけか」「画面を閉じるか」の大きいほう
-- エラーの表示には、周りの部品（`nearby`）と、ダイアログやドロワーの Body の中なら同じ入れ物の Footer のボタン（`footer`）を添える。再試行のボタンは Footer にあることが多い
-- 部品の外の文言には、見出しと説明のように一緒に出す文字（`shownWith`）を添える。文言を並べただけの辞書には添えない
-- 「取り消せません」のような、操作の前に出す注意書きはエラーではないと基準に書く
+- `state.failure` は「操作の失敗か」×「toast だけか」「画面を閉じるか」の大きいほう。`color.semantic` は「その操作は破壊的ではないか」の 1 問
 - 聞く箇所がなければモデルに聞かず、材料不足（`evidenceSufficient: false`）にする。振り分けでは人の判断になる
-- 失敗時の処理は 1 ルール 8 件、エラーの文言は 12 件まで聞く。超えた分は note に件数を書く
+- 失敗時の処理は 1 ルール 8 件まで聞く。超えた分は note に件数を書く
 - `color.semantic` は variant か color が danger の操作だけを見る。CSS やクラスで付けた色は見ていない（note に書く）
 - 同時に呼ぶのは 4 件まで。モデルは `jev-1.13.0` に固定し、応答のモデル ID を記録する。答えが欠けたら推測で埋めずに止める
-- 保存済み 13 本をすべて判定すると 225 回呼ぶ
+- 保存済み 13 本をすべて判定すると 54 回呼ぶ（2 ルールに絞る前は 225 回）
 
 ### 鍵
 
@@ -190,7 +187,7 @@ evaluate は `design-evaluation.json` の `review` を消すので、refine の�
 |---|---|---|---|---|
 | `a11y.control-name` | 12 | 0 | 1 | ほぼ同じ。mvp-11 の 3 本は画像レビューが「画像では名前を確かめられない」で concern。Jev はコードの aria-label を見て通す。修正の 1 本は create-01/harness の aria-label のない閉じるボタン（コードで違反） |
 | `a11y.color-only` | 13 | 0 | 0 | 同じ。ただし invoice-01/baseline のモバイル一覧の色は CSS なので Jev には見えない（画像レビューは concern） |
-| `color.semantic` | 12 | 1 | 0 | 同じ。invoice-01/baseline の「無効化」（danger）は 0.34 で人の判断 |
+| `color.semantic` | 12 | 1 | 0 | 同じ。invoice-01/baseline の「無効化」（danger）は 0.39 で人の判断（表示だけで確かめたときは 0.34） |
 | `a11y.error-recovery` | 1 | 11 | 1 | 画像レビューはすべて concern（エラーの画面が写っていない）。Jev も多くは決めきれない |
 | `state.failure` | 9 | 4 | 0 | 画像レビューはすべて concern（失敗の画面が写っていない）。Jev はコードを読んで判定できる。mvp-11/baseline は確認時の 0.188 から書き込み時に 0.205 になり、人の判断に移った |
 
@@ -206,6 +203,24 @@ evaluate は `design-evaluation.json` の `review` を消すので、refine の�
 - 部品の外の文言は、どこに表示されるかを見ずに判定する。create-01/baseline の 0.853 は `customerService.ts:76` の `result.ok ? "変更を保存できませんでした。" : result.reason` の予備の文言で、ほぼ表示されない。表示先の `CustomerEditDrawer.tsx` は Footer に保存ボタンがある。書いた判定でも修正に振り分けられる
 - 「成功なら return し、その後に失敗の処理を書く」形は失敗時の処理として拾えない。lint-01/baseline の `state.failure` が材料不足になった
 - CSS やクラスで付けた色は見ていない
+
+### 聞くルールを 2 件に絞った（2026-09-20）
+
+上の 13 本を見ると、確率が動いたのは `color.semantic` と `state.failure` だけだった。そこで Jev に聞くのはこの 2 件にし、残りは判定のしかたを変えた。
+
+- `a11y.control-name` と `a11y.color-only` は、Jev に聞いていた 45 件がすべて `{customer.name}` のように式で文字を出す箇所で、文字が出ないケースは 1 件もなかった。式と spread は「文字が出る」側に倒し、コードで決めることにした
+- `a11y.error-recovery` は呼び出しの 56%（125 回）を占めながら、大半が 0.28〜0.45 の中間で 13 本中 11 本が人の判断になっていた。判定器から外し、画像レビューと人の判断に戻した
+- 呼び出しは 224 回から 54 回、費用は約 0.005 ドルから約 0.0013 ドル（入力 31,453 トークン）になった。`judgments.json` は追記だけなので、13 本をいったん消してから書き直した
+
+| ルール | 判定 | 通す | 人の判断 | 修正 | 材料不足 |
+|---|---|---|---|---|---|
+| `a11y.control-name` | コード | 12 | 0 | 1 | 0 |
+| `a11y.color-only` | コード | 13 | 0 | 0 | 0 |
+| `color.semantic` | Jev | 12 | 1 | 0 | 0 |
+| `state.failure` | Jev | 11 | 1 | 0 | 1 |
+| `a11y.error-recovery` | 判定しない | — | — | — | — |
+
+Jev は同じ入力でも答えが少し動く。`color.semantic` は 13 本中 11 本が絞り込み前と同じ値で、invoice-01/baseline が 0.39 から 0.36、lint-01/baseline が 0.05 から 0.04 になった。`state.failure` は ±0.03 ほど動き、0.2 の境目にあった 2 本（create-01/harness は 0.221 から 0.192、mvp-11/baseline は 0.205 から 0.195）が通す側に移った。create-01/harness-corrected は 0.229 から 0.216 で人の判断のまま。材料不足の 1 本（lint-01/baseline）は絞り込み前と同じで、上の表では人の判断に数えていたもの。Run ごとの振り分け（修正 9 本、人の判断 4 本）は変わらない。
 
 ### まだやっていないこと
 

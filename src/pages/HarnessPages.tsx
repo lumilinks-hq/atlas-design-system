@@ -190,9 +190,13 @@ const judgeItems: readonly (LayerArtifact & { item: string })[] = [
   {
     item: "コードで決める",
     path: "scripts/judges/questions.mjs",
-    note: "aria-label の有無など。閉じるボタンの aria-label は design/components-api.md で必須",
+    note: "操作の名前と状態表示の文字があるか。閉じるボタンの aria-label は design/components-api.md で必須",
   },
-  { item: "Jevに聞く", path: "scripts/judges/jev.mjs", note: "TypeSafeのjev-1.13.0。鍵 TYPESAFE_API_KEY はNodeのスクリプトだけで使う" },
+  {
+    item: "Jevに聞く",
+    path: "scripts/judges/jev.mjs",
+    note: "TypeSafeのjev-1.13.0で、危険色の使い方と失敗時の扱いを判定。鍵 TYPESAFE_API_KEY はNodeのスクリプトだけで使う",
+  },
   { item: "LLMが画面画像をレビュー", path: "scripts/review-experiment.mjs", note: "Jevの判定がないルールだけで使う" },
   { item: "判定の記録", path: "experiments/*/runs/*/*/judgments.json", note: "pnpm experiment:judge --write でRunごとに追記" },
   { item: "コードが次の工程を決定", path: "scripts/harness-dispatch.mjs", note: "しきい値は design/harness-policy.json" },
@@ -383,7 +387,10 @@ export function HarnessPage() {
             値の照合では決められないルールは、TypeSafeのJevに判定させます。Jevは画像を見ず、テキストの質問に「はい」の確率を返すモデルです。
           </p>
           <p>
-            コードがRunのソースから部品と文言を抜き出し、aria-label の有無のようにコードで決まるものはその場で0か1にします。意味の判定が要るものだけをJevに聞き、ルールごとに一番高い確率を記録します。
+            コードがRunのソースから部品と文言を抜き出し、操作に名前があるか、状態表示に文字があるかのように、コードで決まるものはその場で0か1にします。Jevに聞くのは、危険色を破壊的でない操作に使っていないかと、操作が失敗したときに画面へ何も残らないかの2件だけです。ルールごとに一番高い確率を記録します。
+          </p>
+          <p>
+            最初はAIレビューの5件すべてをJevに聞いていましたが、保存済み13本の結果を見て2件に絞りました。名前や文字の有無はコードで決まり、実行時に決まる文言はJevからは読めず、確率が中間に集まるだけだったためです。
           </p>
           <p>
             確率が0.8以上なら修正、0.2以下なら通過、その間と材料が足りないときは人の判断です。鍵の <code>TYPESAFE_API_KEY</code>{" "}

@@ -4,14 +4,10 @@
   "judgments": [
     {
       "ruleId": "a11y.control-name",
-      "probability": 0.05,
+      "probability": 0,
       "evidenceSufficient": true,
-      "note": "最大は pages/InvoiceListPage.tsx:84 Link「{invoice.invoiceNumber}」（0.05）。コードで 9 件、Jev で 1 件を判定",
+      "note": "最大は pages/InvoiceDetailPage.tsx:154 Link「請求書一覧へ戻る」（0）。コードで 10 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
       "details": [
-        {
-          "subject": "pages/InvoiceListPage.tsx:84 Link「{invoice.invoiceNumber}」",
-          "probability": 0.05
-        },
         {
           "subject": "pages/InvoiceDetailPage.tsx:154 Link「請求書一覧へ戻る」",
           "probability": 0
@@ -37,6 +33,10 @@
           "probability": 0
         },
         {
+          "subject": "pages/InvoiceListPage.tsx:84 Link「{invoice.invoiceNumber}」",
+          "probability": 0
+        },
+        {
           "subject": "pages/VoidInvoiceDialog.tsx:24 Button「無効化」",
           "probability": 0
         },
@@ -50,123 +50,60 @@
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:18.055Z",
-      "iteration": 0
-    },
-    {
-      "ruleId": "a11y.error-recovery",
-      "probability": 0.23,
-      "evidenceSufficient": true,
-      "note": "最大は pages/VoidInvoiceDialog.tsx:82 文言「無効化しています」（0.23）。コードで 0 件、Jev で 13 件を判定",
-      "details": [
-        {
-          "subject": "pages/VoidInvoiceDialog.tsx:82 文言「無効化しています」",
-          "probability": 0.23
-        },
-        {
-          "subject": "pages/InvoiceEditDrawer.tsx:56 Alert「保存できませんでした」",
-          "probability": 0.206
-        },
-        {
-          "subject": "format.ts:42 文言「支払期限に実在する日付を入力してください。」",
-          "probability": 0.111
-        },
-        {
-          "subject": "pages/VoidInvoiceDialog.tsx:87 文言「無効化する」",
-          "probability": 0.087
-        },
-        {
-          "subject": "pages/VoidInvoiceDialog.tsx:60 Alert「無効化できませんでした」",
-          "probability": 0.077
-        },
-        {
-          "subject": "pages/InvoiceEditDrawer.tsx:86 FieldError「{dueDateError}」",
-          "probability": 0.075
-        },
-        {
-          "subject": "fixtures.ts:124 文言「無効化に失敗しました。時間をおいて再試行してください。」",
-          "probability": 0.049
-        },
-        {
-          "subject": "invoiceApi.ts:16 文言「保存に失敗しました。時間をおいて再試行してください。」",
-          "probability": 0.049
-        },
-        {
-          "subject": "pages/VoidInvoiceDialog.tsx:37 文言「無効化すると、この請求書は一覧から削除され、元に戻せません。」",
-          "probability": 0.034
-        },
-        {
-          "subject": "pages/VoidInvoiceDialog.tsx:32 文言「を無効化しますか」",
-          "probability": 0.015
-        },
-        {
-          "subject": "format.ts:30 文言「支払期限を入力してください。」",
-          "probability": 0.006
-        },
-        {
-          "subject": "pages/InvoiceListPage.tsx:39 Alert「を無効化しました この請求書は一覧から削除されました。 閉じる」",
-          "probability": 0.005
-        },
-        {
-          "subject": "format.ts:33 文言「支払期限は2026-09-30のような形式で入力してください。」",
-          "probability": 0.002
-        }
-      ],
-      "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:18.055Z",
+      "judgedAt": "2026-09-20T11:10:28.222Z",
       "iteration": 0
     },
     {
       "ruleId": "a11y.color-only",
-      "probability": 0.04,
+      "probability": 0,
       "evidenceSufficient": true,
-      "note": "最大は components/StatusChip.tsx:8 Chip「{status}」（0.04）。コードで 0 件、Jev で 1 件を判定",
+      "note": "最大は components/StatusChip.tsx:8 Chip「{status}」（0）。コードで 1 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
       "details": [
         {
           "subject": "components/StatusChip.tsx:8 Chip「{status}」",
-          "probability": 0.04
+          "probability": 0
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:18.055Z",
+      "judgedAt": "2026-09-20T11:10:28.222Z",
       "iteration": 0
     },
     {
       "ruleId": "state.failure",
-      "probability": 0.162,
+      "probability": 0.2,
       "evidenceSufficient": true,
-      "note": "最大は pages/InvoiceDetailPage.tsx:105 失敗時の処理（if）（0.162）。コードで 0 件、Jev で 2 件を判定",
+      "note": "最大は pages/InvoiceDetailPage.tsx:105 失敗時の処理（if）（0.2）。コードで 0 件、Jev で 2 件を判定",
       "details": [
         {
           "subject": "pages/InvoiceDetailPage.tsx:105 失敗時の処理（if）",
-          "probability": 0.162
+          "probability": 0.2
         },
         {
           "subject": "pages/InvoiceDetailPage.tsx:135 失敗時の処理（if）",
-          "probability": 0.114
+          "probability": 0.123
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:18.055Z",
+      "judgedAt": "2026-09-20T11:10:28.222Z",
       "iteration": 0
     },
     {
       "ruleId": "color.semantic",
-      "probability": 0.39,
+      "probability": 0.36,
       "evidenceSufficient": true,
-      "note": "最大は pages/VoidInvoiceDialog.tsx:24 Button「無効化」（0.39）。コードで 0 件、Jev で 2 件を判定。CSS やクラスで付けた色は見ていない",
+      "note": "最大は pages/VoidInvoiceDialog.tsx:24 Button「無効化」（0.36）。コードで 0 件、Jev で 2 件を判定。CSS やクラスで付けた色は見ていない",
       "details": [
         {
           "subject": "pages/VoidInvoiceDialog.tsx:24 Button「無効化」",
-          "probability": 0.39
+          "probability": 0.36
         },
         {
           "subject": "pages/VoidInvoiceDialog.tsx:78 Button「無効化しています 再試行 無効化する」",
-          "probability": 0.34
+          "probability": 0.29
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:18.055Z",
+      "judgedAt": "2026-09-20T11:10:28.222Z",
       "iteration": 0
     }
   ]

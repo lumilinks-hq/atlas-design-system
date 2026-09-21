@@ -473,21 +473,21 @@ describe("保存済み Run の振り分け", () => {
     });
   });
 
-  it("13 本すべてに、あとから足した Jev の判定がある。ai-review の 5 件を 1 回ずつ", async () => {
+  it("13 本すべてに、あとから足した Jev の判定がある。ai-review 5 件のうち 4 件を 1 回ずつ", async () => {
     for (const runDir of savedRunDirs) {
       const { judgments } = await loadRunInput(runDir);
       const jev = judgments.filter((item) => item.model === "jev-1.13.0");
+      // a11y.error-recovery は実行時の文言が読めず中間に集まるだけだったので、判定器から外した
       expect(jev.map((item) => item.ruleId).sort(), runName(runDir)).toEqual([
         "a11y.color-only",
         "a11y.control-name",
-        "a11y.error-recovery",
         "color.semantic",
         "state.failure",
       ]);
     }
   });
 
-  it("failed が 0 の 4 本は、エラー表示の文言が中間なので人の判断", async () => {
+  it("failed が 0 の 4 本は、エラー表示の文言が中間なので人の判断。Jev には聞かず画像レビューの concern を使う", async () => {
     for (const runDir of savedRunDirs.filter((dir) => cleanRuns.includes(runName(dir)))) {
       const result = dispatch(await loadRunInput(runDir), harnessPolicy);
       expect(result.step, runName(runDir)).toBe("human");
@@ -527,6 +527,8 @@ describe("保存済み Run の振り分け", () => {
     const result = dispatch(await loadRunInput(runDir), harnessPolicy);
     expect(result.step).toBe("fix");
     expect(ruleResult(result, "a11y.control-name")).toMatchObject({ step: "pass", reason: "judgment.low" });
+    // 画像レビューも Jev の判定もないルールは、誰も見ていないので人に回す
+    expect(ruleResult(result, "a11y.error-recovery")).toMatchObject({ step: "human", reason: "judgment.missing" });
   });
 
   it("create-01/harness は型の検査の失敗も修正に入る", async () => {

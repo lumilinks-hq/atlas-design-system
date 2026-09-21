@@ -4,14 +4,10 @@
   "judgments": [
     {
       "ruleId": "a11y.control-name",
-      "probability": 0.05,
+      "probability": 0,
       "evidenceSufficient": true,
-      "note": "最大は InvoiceListPage.tsx:98 Link「{invoice.invoiceNumber}」（0.05）。コードで 11 件、Jev で 1 件を判定",
+      "note": "最大は InvoiceDetailPage.tsx:164 Link「請求書一覧へ戻る」（0）。コードで 12 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
       "details": [
-        {
-          "subject": "InvoiceListPage.tsx:98 Link「{invoice.invoiceNumber}」",
-          "probability": 0.05
-        },
         {
           "subject": "InvoiceDetailPage.tsx:164 Link「請求書一覧へ戻る」",
           "probability": 0
@@ -53,125 +49,62 @@
           "probability": 0
         },
         {
+          "subject": "InvoiceListPage.tsx:98 Link「{invoice.invoiceNumber}」",
+          "probability": 0
+        },
+        {
           "subject": "InvoiceListPage.tsx:145 Link「{`${invoice.invoiceNumber}の請求書を確認`}」",
           "probability": 0
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:19.595Z",
-      "iteration": 0
-    },
-    {
-      "ruleId": "a11y.error-recovery",
-      "probability": 0.407,
-      "evidenceSufficient": true,
-      "note": "最大は InvoiceDetailPage.tsx:37 文言「通信が中断したため保存できませんでした。入力はそのまま残っています。」（0.407）。コードで 0 件、Jev で 14 件を判定",
-      "details": [
-        {
-          "subject": "InvoiceDetailPage.tsx:37 文言「通信が中断したため保存できませんでした。入力はそのまま残っています。」",
-          "probability": 0.407
-        },
-        {
-          "subject": "InvoiceDetailPage.tsx:264 Alert「無効化できませんでした」",
-          "probability": 0.323
-        },
-        {
-          "subject": "InvoiceDetailPage.tsx:209 FieldError「{errors.customerName}」",
-          "probability": 0.27
-        },
-        {
-          "subject": "InvoiceDetailPage.tsx:191 Alert「保存できませんでした」",
-          "probability": 0.216
-        },
-        {
-          "subject": "InvoiceDetailPage.tsx:221 FieldError「{errors.dueDate}」",
-          "probability": 0.175
-        },
-        {
-          "subject": "InvoiceDetailPage.tsx:260 文言「）を無効化します。」",
-          "probability": 0.106
-        },
-        {
-          "subject": "InvoiceDetailPage.tsx:249 文言「請求書を無効化」",
-          "probability": 0.092
-        },
-        {
-          "subject": "InvoiceDetailPage.tsx:278 文言「無効化する」",
-          "probability": 0.073
-        },
-        {
-          "subject": "InvoiceDetailPage.tsx:262 文言「無効化した請求書は元に戻せません。一覧にも表示されなくなります。」",
-          "probability": 0.071
-        },
-        {
-          "subject": "fixtures.ts:124 文言「無効化に失敗しました。時間をおいて再試行してください。」",
-          "probability": 0.049
-        },
-        {
-          "subject": "InvoiceDetailPage.tsx:154 文言「請求書を無効化しました」",
-          "probability": 0.045
-        },
-        {
-          "subject": "invoice-presentation.ts:134 文言「支払期限を入力してください。」",
-          "probability": 0.007
-        },
-        {
-          "subject": "invoice-presentation.ts:130 文言「顧客名を入力してください。」",
-          "probability": 0.003
-        },
-        {
-          "subject": "invoice-presentation.ts:136 文言「支払期限は日付として入力してください。例: 2026-09-30」",
-          "probability": 0.002
-        }
-      ],
-      "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:19.595Z",
+      "judgedAt": "2026-09-20T11:10:28.850Z",
       "iteration": 0
     },
     {
       "ruleId": "a11y.color-only",
-      "probability": 0.17,
+      "probability": 0,
       "evidenceSufficient": true,
-      "note": "最大は StatusChip.tsx:18 Chip「{status}」（0.17）。コードで 0 件、Jev で 4 件を判定",
+      "note": "最大は StatusChip.tsx:12 Chip「{status}」（0）。コードで 4 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
       "details": [
         {
-          "subject": "StatusChip.tsx:18 Chip「{status}」",
-          "probability": 0.17
+          "subject": "StatusChip.tsx:12 Chip「{status}」",
+          "probability": 0
         },
         {
-          "subject": "StatusChip.tsx:12 Chip「{status}」",
-          "probability": 0.14
+          "subject": "StatusChip.tsx:18 Chip「{status}」",
+          "probability": 0
         },
         {
           "subject": "StatusChip.tsx:24 Chip「{status}」",
-          "probability": 0.11
+          "probability": 0
         },
         {
           "subject": "StatusChip.tsx:30 Chip「{status}」",
-          "probability": 0.1
+          "probability": 0
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:19.595Z",
+      "judgedAt": "2026-09-20T11:10:28.850Z",
       "iteration": 0
     },
     {
       "ruleId": "state.failure",
-      "probability": 0.088,
+      "probability": 0.097,
       "evidenceSufficient": true,
-      "note": "最大は InvoiceDetailPage.tsx:149 失敗時の処理（if）（0.088）。コードで 0 件、Jev で 2 件を判定",
+      "note": "最大は InvoiceDetailPage.tsx:149 失敗時の処理（if）（0.097）。コードで 0 件、Jev で 2 件を判定",
       "details": [
         {
           "subject": "InvoiceDetailPage.tsx:149 失敗時の処理（if）",
-          "probability": 0.088
+          "probability": 0.097
         },
         {
           "subject": "InvoiceDetailPage.tsx:132 失敗時の処理（if）",
-          "probability": 0.076
+          "probability": 0.067
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:19.595Z",
+      "judgedAt": "2026-09-20T11:10:28.850Z",
       "iteration": 0
     },
     {
@@ -190,7 +123,7 @@
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:19.595Z",
+      "judgedAt": "2026-09-20T11:10:28.850Z",
       "iteration": 0
     }
   ]

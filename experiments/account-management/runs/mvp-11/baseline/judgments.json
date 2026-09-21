@@ -6,7 +6,7 @@
       "ruleId": "a11y.control-name",
       "probability": 0,
       "evidenceSufficient": true,
-      "note": "最大は App.tsx:220 Link「{customer.companyName}」（0）。コードで 10 件、Jev で 0 件を判定",
+      "note": "最大は App.tsx:220 Link「{customer.companyName}」（0）。コードで 10 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
       "details": [
         {
           "subject": "App.tsx:220 Link「{customer.companyName}」",
@@ -50,64 +50,33 @@
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:11.258Z",
-      "iteration": 0
-    },
-    {
-      "ruleId": "a11y.error-recovery",
-      "probability": 0.059,
-      "evidenceSufficient": true,
-      "note": "最大は App.tsx:86 文言「保存に失敗しました。内容を確認して再試行してください。」（0.059）。コードで 0 件、Jev で 5 件を判定",
-      "details": [
-        {
-          "subject": "App.tsx:86 文言「保存に失敗しました。内容を確認して再試行してください。」",
-          "probability": 0.059
-        },
-        {
-          "subject": "App.tsx:296 文言「保存に失敗しました。内容を保持したまま再試行できます。」",
-          "probability": 0.039
-        },
-        {
-          "subject": "fixtures.ts:115 文言「削除に失敗しました。時間をおいて再試行してください。」",
-          "probability": 0.039
-        },
-        {
-          "subject": "App.tsx:122 文言「一般的なメール形式で入力してください。」",
-          "probability": 0.008
-        },
-        {
-          "subject": "App.tsx:119 文言「会社名を入力してください。」",
-          "probability": 0.004
-        }
-      ],
-      "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:11.258Z",
+      "judgedAt": "2026-09-20T11:10:19.549Z",
       "iteration": 0
     },
     {
       "ruleId": "a11y.color-only",
-      "probability": 0.08,
+      "probability": 0,
       "evidenceSufficient": true,
-      "note": "最大は App.tsx:132 Chip「{status}」（0.08）。コードで 0 件、Jev で 1 件を判定",
+      "note": "最大は App.tsx:132 Chip「{status}」（0）。コードで 1 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
       "details": [
         {
           "subject": "App.tsx:132 Chip「{status}」",
-          "probability": 0.08
+          "probability": 0
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:11.258Z",
+      "judgedAt": "2026-09-20T11:10:19.549Z",
       "iteration": 0
     },
     {
       "ruleId": "state.failure",
-      "probability": 0.205,
+      "probability": 0.195,
       "evidenceSufficient": true,
-      "note": "最大は App.tsx:368 失敗時の処理（if）（0.205）。コードで 0 件、Jev で 2 件を判定",
+      "note": "最大は App.tsx:368 失敗時の処理（if）（0.195）。コードで 0 件、Jev で 2 件を判定",
       "details": [
         {
           "subject": "App.tsx:368 失敗時の処理（if）",
-          "probability": 0.205
+          "probability": 0.195
         },
         {
           "subject": "App.tsx:391 失敗時の処理（if）",
@@ -115,7 +84,7 @@
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:11.258Z",
+      "judgedAt": "2026-09-20T11:10:19.549Z",
       "iteration": 0
     },
     {
@@ -134,7 +103,7 @@
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:11.258Z",
+      "judgedAt": "2026-09-20T11:10:19.549Z",
       "iteration": 0
     }
   ]

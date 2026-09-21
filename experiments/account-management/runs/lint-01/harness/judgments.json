@@ -4,17 +4,17 @@
   "judgments": [
     {
       "ruleId": "a11y.control-name",
-      "probability": 0.06,
+      "probability": 0,
       "evidenceSufficient": true,
-      "note": "最大は App.tsx:280 Link「{customer.companyName}」（0.06）。コードで 12 件、Jev で 2 件を判定",
+      "note": "最大は App.tsx:280 Link「{customer.companyName}」（0）。コードで 14 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
       "details": [
         {
           "subject": "App.tsx:280 Link「{customer.companyName}」",
-          "probability": 0.06
+          "probability": 0
         },
         {
           "subject": "App.tsx:328 Link「{customer.companyName}」",
-          "probability": 0.06
+          "probability": 0
         },
         {
           "subject": "App.tsx:386 SearchField.ClearButton「検索条件を消す」",
@@ -66,80 +66,33 @@
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:09.569Z",
-      "iteration": 0
-    },
-    {
-      "ruleId": "a11y.error-recovery",
-      "probability": 0.376,
-      "evidenceSufficient": true,
-      "note": "最大は App.tsx:711 StatusFeedback「顧客を削除できませんでした」（0.376）。コードで 0 件、Jev で 9 件を判定",
-      "details": [
-        {
-          "subject": "App.tsx:711 StatusFeedback「顧客を削除できませんでした」",
-          "probability": 0.376
-        },
-        {
-          "subject": "App.tsx:627 FieldError「{errors.companyName}」",
-          "probability": 0.26
-        },
-        {
-          "subject": "App.tsx:187 文言「メールアドレスの形式を確認してください。」",
-          "probability": 0.18
-        },
-        {
-          "subject": "App.tsx:652 FieldError「{errors.email}」",
-          "probability": 0.065
-        },
-        {
-          "subject": "fixtures.ts:138 文言「削除に失敗しました。時間をおいて再試行してください。」",
-          "probability": 0.049
-        },
-        {
-          "subject": "App.tsx:173 文言「顧客情報を保存できませんでした」",
-          "probability": 0.039
-        },
-        {
-          "subject": "fixtures.ts:104 文言「保存に失敗しました。入力内容を保持したまま再試行できます。」",
-          "probability": 0.039
-        },
-        {
-          "subject": "App.tsx:651 文言「一般的なメール形式で入力してください。」",
-          "probability": 0.005
-        },
-        {
-          "subject": "App.tsx:482 文言「会社名を入力してください。」",
-          "probability": 0.004
-        }
-      ],
-      "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:09.569Z",
+      "judgedAt": "2026-09-20T11:10:18.557Z",
       "iteration": 0
     },
     {
       "ruleId": "a11y.color-only",
-      "probability": 0.05,
+      "probability": 0,
       "evidenceSufficient": true,
-      "note": "最大は App.tsx:258 Chip.Root「{status}」（0.05）。コードで 0 件、Jev で 1 件を判定",
+      "note": "最大は App.tsx:258 Chip.Root「{status}」（0）。コードで 1 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
       "details": [
         {
           "subject": "App.tsx:258 Chip.Root「{status}」",
-          "probability": 0.05
+          "probability": 0
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:09.569Z",
+      "judgedAt": "2026-09-20T11:10:18.557Z",
       "iteration": 0
     },
     {
       "ruleId": "state.failure",
-      "probability": 0.154,
+      "probability": 0.146,
       "evidenceSufficient": true,
-      "note": "最大は App.tsx:514 失敗時の処理（if）（0.154）。コードで 0 件、Jev で 2 件を判定",
+      "note": "最大は App.tsx:514 失敗時の処理（if）（0.146）。コードで 0 件、Jev で 2 件を判定",
       "details": [
         {
           "subject": "App.tsx:514 失敗時の処理（if）",
-          "probability": 0.154
+          "probability": 0.146
         },
         {
           "subject": "App.tsx:548 失敗時の処理（if）",
@@ -147,7 +100,7 @@
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:09.569Z",
+      "judgedAt": "2026-09-20T11:10:18.557Z",
       "iteration": 0
     },
     {
@@ -166,7 +119,7 @@
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:09.569Z",
+      "judgedAt": "2026-09-20T11:10:18.557Z",
       "iteration": 0
     }
   ]

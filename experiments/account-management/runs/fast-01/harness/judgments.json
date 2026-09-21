@@ -4,14 +4,10 @@
   "judgments": [
     {
       "ruleId": "a11y.control-name",
-      "probability": 0.05,
+      "probability": 0,
       "evidenceSufficient": true,
-      "note": "最大は CustomerListPage.tsx:212 Link「{customer.companyName}」（0.05）。コードで 16 件、Jev で 1 件を判定",
+      "note": "最大は CustomerDetailPage.tsx:124 Link「顧客一覧へ戻る」（0）。コードで 17 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
       "details": [
-        {
-          "subject": "CustomerListPage.tsx:212 Link「{customer.companyName}」",
-          "probability": 0.05
-        },
         {
           "subject": "CustomerDetailPage.tsx:124 Link「顧客一覧へ戻る」",
           "probability": 0
@@ -73,105 +69,58 @@
           "probability": 0
         },
         {
+          "subject": "CustomerListPage.tsx:212 Link「{customer.companyName}」",
+          "probability": 0
+        },
+        {
           "subject": "CustomerListPage.tsx:250 Link「顧客を確認」",
           "probability": 0
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:06.331Z",
-      "iteration": 0
-    },
-    {
-      "ruleId": "a11y.error-recovery",
-      "probability": 0.409,
-      "evidenceSufficient": true,
-      "note": "最大は customerForm.tsx:59 FieldError「{errors.companyName}」（0.409）。コードで 0 件、Jev で 10 件を判定",
-      "details": [
-        {
-          "subject": "customerForm.tsx:59 FieldError「{errors.companyName}」",
-          "probability": 0.409
-        },
-        {
-          "subject": "customerForm.tsx:84 FieldError「{errors.email}」",
-          "probability": 0.348
-        },
-        {
-          "subject": "CustomerDetailPage.tsx:203 Alert「顧客を削除できませんでした」",
-          "probability": 0.326
-        },
-        {
-          "subject": "CustomerListPage.tsx:131 Alert「顧客を追加できませんでした 入力した内容はそのまま残しています。」",
-          "probability": 0.127
-        },
-        {
-          "subject": "CustomerDetailPage.tsx:150 Alert「顧客情報を保存できませんでした 入力した内容はそのまま残しています。」",
-          "probability": 0.088
-        },
-        {
-          "subject": "CustomerDetailPage.tsx:11 文言「顧客情報を保存できませんでした。時間をおいて再試行してください。」",
-          "probability": 0.059
-        },
-        {
-          "subject": "fixtures.ts:111 文言「顧客の追加に失敗しました。時間をおいて再試行してください。」",
-          "probability": 0.049
-        },
-        {
-          "subject": "fixtures.ts:152 文言「削除に失敗しました。時間をおいて再試行してください。」",
-          "probability": 0.049
-        },
-        {
-          "subject": "customerForm.tsx:29 文言「会社名を入力してください。」",
-          "probability": 0.004
-        },
-        {
-          "subject": "customerForm.tsx:24 文言「メールアドレスをname@example.comの形式で入力してください。」",
-          "probability": 0.002
-        }
-      ],
-      "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:06.331Z",
+      "judgedAt": "2026-09-20T11:10:16.424Z",
       "iteration": 0
     },
     {
       "ruleId": "a11y.color-only",
-      "probability": 0.07,
+      "probability": 0,
       "evidenceSufficient": true,
-      "note": "最大は CustomerDetailPage.tsx:131 Chip「{customer.status}」（0.07）。コードで 0 件、Jev で 4 件を判定",
+      "note": "最大は CustomerDetailPage.tsx:131 Chip「{customer.status}」（0）。コードで 4 件、Jev で 0 件を判定。式や spread で渡すものの中身は見ていない",
       "details": [
         {
           "subject": "CustomerDetailPage.tsx:131 Chip「{customer.status}」",
-          "probability": 0.07
+          "probability": 0
         },
         {
           "subject": "CustomerDetailPage.tsx:264 Chip「{customer.status}」",
-          "probability": 0.07
+          "probability": 0
         },
         {
           "subject": "CustomerListPage.tsx:219 Chip「{customer.status}」",
-          "probability": 0.07
+          "probability": 0
         },
         {
           "subject": "CustomerListPage.tsx:242 Chip「{customer.status}」",
-          "probability": 0.07
+          "probability": 0
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:06.331Z",
+      "judgedAt": "2026-09-20T11:10:16.424Z",
       "iteration": 0
     },
     {
       "ruleId": "state.failure",
-      "probability": 0.086,
+      "probability": 0.096,
       "evidenceSufficient": true,
-      "note": "最大は CustomerDetailPage.tsx:103 失敗時の処理（if）（0.086）。コードで 0 件、Jev で 3 件を判定",
+      "note": "最大は CustomerDetailPage.tsx:103 失敗時の処理（if）（0.096）。コードで 0 件、Jev で 3 件を判定",
       "details": [
         {
           "subject": "CustomerDetailPage.tsx:103 失敗時の処理（if）",
-          "probability": 0.086
+          "probability": 0.096
         },
         {
           "subject": "CustomerListPage.tsx:93 失敗時の処理（if）",
-          "probability": 0.074
+          "probability": 0.064
         },
         {
           "subject": "CustomerDetailPage.tsx:76 失敗時の処理（if）",
@@ -179,7 +128,7 @@
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:06.331Z",
+      "judgedAt": "2026-09-20T11:10:16.424Z",
       "iteration": 0
     },
     {
@@ -198,7 +147,7 @@
         }
       ],
       "model": "jev-1.13.0",
-      "judgedAt": "2026-09-19T07:52:06.331Z",
+      "judgedAt": "2026-09-20T11:10:16.424Z",
       "iteration": 0
     }
   ]

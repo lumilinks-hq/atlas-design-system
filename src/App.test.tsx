@@ -434,6 +434,10 @@ describe("Atlas Design System demo", () => {
     );
     expect(within(table).getByRole("link", { name: "experiments/*/runs/*/*/judgments.json" })).toBeInTheDocument();
     expect(within(table).getByText(/pnpm experiment:judge --write/)).toBeInTheDocument();
+    // 名前と文字の有無はコードで決める。Jev に聞くのは意味の判定が要る 2 件だけ
+    expect(within(table).getByText(/操作の名前と状態表示の文字があるか/)).toBeInTheDocument();
+    expect(judge).toHaveTextContent("2件だけです");
+    expect(judge).toHaveTextContent("保存済み13本の結果を見て2件に絞りました");
     expect(judge).toHaveTextContent("TYPESAFE_API_KEY");
     expect(judge).toHaveTextContent("0.8以上なら修正");
     expect(within(judge).queryByRole("list")).not.toBeInTheDocument();
